@@ -2,6 +2,7 @@
 
 export(mlxplore)
 export(pkmodel)
+export(prctilemlx)
 export(simulx)
 importFrom(ggplot2,geom_line)
 importFrom(ggplot2,ggplot)
