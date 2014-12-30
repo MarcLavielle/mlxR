@@ -1,4 +1,4 @@
-#' returns the indices corresponding to the positions of s in the array x
+# returns the indices corresponding to the positions of s in the array x
 findstrcmp <- function(x, s , not=FALSE ){
   if(not){
     which( x != s ) 
