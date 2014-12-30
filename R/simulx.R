@@ -140,7 +140,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
     argList <- list(DATA=dataIn, SETTINGS=s)       
    }
   
-  dataOut  <- .Call( "mlxComputeR", argList)
+  dataOut  <- .Call( "mlxComputeR", argList, PACKAGE="mlxComputeR")
   Sys.setenv(LIXOFT_HOME="")
   dataOut  <- convertmlx(dataOut,dataIn)
   

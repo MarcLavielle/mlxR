@@ -65,7 +65,7 @@
 #' # The percentiles are not plotted by setting plot=FALSE
 #' p   <- prctilemlx(res$C, band=list(number=4, level=80), plot=FALSE)
 #' print(p$y[1:5,])
-#' @export
+#' @export         
 prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
 {
   alpha <- band$level
