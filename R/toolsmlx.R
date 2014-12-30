@@ -1,24 +1,14 @@
-findstrcmp <- function(x, s , not=FALSE ) 
-{
-#   ans = STRCMP(x,s) compares  x and s and returns the indices corresponding to 
-#     the positions of s in the array x
-  ans = NULL
-  n = length(x)
-  for (i in 1 :n)
-  {
-    if(x[i]==s)
-    {
-      ans = c(ans, i)
-    }
+#' returns the indices corresponding to the positions of s in the array x
+findstrcmp <- function(x, s , not=FALSE ){
+  if(not){
+    which( x != s ) 
+  } else {
+    which( x == s )
   }
-  if (not == TRUE)
-    ans       = setdiff(c(1:n), ans) #  vérifier
-  
-  ans
+
 }
 
-funique <- function(A)
-{
+funique <- function(A){
   #   [C,IA,IC] = unique(A) also returns index vectors IA and IC such that
   #   C = A(IA) and A = C(IC).  
   #
@@ -30,8 +20,7 @@ funique <- function(A)
     list(arg1=C, arg2=IA, arg3=IC)
 }
 
-fsort <- function(X)
-{
+fsort <- function(X){
   #   [Y,I] = sort(X,DIM,MODE) also returns an index matrix I.
   #   If X is a vector, then Y = X(I).    
   
