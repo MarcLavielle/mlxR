@@ -1,0 +1,17 @@
+Package: mlxR
+Type: Package
+Version: 2.0.0
+Title: mlxR
+Description: mlxR
+Authors@R: as.person(c(
+    "Marc Lavielle <Marc.Lavielle@inria.fr> [aut, cre]",
+    "Romain Francois <romain@r-enthusiasts.com> [aut]"
+    ))
+URL: https://github.com/romainfrancois/mlxR
+BugReports: https://github.com/romainfrancois/mlxR/issues
+Depends:
+    R (>= 3.0.2), 
+    Rcpp (>= 0.11.3)
+LinkingTo: Rcpp (>= 0.11.3)
+License: GPL (>= 3.0)
+
