@@ -1,7 +1,4 @@
-isfield  <- function(structure, field)
-{
-  if (any(names(structure)==field)) TRUE else FALSE
-
+#' find if a structure has an element called field
+isfield  <- function(structure, field){
+  any( field %in% names(structure) )
 } 
-  
-  # match("firstname", names(lis)).
