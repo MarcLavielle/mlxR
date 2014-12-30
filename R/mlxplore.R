@@ -1,3 +1,19 @@
+#' Explore and visualize Mlxtran and pharmML models with the Mlxplore software
+#' 
+#' Explore and visualize \samp{Mlxtran} and \samp{pharmML} models 
+#' with the \samp{Mlxplore} software
+#' 
+#' @param r a \code{data.frame} with a column \samp{id}, a column \samp{time}
+#' and a column with values. The times should be the same for each individual.
+#' @param band a list with two fields
+#' \itemize{
+#'    \item \samp{number} the number of intervals (i.e. the number of percentiles minus 1).
+#'    \item \samp{level} the largest interval (i.e. the difference between the lowest and the highest percentile).
+#' }
+#' @param y.lim vector of length 2, giving the y coordinate range
+#' @param plot if \code{TRUE} the empirical distribution is displayed, 
+#' if \code{FALSE}, the values of the percentiles are returned
+#' @export
 mlxplore <- function(model,parameter=NULL,output=NULL,group=NULL,treatment=NULL)
 {
   
