@@ -38,7 +38,7 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
     if (!file.info(mlxplore.path)$isdir){   
       msg <- sprintf("check the path to Mlxplore (%s) if you want to use mxlplore.R", mlxplore.path )
       warning(msg,call.="FALSE")
-    } else {
+    } else {
       Sys.setenv(session.mlxplore=mlxplore.path)    
     }
   }
