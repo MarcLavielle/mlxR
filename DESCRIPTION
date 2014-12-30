@@ -10,8 +10,9 @@ Authors@R: as.person(c(
 URL: https://github.com/romainfrancois/mlxR
 BugReports: https://github.com/romainfrancois/mlxR/issues
 Depends:
-    R (>= 3.0.2), 
-    Rcpp (>= 0.11.3)
+    R (>= 3.1.2), 
+    Rcpp (>= 0.11.3), 
+    tools
 LinkingTo: Rcpp (>= 0.11.3)
 License: GPL (>= 3.0)
 
