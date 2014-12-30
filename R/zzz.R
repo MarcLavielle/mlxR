@@ -44,7 +44,7 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
   }
 
   #--- load Mlxlibrary
-  mlxComputeRLibraryBuilder(mlxlibrary.path, mlxr.dir);
+  mlxComputeRLibraryBuilder(mlxlibrary.path)
   
 }
 
