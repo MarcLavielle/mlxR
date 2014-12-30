@@ -1,22 +1,6 @@
 mlxComputeRLibraryBuilder <- function (lixoftHOME, myCallingPath){
   myOS <- Sys.info()['sysname'];
   
-  #--- install "Rcpp" or check "Rcpp" version
-  if (!is.element("Rcpp", installed.packages()[,1])){
-  stop("Please install Rcpp \n",call.="FALSE")
-  }
-  
-  # --- Check the Rcpp version installed is the correct one
-  packinfo <- installed.packages ();
-    installedRcppVersion = packinfo[c("Rcpp"), c("Version")]
-    requiredRcppVersion = "0.11.0";
-    myOS <- Sys.info()['sysname'];
-    if (myOS == "Windows") {
-    	if (installedRcppVersion < requiredRcppVersion)
-      		stop("Either install version 0.11.0 or delete file runtime/lib/mlxComputeR.dll, install Rtools and recompile") }
-  
-  
-  
   #STEP 02: Test if mlxComputeR.so / mlxComputeR.dll already exists ?
   mlxComputeFileName = sprintf("%s/lib/mlxComputeR.so", lixoftHOME);
   if (myOS == "Windows")
