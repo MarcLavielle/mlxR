@@ -32,8 +32,7 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
     stop(mess.mlxlibrary,call.="FALSE")
   }
   Sys.setenv(session.simulx=mlxlibrary.path)
-  Sys.setenv(mlxtoolbox.path=mlxtoolbox.path)
-
+  
   mlxplore.path   <- get_lixoft_path("mlxplore")
   if (!is.null(mlxplore.path)){
     if (!file.info(mlxplore.path)$isdir){   
