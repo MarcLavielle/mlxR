@@ -1,3 +1,6 @@
+#' @importFrom Rcpp sourceCpp
+NULL
+
 .onLoad <- function(libname, pkgname){
 
   mess.mlxlibrary="\n\nMlxlibrary has probably not been installed. 
