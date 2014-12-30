@@ -14,5 +14,5 @@ Depends:
     Rcpp (>= 0.11.3), 
     tools
 LinkingTo: Rcpp (>= 0.11.3)
-License: GPL (>= 3.0)
+License: CeCILL-B
 
