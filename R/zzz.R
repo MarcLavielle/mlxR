@@ -17,6 +17,7 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
   } 
   lines <- readLines(lixoft.ini)
   
+  # small utility function to get a path from lixoft.ini file
   get_lixoft_path <- function(name){
     rx <- sprintf( "%s=", name)
     line <- grep( rx, lines, fixed=TRUE, value=TRUE)
@@ -42,7 +43,6 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
       Sys.setenv(session.mlxplore=mlxplore.path)    
     }
   }
-
 
   #--- load Mlxlibrary
   mlxComputeRLibraryBuilder(mlxlibrary.path, mlxr.dir);
