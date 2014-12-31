@@ -6,17 +6,17 @@
 pkmodel(time, treatment, parameter, dose = NULL)
 }
 \arguments{
-\item{time}{a list}
+\item{time}{a vector}
 
-\item{treatment}{a list with two fields
+\item{treatment}{a list with fields
 \itemize{
-  \item \code{number} the number of intervals (i.e. the number of percentiles minus 1).
-  \item \code{level} level the largest interval (i.e. the difference between the lowest and the highest percentile).
+  \item \code{time} : a vector of input times,
+  \item \code{amount} : a scalar or a vector of amounts,
+  \item \code{rate} : a scalar or a vector of infusion rates (default=\code{Inf}),
+  \item \code{tinf} : a scalar or a vector of infusion times (default=0),
 }}
 
-\item{parameter}{vector of parameters with their names}
-
-\item{dose}{...}
+\item{parameter}{vector of parameters with their names and values}
 }
 \description{
 Easy simulation of basic PK models
