@@ -3,7 +3,7 @@
 \alias{pkmodel}
 \title{Easy simulation of basic PK models}
 \usage{
-pkmodel(time, treatment, parameter, dose = NULL)
+pkmodel(time, treatment, parameter)
 }
 \arguments{
 \item{time}{a vector}
@@ -17,8 +17,6 @@ pkmodel(time, treatment, parameter, dose = NULL)
 }}
 
 \item{parameter}{vector of parameters with their names and values}
-
-\item{dose}{TODO}
 }
 \description{
 Easy simulation of basic PK models

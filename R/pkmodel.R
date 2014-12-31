@@ -10,7 +10,6 @@
 #'   \item \code{tinf} : a scalar or a vector of infusion times (default=0),
 #' }
 #' @param parameter vector of parameters with their names and values
-#' @param dose TODO
 #' 
 #' @examples    
 #' \dontrun{
@@ -60,7 +59,7 @@
 #'             theme(legend.position=c(.9, .8)))
 #'   } 
 #' }
-pkmodel <- function(time,treatment,parameter,dose=NULL){
+pkmodel <- function(time,treatment,parameter){
   # ########################################################################################  
   #  pkmodel.R is governed by the CeCILL-B license. 
   #  You can  use, modify and/ or redistribute the software under the terms of 
@@ -69,9 +68,6 @@ pkmodel <- function(time,treatment,parameter,dose=NULL){
   #
   #  pkmodel.R was developed by Marc Lavielle and Fazia Bellal (Inria) for the DDMoRe project. 
   # ########################################################################################  
-  if (!is.null(dose))
-    treatment <- dose
-  
   if (!is.list(parameter)){
     parameter <- list(name=names(parameter), value=as.numeric(parameter))
   }
