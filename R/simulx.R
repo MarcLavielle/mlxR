@@ -21,6 +21,7 @@
 #'   \item \code{name}: a vector of output names
 #'   \item \code{time}: a vector of times (only for the longitudinal outputs)
 #' }
+#' @param data TODO
 #' @param parameter a vector of parameters with their names and values
 #' @param treatment a list with fields
 #' \itemize{
