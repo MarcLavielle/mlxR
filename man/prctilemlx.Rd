@@ -59,7 +59,7 @@ res <- simulx(model     = myModel,
               treatment = list(time=0, amount=100),
               group     = list(size=N, level='individual'),
               output    = list(name='C', time=seq(0,24,by=0.1)))
-# res$C is a dataframe with 2000×241=482000 rows and 3 columns
+# res$C is a data.frame with 2000x241=482000 rows and 3 columns
 res$C[1:10,]
 # we can compute and display the empirical percentiles of C using the default
 # settings (i.e. percentiles of order 10\%, 20\%, ... 90\%)
