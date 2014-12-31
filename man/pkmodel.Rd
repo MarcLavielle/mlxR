@@ -17,6 +17,8 @@ pkmodel(time, treatment, parameter, dose = NULL)
 }}
 
 \item{parameter}{vector of parameters with their names and values}
+
+\item{dose}{TODO}
 }
 \description{
 Easy simulation of basic PK models

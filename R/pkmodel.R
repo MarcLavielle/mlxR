@@ -10,6 +10,7 @@
 #'   \item \code{tinf} : a scalar or a vector of infusion times (default=0),
 #' }
 #' @param parameter vector of parameters with their names and values
+#' @param dose TODO
 #' 
 #' @examples
 #' adm <- list(time=c(2,14,20), amount=40)
