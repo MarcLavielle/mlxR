@@ -3,16 +3,25 @@
 #' Explore and visualize \samp{Mlxtran} and \samp{pharmML} models 
 #' with the \samp{Mlxplore} software
 #' 
-#' @param r a \code{data.frame} with a column \samp{id}, a column \samp{time}
-#' and a column with values. The times should be the same for each individual.
-#' @param band a list with two fields
+#' @param model a \code{Mlxtran} or \code{PharmML} model
+#' @param output a list with fields: 
 #' \itemize{
-#'    \item \samp{number} the number of intervals (i.e. the number of percentiles minus 1).
-#'    \item \samp{level} the largest interval (i.e. the difference between the lowest and the highest percentile).
+#'   \item \code{name}: a vector of output names
+#'   \item \code{time}: a vector of times 
 #' }
-#' @param y.lim vector of length 2, giving the y coordinate range
-#' @param plot if \code{TRUE} the empirical distribution is displayed, 
-#' if \code{FALSE}, the values of the percentiles are returned
+#' @param parameter a vector of parameters with their names and values
+#' @param treatment a list with fields
+#' \itemize{
+#'   \item \code{time} : a vector of input times,
+#'   \item \code{amount} : a scalar or a vector of amounts,
+#'   \item \code{rate} : a scalar or a vector of infusion rates (default=\code{Inf}),
+#'   \item \code{type} : the type of input (default=1),
+#'   \item \code{target} : the target compartment (default=NULL). 
+#' }
+#' @param group a list with unique field: 
+#' \itemize{
+#'   \item \code{treatment} : a list,
+#' }
 #' @importFrom tools file_ext
 #' @export
 mlxplore <- function(model,parameter=NULL,output=NULL,group=NULL,treatment=NULL)
@@ -24,7 +33,7 @@ mlxplore <- function(model,parameter=NULL,output=NULL,group=NULL,treatment=NULL)
   #  the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL
   #  http://www.cecill.info/index.en.html
   #
-  #  mlxplore.R was developed by Marc Lavielle and Fazia Bellal (Inria) for the DDMoRe project. 
+  #  mlxplore.R was developed by Marc Lavielle and the Inria Popix team for the DDMoRe project. 
   # ########################################################################################  
   
   session <- Sys.getenv("session.mlxplore")
