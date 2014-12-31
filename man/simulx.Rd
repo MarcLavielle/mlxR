@@ -13,7 +13,7 @@ simulx(model = NULL, group = NULL, treatment = NULL, parameter = NULL,
 \item{group}{a list, or a list of lists, with fields:
 \itemize{
   \item \code{size} : size of the group (default=1),
-  \item \code{level} : level of randomization (default=longitudinal),
+  \item \code{level} : level(s) of randomization,
   \item \code{parameter} : if different parameters per group are defined,
   \item \code{output} : if different outputs per group are defined,
   \item \code{treatment} : if different treatements per group are defined,
@@ -55,9 +55,9 @@ simulx(model = NULL, group = NULL, treatment = NULL, parameter = NULL,
   \item \code{value} : a vector of values.
 }}
 
-\item{level}{a list, or a list of lists, with fields
+\item{varlevel}{a list, or a list of lists, with fields
 \itemize{
-  \code{name} : a vector of level names,
+  \code{name} : a vector of names of variability levels,
   \code{time} : a vector of times that define the occasions.
 }}
 }
