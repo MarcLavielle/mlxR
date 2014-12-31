@@ -16,6 +16,9 @@ readdatamlx  <- function(infoProject)
   
   header=unlist(strsplit(header, ","))  
   nlabel = length(header)
+  
+  icov <- icat <- iid <- iamt <- iy <- iytype <- NULL
+
   for (i in 1:length(headerList))
   {
     hi=headerList[[i]]
