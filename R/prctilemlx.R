@@ -19,52 +19,54 @@
 #'   \item y a data frame with the values of the empirical percentiles computed at each time point
 #' }
 #' @examples
-#' myModel <- inlineModel("
-#' [LONGITUDINAL]
-#' input = {ka, V, Cl}
-#' EQUATION:
-#' C = pkmodel(ka,V,Cl)
-#' 
-#' [INDIVIDUAL]
-#' input = {ka_pop, V_pop, Cl_pop, omega_ka, omega_V, omega_Cl}
-#' DEFINITION:
-#' ka = {distribution=lognormal, reference=ka_pop, sd=omega_ka}
-#' V  = {distribution=lognormal, reference=V_pop,  sd=omega_V }
-#' Cl = {distribution=lognormal, reference=Cl_pop, sd=omega_Cl}
-#' ")
-#' 
-#' N=2000
-#' 
-#' pop.param   <- c(
-#'   ka_pop  = 1,    omega_ka  = 0.5,
-#'   V_pop   = 10,   omega_V   = 0.4,
-#'   Cl_pop  = 1,    omega_Cl  = 0.3)
+#' \dontrun{
+#'   myModel <- inlineModel("
+#'   [LONGITUDINAL]
+#'   input = {ka, V, Cl}
+#'   EQUATION:
+#'   C = pkmodel(ka,V,Cl)
 #'   
-#' res <- simulx(model     = myModel,
-#'               parameter = pop.param,
-#'               treatment = list(time=0, amount=100),
-#'               group     = list(size=N, level='individual'),
-#'               output    = list(name='C', time=seq(0,24,by=0.1)))
-#' # res$C is a data.frame with 2000x241=482000 rows and 3 columns
-#' res$C[1:10,]
-#' # we can compute and display the empirical percentiles of C using the default 
-#' # settings (i.e. percentiles of order 10%, 20%, ... 90%)
-#' p   <- prctilemlx(res$C)
-#' print(names(p))
-#' print(p$q)
-#' print(p$color)
-#' print(p$y[1:5,])
-#' # The 3 quartiles (i.e. percentiles of order 25%, 50% and 75%) are displayed by 
-#' # selecting a 50% interval splitted into 2 subintervals
-#' p  <- prctilemlx(res$C, band=list(number=2, level=50))
-#' # A one 90% interval can be displayed using only one interval
-#' p   <- prctilemlx(res$C, band=list(number=1, level=90))
-#' # or 99 subintervals in order to better represent the continuous distribution 
-#' # of the data within this interval
-#' p   <- prctilemlx(res$C, band=list(number=99, level=90))
-#' # The percentiles are not plotted by setting plot=FALSE
-#' p   <- prctilemlx(res$C, band=list(number=4, level=80), plot=FALSE)
-#' print(p$y[1:5,])
+#'   [INDIVIDUAL]
+#'   input = {ka_pop, V_pop, Cl_pop, omega_ka, omega_V, omega_Cl}
+#'   DEFINITION:
+#'   ka = {distribution=lognormal, reference=ka_pop, sd=omega_ka}
+#'   V  = {distribution=lognormal, reference=V_pop,  sd=omega_V }
+#'   Cl = {distribution=lognormal, reference=Cl_pop, sd=omega_Cl}
+#'   ")
+#'   
+#'   N=2000
+#'   
+#'   pop.param   <- c(
+#'     ka_pop  = 1,    omega_ka  = 0.5,
+#'     V_pop   = 10,   omega_V   = 0.4,
+#'     Cl_pop  = 1,    omega_Cl  = 0.3)
+#'     
+#'   res <- simulx(model     = myModel,
+#'                 parameter = pop.param,
+#'                 treatment = list(time=0, amount=100),
+#'                 group     = list(size=N, level='individual'),
+#'                 output    = list(name='C', time=seq(0,24,by=0.1)))
+#'   # res$C is a data.frame with 2000x241=482000 rows and 3 columns
+#'   res$C[1:10,]
+#'   # we can compute and display the empirical percentiles of C using the default 
+#'   # settings (i.e. percentiles of order 10%, 20%, ... 90%)
+#'   p   <- prctilemlx(res$C)
+#'   print(names(p))
+#'   print(p$q)
+#'   print(p$color)
+#'   print(p$y[1:5,])
+#'   # The 3 quartiles (i.e. percentiles of order 25%, 50% and 75%) are displayed by 
+#'   # selecting a 50% interval splitted into 2 subintervals
+#'   p  <- prctilemlx(res$C, band=list(number=2, level=50))
+#'   # A one 90% interval can be displayed using only one interval
+#'   p   <- prctilemlx(res$C, band=list(number=1, level=90))
+#'   # or 99 subintervals in order to better represent the continuous distribution 
+#'   # of the data within this interval
+#'   p   <- prctilemlx(res$C, band=list(number=99, level=90))
+#'   # The percentiles are not plotted by setting plot=FALSE
+#'   p   <- prctilemlx(res$C, band=list(number=4, level=80), plot=FALSE)
+#'   print(p$y[1:5,])
+#' }
 #' @export         
 prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
 {
