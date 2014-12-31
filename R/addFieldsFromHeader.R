@@ -26,17 +26,11 @@ addFieldsFromHeader  <- function(structure)
   }
   
   ##create fields directly from header and value
-  if (length(couples)==0){
-    for (i in 1:length(header)){
-        structure[header[[i]]] <- tolist(value[,i])    
-    }
-  }else{
-    idx_id <- which(header=='id') 
-    structure$id <- value[,idx_id];
-    structure$value <- matrix(nrow=length(structure$id), ncol=dim(couples)[1])
-    for (j in 1 : dim(couples)[1]){
-      structure$value[,j] <- value[, couples[j,2]]
-    }
+  idx_id <- which(header=='id') 
+  structure$id <- value[,idx_id];
+  structure$value <- matrix(nrow=length(structure$id), ncol=dim(couples)[1])
+  for (j in 1 : dim(couples)[1]){
+    structure$value[,j] <- value[, couples[j,2]]
   }
   
   ## Only if "id" is a field
