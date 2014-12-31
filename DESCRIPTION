@@ -18,4 +18,4 @@ Imports:
     XML,
     Rcpp (>= 0.11.3),
     tools
-License: CeCILL-B
+License: file LICENSE
