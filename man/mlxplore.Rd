@@ -7,19 +7,29 @@ mlxplore(model, parameter = NULL, output = NULL, group = NULL,
   treatment = NULL)
 }
 \arguments{
-\item{r}{a \code{data.frame} with a column \samp{id}, a column \samp{time}
-and a column with values. The times should be the same for each individual.}
+\item{model}{a \code{Mlxtran} or \code{PharmML} model}
 
-\item{band}{a list with two fields
+\item{parameter}{a vector of parameters with their names and values}
+
+\item{output}{a list with fields:
 \itemize{
-   \item \samp{number} the number of intervals (i.e. the number of percentiles minus 1).
-   \item \samp{level} the largest interval (i.e. the difference between the lowest and the highest percentile).
+  \item \code{name}: a vector of output names
+  \item \code{time}: a vector of times
 }}
 
-\item{y.lim}{vector of length 2, giving the y coordinate range}
+\item{group}{a list with unique field:
+\itemize{
+  \item \code{treatment} : a list,
+}}
 
-\item{plot}{if \code{TRUE} the empirical distribution is displayed,
-if \code{FALSE}, the values of the percentiles are returned}
+\item{treatment}{a list with fields
+\itemize{
+  \item \code{time} : a vector of input times,
+  \item \code{amount} : a scalar or a vector of amounts,
+  \item \code{rate} : a scalar or a vector of infusion rates (default=\code{Inf}),
+  \item \code{type} : the type of input (default=1),
+  \item \code{target} : the target compartment (default=NULL).
+}}
 }
 \description{
 Explore and visualize \samp{Mlxtran} and \samp{pharmML} models
