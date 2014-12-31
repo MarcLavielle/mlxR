@@ -1,3 +1,8 @@
+#' @importFrom XML xmlParse
+#' @importFrom XML getNodeSet
+#' @importFrom XML xmlAttrs
+NULL
+
 processing_monolix  <- function(project,model,treatment,param,output,group)
 {
   ### processing_monolix
@@ -8,7 +13,6 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   #     they missed in the input parameters. Theses informations are read in
   #     files.
   
-  library(XML)
   ##************************************************************************
   #       XML FILENUL
   #*************************************************************************

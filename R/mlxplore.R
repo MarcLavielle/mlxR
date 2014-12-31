@@ -13,6 +13,7 @@
 #' @param y.lim vector of length 2, giving the y coordinate range
 #' @param plot if \code{TRUE} the empirical distribution is displayed, 
 #' if \code{FALSE}, the values of the percentiles are returned
+#' @importFrom tools file_ext
 #' @export
 mlxplore <- function(model,parameter=NULL,output=NULL,group=NULL,treatment=NULL)
 {
