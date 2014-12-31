@@ -1,3 +1,6 @@
+#' @importFrom tools file_path_sans_ext
+NULL
+
 pharmml2mlxtran  <- function(model.input, model.output=NULL)
 {
   if (is.null(model.output))

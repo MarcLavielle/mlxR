@@ -10,7 +10,6 @@
 #' @param parameter vector of parameters with their names
 #' @param dose ...
 #' 
-#' @importFrom ggplot2 ggplot geom_line
 #' @examples
 #' adm <- list(time=c(2,14,20), amount=40)
 #' p   <- c(V=8, Cl=0.5,k12=0.3, k21=0.2)
