@@ -51,7 +51,7 @@
 #' res <- pkmodel(t,adm,p)
 #' 
 #' if( require("reshape2") ){
-#'   r <- melt(res, id='time', variable_name='c')
+#'   r <- melt(res, id='time', variable.name='c')
 #'   print(ggplot(r, aes(time,value)) + geom_line(aes(colour = c),size=1) +
 #'           ylab('concentration') + guides(colour=guide_legend(title=NULL)) +
 #'           theme(legend.position=c(.9, .8)))

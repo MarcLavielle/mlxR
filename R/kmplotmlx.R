@@ -1,3 +1,6 @@
+#' @importFrom ggplot2 ggplot geom_line aes
+NULL
+
 kmplotmlx  <-  function(r0)
 {
   r0.name=attr(r0,"name")

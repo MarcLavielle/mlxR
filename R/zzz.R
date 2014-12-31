@@ -1,5 +1,4 @@
 #' @importFrom Rcpp sourceCpp
-#' @importFrom ggplot2 ggplot
 NULL
 
 .onLoad <- function(libname, pkgname){
