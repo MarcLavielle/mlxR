@@ -34,7 +34,7 @@
 #' @param group a list, or a list of lists, with fields: 
 #' \itemize{
 #'   \item \code{size} : size of the group (default=1),
-#'   \item \code{level} : level of randomization (default=longitudinal),
+#'   \item \code{level} : level(s) of randomization,
 #'   \item \code{parameter} : if different parameters per group are defined,
 #'   \item \code{output} : if different outputs per group are defined,
 #'   \item \code{treatment} : if different treatements per group are defined,
@@ -46,9 +46,9 @@
 #'   \item \code{time} : a vector of times,
 #'   \item \code{value} : a vector of values.
 #' }
-#' @param level a list, or a list of lists, with fields
+#' @param varlevel a list, or a list of lists, with fields
 #' \itemize{
-#'   \code{name} : a vector of level names,
+#'   \code{name} : a vector of names of variability levels,
 #'   \code{time} : a vector of times that define the occasions.
 #' }
 #' @param project the name of a Monolix project
@@ -72,7 +72,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   #  the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL
   #  http://www.cecill.info/index.en.html
   #
-  #  simulx.R was developed by Marc Lavielle (Inria, popix team) for the DDMoRe project. 
+  #  simulx.R was developed by Marc Lavielle and the Inria popix team for the DDMoRe project. 
   #--------------------------------------------------
   
   session=Sys.getenv("session.simulx")
