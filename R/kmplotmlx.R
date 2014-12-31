@@ -1,4 +1,4 @@
-#' @importFrom ggplot2 ggplot geom_line aes
+#' @importFrom ggplot2 ggplot geom_line aes xlab ylab
 NULL
 
 kmplotmlx  <-  function(r0)
