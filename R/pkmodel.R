@@ -1,14 +1,15 @@
 #' Easy simulation of basic PK models
 #'        
 #' @export
-#' @param time a list
-#' @param treatment a list with two fields
+#' @param time a vector
+#' @param treatment a list with fields
 #' \itemize{
-#'   \item \code{number} the number of intervals (i.e. the number of percentiles minus 1).
-#'   \item \code{level} level the largest interval (i.e. the difference between the lowest and the highest percentile). 
+#'   \item \code{time} : a vector of input times,
+#'   \item \code{amount} : a scalar or a vector of amounts,
+#'   \item \code{rate} : a scalar or a vector of infusion rates (default=\code{Inf}),
+#'   \item \code{tinf} : a scalar or a vector of infusion times (default=0),
 #' }
-#' @param parameter vector of parameters with their names
-#' @param dose ...
+#' @param parameter vector of parameters with their names and values
 #' 
 #' @examples
 #' adm <- list(time=c(2,14,20), amount=40)
