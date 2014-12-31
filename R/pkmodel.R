@@ -50,10 +50,12 @@
 #' 
 #' res <- pkmodel(t,adm,p)
 #' 
-#' r <- melt(res, id='time', variable_name='c')
-#' print(ggplot(r, aes(time,value)) + geom_line(aes(colour = c),size=1) +
-#'         ylab('concentration') + guides(colour=guide_legend(title=NULL)) +
-#'         theme(legend.position=c(.9, .8)))
+#' if( require("reshape2") ){
+#'   r <- melt(res, id='time', variable_name='c')
+#'   print(ggplot(r, aes(time,value)) + geom_line(aes(colour = c),size=1) +
+#'           ylab('concentration') + guides(colour=guide_legend(title=NULL)) +
+#'           theme(legend.position=c(.9, .8)))
+#' }
 pkmodel <- function(time,treatment,parameter,dose=NULL){
   # ########################################################################################  
   #  pkmodel.R is governed by the CeCILL-B license. 

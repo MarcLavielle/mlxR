@@ -12,6 +12,8 @@ BugReports: https://github.com/romainfrancois/mlxR/issues
 Depends:
     R (>= 3.0.3),
     ggplot2
+Suggests:
+    reshape2
 Imports:
     XML,
     Rcpp (>= 0.11.3),
