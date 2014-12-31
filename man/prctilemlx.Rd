@@ -62,7 +62,7 @@ res <- simulx(model     = myModel,
 # res$C is a dataframe with 2000×241=482000 rows and 3 columns
 res$C[1:10,]
 # we can compute and display the empirical percentiles of C using the default
-# settings (i.e. percentiles of order 10\%, 20\%, … 90\%)
+# settings (i.e. percentiles of order 10\%, 20\%, ... 90\%)
 p   <- prctilemlx(res$C)
 print(names(p))
 print(p$q)
