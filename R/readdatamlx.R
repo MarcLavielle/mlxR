@@ -22,8 +22,8 @@ readdatamlx  <- function(infoProject)
     ih <- which(header %in% hi)
     if (length(ih)==0)
       ih=NULL
-    eval(parse(text= paste0("ii='i",tolower(hi),"'")))
-     eval(parse(text= paste0(ii,"=ih")))
+    ii <- paste0( 'i', tolower(hi) )
+    eval(parse(text= paste0(ii,"=ih")))
     if (!is.null(ih))
       newHeader[ih]=newList[i]      
   }

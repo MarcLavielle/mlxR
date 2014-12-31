@@ -38,6 +38,8 @@ simulx(model = NULL, group = NULL, treatment = NULL, parameter = NULL,
   \item \code{time}: a vector of times (only for the longitudinal outputs)
 }}
 
+\item{data}{TODO}
+
 \item{project}{the name of a Monolix project}
 
 \item{settings}{a list of optional settings
