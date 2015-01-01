@@ -1,3 +1,4 @@
+#' support for matlab-like multi results
 #' @export
 list <- structure(NA,class="result")
 
