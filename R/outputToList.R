@@ -1,4 +1,7 @@
+#' @export
 list <- structure(NA,class="result")
+
+#' @export
 "[<-.result" <- function(x,...,value) {
   args <- as.list(match.call())
   args <- args[-c(1:2,length(args))]
@@ -9,3 +12,4 @@ list <- structure(NA,class="result")
   }
   x
 }
+
