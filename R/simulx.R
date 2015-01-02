@@ -134,24 +134,19 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
     dataIn=data
     group=NULL
   }
-    
-   if (length(s)==0){
-     argList <- list(DATA=dataIn) 
-   } else {
+  
+  if (length(s)==0){
+    argList <- list(DATA=dataIn) 
+  } else {
     argList <- list(DATA=dataIn, SETTINGS=s)       
-   }
+  }
   
-  dataOut  <- .Call( "mlxComputeR", argList, PACKAGE="mlxComputeR")
-  Sys.setenv(LIXOFT_HOME="")
-  dataOut  <- convertmlx(dataOut,dataIn)
-  
-  if(is.null(data)){
-    if(data.in==F){
-      return(dataOut)
-    }else{
-      return(list(dataOut, dataIn))
-    }
-  }else{
+  if(data.in==F){
+    dataOut  <- .Call( "mlxComputeR", argList)
+    Sys.setenv(LIXOFT_HOME="")
+    dataOut  <- convertmlx(dataOut,dataIn)
     return(dataOut)
+  }else{
+    return(dataIn)
   }
 }
