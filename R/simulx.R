@@ -143,7 +143,8 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   
   if(data.in==F){
     dot_call <- .Call
-    dataOut  <- dot_call( "mlxComputeR", argList)
+    initMlxLibrary()
+    dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
     Sys.setenv(LIXOFT_HOME="")
     dataOut  <- convertmlx(dataOut,dataIn)
     return(dataOut)

@@ -1,7 +1,11 @@
 #' @importFrom Rcpp sourceCpp
 NULL
 
-.onLoad <- function(libname, pkgname){
+NAMESPACE <- environment()
+mlx_library_ready <- FALSE
+
+initMlxLibrary <- function(){
+  if( mlx_library_ready ) return()
 
   mess.mlxlibrary="\n\nMlxlibrary has probably not been installed. 
 You can install it from  http://download.lixoft.com/?software=mlxlibrary\n
@@ -48,6 +52,9 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
 
   #--- load Mlxlibrary
   mlxComputeRLibraryBuilder(mlxlibrary.path)
+  
+  NAMESPACE[["mlx_library_ready"]] <- TRUE
+  
   
 }
 
