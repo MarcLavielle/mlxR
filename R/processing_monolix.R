@@ -100,7 +100,14 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
       param  = list(param, list(name=name, value=value))    
     }
   }
-  ans = list(model=model, treatment=treatment, param=param, output=output)
+  #**************************************************************************
+  test.colNames <- testC(list(treatment,param,output))
+  if (test.colNames==TRUE){
+    group=NULL
+  }else{
+    group <- list(size=c(group$size, 1) , level=c("individual","longitudinal"))
+  }
+  ans = list(model=model, treatment=treatment, param=param, output=output, group=group)
   return(ans)
 }
 
@@ -506,16 +513,16 @@ getInputSection  <-  function(model_file, section)
   idx         = grep("input",temp$model, fixed=TRUE)
   inputList   = temp$model[[idx]] 
   
-  #   extraction des variables prÃ©sentes entre les {}  
+  #   extraction des variables présentes entre les {}  
   #   Exemple : 
   #   "input = {V_pop, Cl_pop, omega_V, omega_Cl, beta_V, weight}"
   #
   
-  #   extraction de la chaine prÃ©sentes aprÃ¨s "{" dans "input = {V_pop, Cl_pop, omega_V, omega_Cl, beta_V, weight}"
+  #   extraction de la chaine présentes après "{" dans "input = {V_pop, Cl_pop, omega_V, omega_Cl, beta_V, weight}"
   chaine1      = strsplit(inputList,"\\{")
   lc1 <- length(chaine1[[1]])
   chaine1      = chaine1[[1]][lc1]
-  #   extraction de la chaine prÃ©sentes avant "}" dans chaine1 = "V_pop, Cl_pop, omega_V, omega_Cl, beta_V, weight}"
+  #   extraction de la chaine présentes avant "}" dans chaine1 = "V_pop, Cl_pop, omega_V, omega_Cl, beta_V, weight}"
   chaine2      = strsplit(chaine1,"\\}")
   chaine2      = chaine2[[1]][1]
   #   split en fonction de ","  dans chaine2 = "V_pop, Cl_pop, omega_V, omega_Cl, beta_V, weight"
@@ -548,12 +555,12 @@ formatp <- function(param)
         if (!is.list(paramk)){
           paramk <- list(name=names(paramk),value=as.vector(paramk))
         }else{
- #         paramk$colNames=c("id",paramk$name)
- #         paramk$colNames=paramk$name
-#          N <- length(paramk$value)
+          #         paramk$colNames=c("id",paramk$name)
+          #         paramk$colNames=paramk$name
+          #          N <- length(paramk$value)
           #           paramk$value <- cbind((1:N),paramk$value) 
- #         paramk$value <- data.matrix(data.frame(id=(1:N),value=paramk$value))
-#          paramk$value <- data.matrix(data.frame(value=paramk$value))
+          #         paramk$value <- data.matrix(data.frame(id=(1:N),value=paramk$value))
+          #          paramk$value <- data.matrix(data.frame(value=paramk$value))
         }
       }
     }
@@ -633,3 +640,18 @@ resample.data  <- function(data,N)
   return(data)
 }
 
+#----------------------------------
+testC  <- function(x)
+{
+  testC <- FALSE
+  d <- length(x)
+  for (k in seq(1,d)) {
+    xk <- x[[k]]
+    dk <- length(xk)
+    for (j in seq(1,dk)) {
+      if (any( "colNames" %in% names(xk[[j]]) ))
+        testC <- TRUE
+    }
+  }
+  return(testC)
+}

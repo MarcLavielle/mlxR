@@ -18,7 +18,7 @@ readdatamlx  <- function(infoProject)
   nlabel = length(header)
   
   icov <- icat <- iid <- iamt <- iy <- iytype <- NULL
-
+  
   for (i in 1:length(headerList))
   {
     hi=headerList[[i]]
@@ -30,7 +30,7 @@ readdatamlx  <- function(infoProject)
     if (!is.null(ih))
       newHeader[ih]=newList[i]      
   }
-#  newHeader = unlist(newHeader)
+  #  newHeader = unlist(newHeader)
   ##************************************************************************
   #       Gestion du format du fichier de donnees
   #*************************************************************************  
@@ -54,11 +54,13 @@ readdatamlx  <- function(infoProject)
     h1 = read.table(datafile, sep=",", nrows=1)
     h2 = read.table(datafile, sep=";", nrows=1)
     if (length(h1)>length(h2)) {
-    delimiter=','
+      delimiter=','
     } else {
       delimiter=';'
     }
   }else if (tolower(fileFormat)=="space"){
+    delimiter=""
+  }else if (tolower(fileFormat)==" "){
     delimiter=""
   }else if (tolower(fileFormat)=="tab"){
     delimiter='\t'
@@ -102,7 +104,7 @@ readdatamlx  <- function(infoProject)
   }
   
   if (is.null(itime))
-  {# cas pas encore testÃ©
+  {# cas pas encore testé
     itime=ix[1]
     ix=ix[2:length(ix)]
   }
@@ -141,7 +143,7 @@ readdatamlx  <- function(infoProject)
         uv[i,2+j]=as.numeric(as.character(S[[ixdose[j]]][i1[i]]))
       }
     }
-
+    
     uh = c('id',newHeader[[itime]])
     for(j in 1:nxdose){
       uh=c(uh,newHeader[[ixdose[j]]])
