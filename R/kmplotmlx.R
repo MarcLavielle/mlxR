@@ -11,6 +11,10 @@
 #' @return what the function returns
 #' 
 #' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab
+#' 
+#' \dontrun{
+#'    # some R code demonstrating the use of the function
+#' }
 #' @export 
 kmplotmlx  <-  function(r, index=1, interval.censored=FALSE, level=NULL)
 { 
