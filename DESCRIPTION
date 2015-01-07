@@ -1,13 +1,14 @@
 Package: mlxR
 Type: Package
 Version: 2.0.0
-Title: mlxR
-Description: mlxR
+Title: mlxR: Simulation of longitudinal data
+Description: mlxR can be used for the simulation and visualization of complex models for longitudinal data. The models are encoded using the model coding language Mlxtran, automatically converted into C++ codes, compiled on the fly and linked to R using the Rcpp package. That allows one to implement very easily complex ODE based models and complex statistical models, including mixed effects models, for  continuous, count, categorical, and time-to-event data.
 Authors@R: as.person(c(
     "Marc Lavielle <Marc.Lavielle@inria.fr> [aut, cre]",
+    "Fazia Bellal [aut]",
     "Romain Francois <romain@r-enthusiasts.com> [aut]"
     ))
-URL: https://github.com/romainfrancois/mlxR
+URL: http://simulx.webpopix.fr
 BugReports: https://github.com/romainfrancois/mlxR/issues
 Depends:
     R (>= 3.0.3),
