@@ -513,16 +513,13 @@ getInputSection  <-  function(model_file, section)
   idx         = grep("input",temp$model, fixed=TRUE)
   inputList   = temp$model[[idx]] 
   
-  #   extraction des variables présentes entre les {}  
   #   Exemple : 
   #   "input = {V_pop, Cl_pop, omega_V, omega_Cl, beta_V, weight}"
   #
   
-  #   extraction de la chaine présentes après "{" dans "input = {V_pop, Cl_pop, omega_V, omega_Cl, beta_V, weight}"
   chaine1      = strsplit(inputList,"\\{")
   lc1 <- length(chaine1[[1]])
   chaine1      = chaine1[[1]][lc1]
-  #   extraction de la chaine présentes avant "}" dans chaine1 = "V_pop, Cl_pop, omega_V, omega_Cl, beta_V, weight}"
   chaine2      = strsplit(chaine1,"\\}")
   chaine2      = chaine2[[1]][1]
   #   split en fonction de ","  dans chaine2 = "V_pop, Cl_pop, omega_V, omega_Cl, beta_V, weight"

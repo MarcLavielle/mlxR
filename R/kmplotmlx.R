@@ -1,3 +1,6 @@
+#' @importFrom ggplot2 geom_point theme
+NULL
+
 kmplotmlx  <-  function(r, index=1, interval.censored=FALSE, level=NULL)
 { 
   r.name <- attr(r,"name")

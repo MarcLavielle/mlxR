@@ -104,7 +104,6 @@ readdatamlx  <- function(infoProject)
   }
   
   if (is.null(itime))
-  {# cas pas encore testé
     itime=ix[1]
     ix=ix[2:length(ix)]
   }
