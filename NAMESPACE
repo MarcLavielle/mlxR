@@ -3,6 +3,7 @@
 S3method("[<-",result)
 export(inlineDataFrame)
 export(inlineModel)
+export(kmplotmlx)
 export(list)
 export(mlxplore)
 export(pkmodel)

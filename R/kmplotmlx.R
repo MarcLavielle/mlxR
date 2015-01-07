@@ -1,6 +1,17 @@
+#' brief description
+#' 
+#' longer description 
+#' possibly on multiple lines
+#' 
+#' @param r ...
+#' @param index ...
+#' @param interval.censored ...
+#' @param level
+#' 
+#' @return what the function returns
+#' 
 #' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab
-NULL
-
+#' @export 
 kmplotmlx  <-  function(r, index=1, interval.censored=FALSE, level=NULL)
 { 
   r.name <- attr(r,"name")
