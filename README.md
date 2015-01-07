@@ -1,7 +1,7 @@
 # mlxR
 
 A toolbox for the simulation and visualization of mixed effects models. 
-See simulx.webpopix.org
+See [this page for more information](http://simulx.webpopix.org). 
 
 # install
 
