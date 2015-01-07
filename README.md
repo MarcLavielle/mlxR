@@ -1,7 +1,7 @@
 # mlxR
 
 A toolbox for the simulation and visualization of mixed effects models. 
-See https://team.inria.fr/popix/files/2014/08/MlxR112.pdf
+See simulx.webpopix.org
 
 # install
 
@@ -12,7 +12,7 @@ Then you can install the development version from `github`:
 
 ```
 library("devtools")
-install_github("romainfrancois/mlxR" )
+install_github("MarcLavielle/mlxR" )
 library("mlxR")
 ```
 
