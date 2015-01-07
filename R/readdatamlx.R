@@ -1,5 +1,4 @@
-readdatamlx  <- function(infoProject)
-{
+readdatamlx  <- function(infoProject){
   # READDATAMLX
   #
   # READDATAMLX reads a datafile and create a list.
@@ -103,7 +102,7 @@ readdatamlx  <- function(infoProject)
     i      = i+1
   }
   
-  if (is.null(itime))
+  if (is.null(itime)){
     itime=ix[1]
     ix=ix[2:length(ix)]
   }
