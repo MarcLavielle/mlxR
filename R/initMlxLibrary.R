@@ -53,7 +53,8 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
   #--- load Mlxlibrary
   mlxComputeRLibraryBuilder(mlxlibrary.path)
   
-  unlockBinding( "mlx_library_ready", NAMESPACE )
+  unlock <- unlockBinding
+  unlock( "mlx_library_ready", NAMESPACE )
   NAMESPACE[["mlx_library_ready"]] <- TRUE
   
 }
