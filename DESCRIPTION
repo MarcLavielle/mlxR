@@ -8,8 +8,8 @@ Authors@R: as.person(c(
     "Fazia Bellal [aut]",
     "Romain Francois <romain@r-enthusiasts.com> [aut]"
     ))
-URL: http://simulx.webpopix.fr
-BugReports: https://github.com/romainfrancois/mlxR/issues
+URL: http://simulx.webpopix.org
+BugReports: https://github.com/MarcLavielle/mlxR/issues
 Depends:
     R (>= 3.0.3),
     ggplot2
