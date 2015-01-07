@@ -157,3 +157,12 @@ kmplotmlx  <-  function(r, index=1, level=NULL)
   return(plot1)
 }
 
+
+
+#--------------------------------------------------------
+uniquemlx <- function(x) 
+{ 
+  d <- !duplicated(x) 
+  u=list(uniqueValue=x[d], firstIndex=which(d), sortIndex=match(x,x[d])) 
+  return(u)
+}
