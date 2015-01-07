@@ -1,4 +1,4 @@
-#' @importFrom ggplot2 geom_point theme
+#' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab
 NULL
 
 kmplotmlx  <-  function(r, index=1, interval.censored=FALSE, level=NULL)
