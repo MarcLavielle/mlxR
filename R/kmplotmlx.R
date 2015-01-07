@@ -1,27 +1,41 @@
-#' brief description
-#' 
-#' longer description 
-#' possibly on multiple lines
-#' 
-#' @param r ...
-#' @param index ...
-#' @param interval.censored ...
-#' @param level
-#' 
-#' @return what the function returns
-#' 
-#' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab
-#' 
+#' Kaplan Meier plot
+#'
+#' @param r a data frame with a column \samp{id}, a column \samp{time}, 
+#' a column with values and possibly a column \samp{group}.
+#' @param index an integer: \code{index=k} means that the survival function for the k-th event is displayed. 
+#' Default is \code{index=1}.
+#' @param level a number between 0 and 1:  confidence interval level. 
+#' @examples
 #' \dontrun{
-#'    # some R code demonstrating the use of the function
+#' tteModel1 <- inlineModel("
+#'   [LONGITUDINAL]
+#'   input = {beta,lambda}  
+#'   EQUATION:
+#'   h=(beta/lambda)*(t/lambda)^(beta-1)
+#'   DEFINITION:
+#'   e = {type=event, maxEventNumber=1, rightCensoringTime=70, hazard=h}
+#'   ")
+
+#'   p1   <- c(beta=2.5,lambda=50)
+#'   e    <- list(name='e', time=0)
+#'   res1 <- simulx(model=tteModel1, parameter=p1, output=e, group=list(size=100))
+#'   pl1  <- kmplotmlx(res1$e,level=0.95)
+#'   print(pl1)
+#' 
+#'   p2   <- c(beta=2,lambda=45)
+#'   g1   <- list(size=50, parameter=p1)
+#'   g2   <- list(size=100, parameter=p2)
+#'   res2 <- simulx(model=tteModel1, output=e, group=list(g1,g2))
+#'   pl2  <- kmplotmlx(res2$e)
+#'   print(pl2)
 #' }
-#' @export 
-kmplotmlx  <-  function(r, index=1, interval.censored=FALSE, level=NULL)
+#' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab
+#' @export         
+kmplotmlx  <-  function(r, index=1, level=NULL)
 { 
   r.name <- attr(r,"name")
   names(r)[names(r)==r.name] <- "y"
   
-  #  if (interval.censored==TRUE){
   N <- length(unique(r$id))
   r0 <- r1 <- NULL
   for (i in seq(1,N)){
@@ -83,7 +97,8 @@ kmplotmlx  <-  function(r, index=1, interval.censored=FALSE, level=NULL)
       Sk[j] <- Sk[j-1]*pj
       V <- V + ru$d[j]/nj/(nj - ru$d[j])
       #       sek[j] <- Sk[j]*sqrt(V)
-      sek[j] <- sqrt(V)/log(Sk[j])  # Kalbfleisch and Prentice (2002) 
+      # sek[j] <- sqrt(V)/log(Sk[j])  # Kalbfleisch and Prentice (2002) 
+      sek[j] <- sqrt(V)/(1-Sk[j])  # logit 
     }
     sek[which(is.nan(sek))] <- 0
     S <- c(S,rep(Sk,each=2))
@@ -109,10 +124,14 @@ kmplotmlx  <-  function(r, index=1, interval.censored=FALSE, level=NULL)
     alpha <- (1-level)/2
     #  S1 <- pmax(S + Se*qnorm(alpha),0)
     #  S2 <- pmin(S + Se*qnorm(1-alpha),1)
-    s1 <- log(-log(S)) + Se*qnorm(alpha)  # Kalbfleisch and Prentice (2002) 
-    s2 <- log(-log(S)) + Se*qnorm(1-alpha)
-    S1 <- exp(-exp(s1))
-    S2 <- exp(-exp(s2))
+#     s1 <- log(-log(S)) + Se*qnorm(alpha)  # Kalbfleisch and Prentice (2002) 
+#     s2 <- log(-log(S)) + Se*qnorm(1-alpha)
+#     S1 <- exp(-exp(s1))
+#     S2 <- exp(-exp(s2))
+    s1 <- log(S/(1-S)) + Se*qnorm(alpha)  # logit 
+    s2 <- log(S/(1-S)) + Se*qnorm(1-alpha)
+    S1 <- 1/(1+exp(-s1))
+    S2 <- 1/(1+exp(-s2))
     D=data.frame(T,S,S1,S2,group)
   }else{
     D=data.frame(T,S,group)
@@ -131,18 +150,10 @@ kmplotmlx  <-  function(r, index=1, interval.censored=FALSE, level=NULL)
     plot1 <- plot1 + geom_point(data=D0, aes(x=T0,y=S0, colour=group), size=3)
   }
   if (ng>1){
-    plot1 <- plot1 + theme(legend.position=c(0.1,0.1))
+    plot1 <- plot1 + theme(legend.position=c(0.1,0.15))
   }else{
     plot1 <- plot1 + theme(legend.position="none")
   }  
   return(plot1)
 }
 
-
-#--------------------------------------------------------
-uniquemlx <- function(x) 
-{ 
-  d <- !duplicated(x) 
-  u=list(uniqueValue=x[d], firstIndex=which(d), sortIndex=match(x,x[d])) 
-  return(u)
-}
