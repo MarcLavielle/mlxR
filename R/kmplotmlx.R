@@ -15,7 +15,7 @@
 #'   DEFINITION:
 #'   e = {type=event, maxEventNumber=1, rightCensoringTime=70, hazard=h}
 #'   ")
-
+#'
 #'   p1   <- c(beta=2.5,lambda=50)
 #'   e    <- list(name='e', time=0)
 #'   res1 <- simulx(model=tteModel1, parameter=p1, output=e, group=list(size=100))
