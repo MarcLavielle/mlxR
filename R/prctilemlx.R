@@ -48,76 +48,120 @@
 #'                 output    = list(name='C', time=seq(0,24,by=0.1)))
 #'   # res$C is a data.frame with 2000x241=482000 rows and 3 columns
 #'   res$C[1:10,]
-#'   # we can compute and display the empirical percentiles of C using the default 
+#'   # we can display the empirical percentiles of C using the default 
 #'   # settings (i.e. percentiles of order 10%, 20%, ... 90%)
-#'   p   <- prctilemlx(res$C)
-#'   print(names(p))
-#'   print(p$q)
-#'   print(p$color)
-#'   print(p$y[1:5,])
+#'   p1   <- prctilemlx(res$C)
+#'   print(p1)
 #'   # The 3 quartiles (i.e. percentiles of order 25%, 50% and 75%) are displayed by 
 #'   # selecting a 50% interval splitted into 2 subintervals
-#'   p  <- prctilemlx(res$C, band=list(number=2, level=50))
+#'   p2  <- prctilemlx(res$C, band=list(number=2, level=50))
 #'   # A one 90% interval can be displayed using only one interval
-#'   p   <- prctilemlx(res$C, band=list(number=1, level=90))
-#'   # or 99 subintervals in order to better represent the continuous distribution 
+#'   p3   <- prctilemlx(res$C, band=list(number=1, level=90))
+#'   # or 75 subintervals in order to better represent the continuous distribution 
 #'   # of the data within this interval
-#'   p   <- prctilemlx(res$C, band=list(number=99, level=90))
+#'   p4   <- prctilemlx(res$C, band=list(number=75, level=90))
 #'   # The percentiles are not plotted by setting plot=FALSE
-#'   p   <- prctilemlx(res$C, band=list(number=4, level=80), plot=FALSE)
-#'   print(p$y[1:5,])
+#'   p5   <- prctilemlx(res$C, band=list(number=4, level=80), plot=FALSE)
+#'   print(names(p4))
+#'   print(p4$q)
+#'   print(p4$color)
+#'   print(p4$y[1:5,])
+#'   print(p4$y[1:5,])
 #' }
 #' @export         
 prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
 {
   alpha <- band$level
-  m0 <- band$number
+  m <- band$number
+  
   q1=(1-alpha/100)/2
   q2=1-q1
-  q=seq(q1,q2,length.out=m0+1)
-  if (round(m0/2)!=m0/2){
-    m=m0+1
-    q=sort(c(q,0.5))
+  q=seq(q1,q2,length.out=m+1)
+  if (m%%2==0){
+    q <- append(q,0.5,m/2) 
+    q[m/2+2] <- 0.5
+    m <- m+1
+    m.test <- 1
   }else{
-    m=m0}
+    m.test <- 0
+  }
+  
   N <- length(unique(r$id))
   n <- length(which(r$id==r$id[1]))
   d <- dim(r)[2]
   
-  t <- t(r$time[1:n])
+  t <- r$time[1:n]
   y.label=names(r)[d]
   v <- matrix(r[,d], nrow = n, byrow = FALSE)
   
   y<-apply(v,1,quantile, probs = round(q,digits=3),  na.rm = TRUE)
-  #   colnames(y)=as.character(round(t,digits=6))
   nq=length(q)
-  ncol <- trunc((nq-1)/2)
-  c=hsv(.8,.8,.7,seq(0.3,0.9,length.out=ncol))
-  color <- c(c,rev(c))
-  ty=cbind(round(t(t),digits=6),t(y))
+  ncol <- trunc(nq/2)
+  if (band$number<=2){
+    cl=hsv(.8,.8,.7,0.4)
+  }else{
+    cl=hsv(.8,.8,.7,seq(0.2,0.93,length.out=ncol)) 
+  }
+  if (m.test==1)
+    cl[ncol] <- hsv(.8,1,.5)
+  color <- c(cl,rev(cl))
+  
+  ty=cbind(round(t,digits=6),t(y))
   colnames(ty)[1]="time"
   dy <- as.data.frame(ty)
-  if (m==m0){
-    qr <- q
+  if (m%%2==0){
     colq <- color
   }else{
-    qr=q[-(nq+1)/2]
     colq <- color[-(nq+1)/2]
   }
   
   res <- list(q=qr,color=colq,y=dy)
   
   if (plot==TRUE){
+    nt <- length(t)
+    if (m%%2==0){
+      q <- q[-(nq+1)/2]
+    }else{
+      q[nq/2] <- (q[nq/2]+q[nq/2+1])/2
+      q <- q[-(nq/2+1)]
+    }
+    q[nq] <- 1
+    q <- round(q,2)
+    vf <- rep(as.factor(q[(nq-1):1]), each=2*nt)
+    x <- rep(c(t,rev(t)),nq-1)
+    
+    nbq.max <- 13
+    if (nq>nbq.max){
+      if (m.test==0){
+        iq1 <- round(seq(1,nq/2,length.out=(nbq.max+1)/2))
+      }else{
+        iq1 <- round(seq(1,nq/2,length.out=(nbq.max+1)/2))
+      }
+      iq2 <- nq-iq1
+      iq <- sort(unique(c(iq1,iq2)))
+      vq <- q[iq]
+    }else{
+      vq <- q[1:nq]
+    }
+    
+    bq <- as.character(rev(vq))
+    sfm = scale_fill_manual(name="proba",values=colq,breaks=bq)
     if (is.null(y.lim))
       y.lim <- c(min(y[1,]),max(y[nq,]))
     
-    plot(t,y[nq,],type="l",col=color[length(color)],xlab="",ylab="",ylim=y.lim)
+    pr <- NULL
+    for (j in (1:(nq-1)))
+      pr <- c(pr,y[j,],rev(y[j+1,]))
     
-    for (j in 1:(nq-1))
-      polygon(c(t,rev(t)),c(y[j,],rev(y[j+1,])),col=color[j],border=NA)
-    
-    if (m==m0)
-      points(t,y[(nq+1)/2,],type="l",col=hsv(.8,1,.6),lwd=2)
+    datapoly <- data.frame(x,pr,v,vf)    
+    pk<-ggplot(datapoly, aes(x=x, y=pr)) + geom_polygon(aes(fill=vf, group=vf)) +
+      xlab("time")+ylab(y.label)+ylim(y.lim) 
+    pk <- pk +sfm
+    if (m.test==1){
+      data0 <- data.frame(y=y[(nq+1)/2,],x=t)
+      pk <- pk+ geom_line(data=data0, aes(x=x,y=y),col=hsv(.8,1,.5))
+    }
+    res <- pk
   }
   return(res)
 }
