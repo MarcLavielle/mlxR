@@ -76,6 +76,8 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   #  simulx.R was developed by Marc Lavielle and the Inria popix team for the DDMoRe project. 
   #--------------------------------------------------
   
+  initMlxLibrary()
+  
   session=Sys.getenv("session.simulx")
   Sys.setenv(LIXOFT_HOME=session)
   
@@ -143,7 +145,6 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   
   if(data.in==F){
     dot_call <- .Call
-    initMlxLibrary()
     dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
     Sys.setenv(LIXOFT_HOME="")
     dataOut  <- convertmlx(dataOut,dataIn)
