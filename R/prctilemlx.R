@@ -154,7 +154,7 @@ prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
       pr <- c(pr,y[j,],rev(y[j+1,]))
     
     datapoly <- data.frame(x,pr,v,vf)    
-    pk<-ggplot(datapoly, aes(x=x, y=pr)) + geom_polygon(aes(fill=vf, group=vf)) +
+    pk<-ggplotmlx(datapoly, aes(x=x, y=pr)) + geom_polygon(aes(fill=vf, group=vf)) +
       xlab("time")+ylab(y.label)+ylim(y.lim) 
     pk <- pk +sfm
     if (m.test==1){
@@ -165,3 +165,6 @@ prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
   }
   return(res)
 }
+
+ggplotmlx <- function(...) {ggplot2::ggplot(...) + theme_bw() +
+            theme(plot.background = element_rect(fill=rgb(1,1,1))) }

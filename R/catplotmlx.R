@@ -98,7 +98,7 @@ catplotmlx <- function(r, breaks=NULL)
       pr <- c(pr,H[j,],rev(H[j+1,]))
     }
     datapoly <- data.frame(x,pr,v)    
-    pk<-ggplot(datapoly, aes(x=x, y=pr)) + geom_polygon(aes(fill=v, group=v)) +
+    pk<-ggplotmlx(datapoly, aes(x=x, y=pr)) + geom_polygon(aes(fill=v, group=v)) +
       xlab("time")+ylab("probability")+ylim(c(0,1)) 
     if (ng>1)
       pk <- pk + ggtitle(paste0("group = ",kg))
@@ -109,3 +109,5 @@ catplotmlx <- function(r, breaks=NULL)
   return(p)
 }  
 
+ggplotmlx <- function(...) {ggplot2::ggplot(...) + theme_bw() +
+            theme(plot.background = element_rect(fill=rgb(1,1,1))) }
