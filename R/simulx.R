@@ -127,6 +127,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
                group=group,
                model=model
     )
+    doseRegimen <- lv$treatment
     lv  <- hformat(lv)
     
     dataIn    <-  hgdata(lv)
@@ -148,6 +149,11 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
     dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
     Sys.setenv(LIXOFT_HOME="")
     dataOut  <- convertmlx(dataOut,dataIn)
+    if (!(is.null(project)))  {
+      nd <- length(dataOut)
+      dataOut[[nd+1]] <- doseRegimen
+      names(dataOut)[nd+1] <- "doseRegimen"
+    }
     return(dataOut)
   }else{
     return(dataIn)
