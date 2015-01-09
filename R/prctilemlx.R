@@ -166,5 +166,3 @@ prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
   return(res)
 }
 
-ggplotmlx <- function(...) {ggplot2::ggplot(...) + theme_bw() +
-            theme(plot.background = element_rect(fill=rgb(1,1,1))) }
