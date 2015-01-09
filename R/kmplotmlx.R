@@ -138,7 +138,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL)
   }
   
   
-  plot1=ggplot(data=D) +  geom_line(aes(x=T, y=S, colour=group), size=0.7)
+  plot1=ggplotmlx(data=D) +  geom_line(aes(x=T, y=S, colour=group), size=0.7)
   if (!is.null(level)){
     plot1=plot1+geom_line(aes(x=T, y=S1, colour=group), linetype="dotted") +
       geom_line(aes(x=T, y=S2, colour=group), linetype="dotted")
@@ -166,3 +166,7 @@ uniquemlx <- function(x)
   u=list(uniqueValue=x[d], firstIndex=which(d), sortIndex=match(x,x[d])) 
   return(u)
 }
+
+ggplotmlx <- function(...) {ggplot2::ggplot(...) + theme_bw() +
+              theme(plot.background = element_rect(fill=rgb(1,1,1))) }
+
