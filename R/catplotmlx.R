@@ -37,7 +37,9 @@
 #'   g2 <- list(size=100, parameter=p2)
 #'   res <- simulx(model=catModel, output=y, group=list(g1,g2))
 #'   plot4 <- catplotmlx(res$y) 
-#'   grid.arrange(plot4[[1]],plot4[[2]],ncol=2)
+#'   if( require("gridExtra") ){
+#'     grid.arrange(plot4[[1]],plot4[[2]],ncol=2)
+#'   }
 #' }
 #' @importFrom ggplot2 ggplot aes geom_polygon xlab ylab ylim ggtitle scale_fill_manual
 #' @export         
