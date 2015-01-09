@@ -14,7 +14,7 @@
 #' @return 
 #' a list with fields:
 #' \itemize{
-#'   \item q a vector of percentiles of length \code{band$number+1} 
+#'   \item proba a vector of probabilities of length \code{band$number+1} 
 #'   \item color a vector of colors used for the plot of length \code{band$number}
 #'   \item y a data frame with the values of the empirical percentiles computed at each time point
 #' }
@@ -63,7 +63,7 @@
 #'   # The percentiles are not plotted by setting plot=FALSE
 #'   p5   <- prctilemlx(res$C, band=list(number=4, level=80), plot=FALSE)
 #'   print(names(p4))
-#'   print(p4$q)
+#'   print(p4$proba)
 #'   print(p4$color)
 #'   print(p4$y[1:5,])
 #'   print(p4$y[1:5,])
@@ -115,7 +115,7 @@ prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
     colq <- color[-(nq+1)/2]
   }
   
-  res <- list(q=qr,color=colq,y=dy)
+  res <- list(proba=q,color=colq,y=dy)
   
   if (plot==TRUE){
     nt <- length(t)
