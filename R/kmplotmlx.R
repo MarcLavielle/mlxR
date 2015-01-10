@@ -61,7 +61,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL)
   re <- rbind(r1,r0)
   re <- re[with(re, order(time)), ]
   
-  if (isfield(re,"group")){
+  if (any( "group" %in% names(re) )){
     g=as.numeric(levels(re$group))[re$group]
   }else{
     g=rep(1,length(re$id))
@@ -124,10 +124,10 @@ kmplotmlx  <-  function(r, index=1, level=NULL)
     alpha <- (1-level)/2
     #  S1 <- pmax(S + Se*qnorm(alpha),0)
     #  S2 <- pmin(S + Se*qnorm(1-alpha),1)
-#     s1 <- log(-log(S)) + Se*qnorm(alpha)  # Kalbfleisch and Prentice (2002) 
-#     s2 <- log(-log(S)) + Se*qnorm(1-alpha)
-#     S1 <- exp(-exp(s1))
-#     S2 <- exp(-exp(s2))
+    #     s1 <- log(-log(S)) + Se*qnorm(alpha)  # Kalbfleisch and Prentice (2002) 
+    #     s2 <- log(-log(S)) + Se*qnorm(1-alpha)
+    #     S1 <- exp(-exp(s1))
+    #     S2 <- exp(-exp(s2))
     s1 <- log(S/(1-S)) + Se*qnorm(alpha)  # logit 
     s2 <- log(S/(1-S)) + Se*qnorm(1-alpha)
     S1 <- 1/(1+exp(-s1))
@@ -138,16 +138,16 @@ kmplotmlx  <-  function(r, index=1, level=NULL)
   }
   
   
-  plot1=ggplotmlx(data=D) +  geom_line(aes(x=T, y=S, colour=group), size=0.7)
+  plot1=ggplotmlx(data=D) +  geom_line(aes(x=T, y=S, colour=group), size=1)
   if (!is.null(level)){
-    plot1=plot1+geom_line(aes(x=T, y=S1, colour=group), linetype="dotted") +
-      geom_line(aes(x=T, y=S2, colour=group), linetype="dotted")
+    plot1=plot1+geom_line(aes(x=T, y=S1, colour=group), linetype="dotted", size=0.8) +
+      geom_line(aes(x=T, y=S2, colour=group), linetype="dotted", size=0.8)
   }
   plot1 <- plot1 + xlab("time") + ylab("survival") 
   if (length(i0)>0){
     group <- factor(G0)
     D0 <- data.frame(T0,S0,group)
-    plot1 <- plot1 + geom_point(data=D0, aes(x=T0,y=S0, colour=group), size=3)
+    plot1 <- plot1 + geom_point(data=D0, aes(x=T0,y=S0, colour=group), size=4)
   }
   if (ng>1){
     plot1 <- plot1 + theme(legend.position=c(0.1,0.15))
