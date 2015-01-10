@@ -1,6 +1,11 @@
+#' Translate PharmML into Mlxtran 
+#' 
+#' @param model.input the PharmML model (string)
+#' @param model.output the Mlxtran model (string)
+#' 
+#' @return the Mlxtran model (string)
 #' @importFrom tools file_path_sans_ext
-NULL
-
+#' @export         
 pharmml2mlxtran  <- function(model.input, model.output=NULL)
 {
   if (is.null(model.output))
