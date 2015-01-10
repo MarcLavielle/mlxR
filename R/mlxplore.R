@@ -1,8 +1,9 @@
-#' Explore and visualize Mlxtran and pharmML models with the Mlxplore software
+#' Explore and visualize models
 #' 
 #' Explore and visualize \samp{Mlxtran} and \samp{pharmML} models 
-#' with the \samp{Mlxplore} software
+#' with the \samp{Mlxplore} software.
 #' 
+#' See http://simulx.webpopix.org/mlxr/mlxplore/ for more details.
 #' @param model a \code{Mlxtran} or \code{PharmML} model
 #' @param output a list with fields: 
 #' \itemize{

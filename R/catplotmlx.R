@@ -1,5 +1,8 @@
 #'  Plot Categorical Longitudinal Data
 #'
+#'  Plot the empirical distribution of categorical longitudinal data.
+#'
+#' See http://simulx.webpopix.org/mlxr/catplotmlx/ for more details.      
 #' @param r a data frame with a column \samp{id}, a column \samp{time}, 
 #' a column with values and possibly a column \samp{group}.
 #' @param breaks one of:

@@ -1,4 +1,4 @@
-#' Compute predictions and sample data from Mlxtran and PharmML models
+#' Simulation and of mixed effects models and longitudinal data
 #'
 #' Compute predictions and sample data from \code{Mlxtran} and \code{PharmML} models
 #' 
@@ -14,7 +14,8 @@
 #' compiled on the fly and linked to R using the \samp{Rcpp} package. 
 #' That allows one to implement very easily complex models and to take advantage 
 #' of the numerical sovers used by the C++ \samp{MlxLibrary}.
-#'       
+#' 
+#' See http://simulx.webpopix.org for more details.      
 #' @param model a \code{Mlxtran} or \code{PharmML} model used for the simulation
 #' @param output a list (or list of lists) with fields: 
 #' \itemize{

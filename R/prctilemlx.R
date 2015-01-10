@@ -1,5 +1,8 @@
-#' Compute and display percentiles of the empiricial distribution of longitudinal data
+#' Percentiles of the empiricial distribution of longitudinal data
 #'
+#' Compute and display percentiles of the empiricial distribution of longitudinal data.
+#'
+#' See http://simulx.webpopix.org/mlxr/prctilemlx/ for more details.
 #' @param r a data frame with a column \samp{id}, a column \samp{time} and a column with values.
 #' The times should be the same for each individual. 
 #' @param band a list with two fields
