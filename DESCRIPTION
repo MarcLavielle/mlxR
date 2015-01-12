@@ -26,5 +26,5 @@ Imports:
     XML,
     Rcpp (>= 0.11.3),
     tools
-License: file LICENSE
-License_is_FOSS: yes
+License: BSD_2_clause + file LICENSE
+
