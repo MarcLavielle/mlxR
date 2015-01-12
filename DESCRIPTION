@@ -9,11 +9,11 @@ Description: mlxR can be used for the simulation and visualization of complex
     very easily complex ODE based models and complex statistical models,
     including mixed effects models, for continuous, count, categorical, and
     time-to-event data.
-Authors@R: as.person(c(
-    "Marc Lavielle <Marc.Lavielle@inria.fr> [aut, cre]",
-    "Fazia Bellal [aut]",
-    "Romain Francois <romain@r-enthusiasts.com> [aut]"
-    ))
+Authors@R: c(
+    person( "Marc", "Lavielle", role = c("aut","cre"), email = "Marc.Lavielle@inria.fr" ), 
+    person( "Romain", "Francois", role = "aut", email = "romain@r-enthusiasts.com"), 
+    person( "Fazia", "Bellal", role = "ctb" )
+    )
 URL: http://simulx.webpopix.org
 BugReports: https://github.com/MarcLavielle/mlxR/issues
 Depends:

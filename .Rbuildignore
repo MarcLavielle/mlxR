@@ -1,7 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.travis\.yml$
-^[.]Rprofile$
 ^.*[.]txt$
+^[.]Rprofile$
+^[.]Rhistory$
 ^[.]gitignore$
 
