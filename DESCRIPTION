@@ -1,7 +1,7 @@
 Package: mlxR
 Type: Package
 Version: 2.1.0
-Title: mlxR: Simulation of longitudinal data
+Title: Simulation of Longitudinal Data
 Description: mlxR can be used for the simulation and visualization of complex
     models for longitudinal data. The models are encoded using the model coding
     language Mlxtran, automatically converted into C++ codes, compiled on the
