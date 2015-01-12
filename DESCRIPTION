@@ -27,4 +27,5 @@ Imports:
     Rcpp (>= 0.11.3),
     tools
 License: BSD_2_clause + file LICENSE
+Copyright: Inria
 
