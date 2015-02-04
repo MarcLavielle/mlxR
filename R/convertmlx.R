@@ -2,8 +2,12 @@
 convertmlx <- function(data, dataIn){
   
   g <- dataIn$group
-  for(k in seq(1,length(g)))
+  iop.gout <- 0
+  for(k in seq(1,length(g))){
     g[[k]]$output=NULL
+    if (prod(g[[k]]$size) > 1)
+      iop.gout <- 1
+  }
   
   cv <- dataIn$catvar
   var <- dataIn$variability
@@ -165,6 +169,8 @@ convertmlx <- function(data, dataIn){
     dd$varlevel <- v
     
   }
-  dd$group=g
+  if (iop.gout==1)
+    dd$group=g
+  
   return(dd)
 }
