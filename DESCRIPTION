@@ -1,6 +1,6 @@
 Package: mlxR
 Type: Package
-Version: 2.1.0.9000
+Version: 2.1.1
 Title: Simulation of Longitudinal Data
 Description: Simulation and visualization of complex
     models for longitudinal data. The models are encoded using the model coding
