@@ -152,8 +152,11 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
     dataOut  <- convertmlx(dataOut,dataIn)
     if (!(is.null(project)))  {
       nd <- length(dataOut)
-      dataOut[[nd+1]] <- doseRegimen
-      names(dataOut)[nd+1] <- "doseRegimen"
+      if(!(is.null(doseRegimen)))
+      {
+        dataOut[[nd+1]] <- doseRegimen
+        names(dataOut)[nd+1] <- "doseRegimen"
+      }
     }
     return(dataOut)
   }else{

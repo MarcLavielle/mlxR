@@ -24,7 +24,7 @@ hgdata <- function(lv)
     if (!is.null(cc))
       dataIn$catvar <- cc
     dm <- data.matrix(pp)
-    ip <- list(name=names(pp), value=matrix(dm,nrow=N))
+    ip <- list(name=names(pp), value=matrix(dm,nrow=N,ncol=ncol(dm)))
     dataIn$individual_parameters=ip
   }
   if (isfield(lv,"depot"))

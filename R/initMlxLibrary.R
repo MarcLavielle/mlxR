@@ -57,6 +57,9 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
   #--- load Mlxlibrary
   mlxComputeRLibraryBuilder(mlxlibrary.path)
   
+ #--- load C++ Data reader for Mlxlibrary
+ mlxDataReaderRLibraryBuilder(mlxlibrary.path)
+
   unlock <- unlockBinding
   unlock( "mlx_library_ready", NAMESPACE )
   NAMESPACE[["mlx_library_ready"]] <- TRUE
