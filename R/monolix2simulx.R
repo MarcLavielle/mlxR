@@ -14,7 +14,7 @@
 #' the data inputs: treatment, parameters, output of monolix, group... 
 #' 
 #' @export
-monolix2simulx <-function(project)
+monolix2simulx <-function(project, graphics=FALSE)
 {
   #------- project to be converted into Simulx project
   
@@ -46,202 +46,198 @@ monolix2simulx <-function(project)
   file.remove(model)
   model<-file.path(Rproject,modelname)
   
-  # write out parameters 
-  if(!(is.null(parameter)))
-  { 
-    outinfo <-matrix(nrow=length(parameter),ncol=2)
-    # many types of output could exist
-    for(i in seq(1:length(parameter)))
-    {      
-      outfile = file.path(Rproject,paste0("/parameter_",i))
-      outfile = paste0(outfile,".txt")
-      if(!(is.null(parameter[[i]]$colNames)))
-      {
-        out2<-NULL
-        out2 <-matrix(parameter[[i]]$value,nrow=nrow(parameter[[i]]$value),ncol=ncol(parameter[[i]]$value))
-        outinfo[i,1]<-parameter[[i]]$name
-        outinfo[i,2]<-parameter[[i]]$label
-        colnames(out2)<-parameter[[i]]$colNames
-        write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
-      } else{
-        write.table(parameter[[i]],file=outfile,row.names=FALSE,quote=FALSE)
-      }
-      
-       
-    }
-    write.table(outinfo,file=file.path(Rproject,"/parameter.info"),row.names=FALSE,quote=TRUE) 
-  }
-  # write out requested output 
-  if(!(is.null(output)))
-  { 
-    outinfo <-matrix(nrow=length(output),ncol=2)
-    # many types of output could exist
-    for(i in seq(1:length(output)))
-    {
-      outinfo[i,1]<-output[[i]]$name
-      outinfo[i,2]<-output[[i]]$label
-      out2 <-matrix(output[[i]]$value,nrow=nrow(output[[i]]$value),ncol=ncol(output[[i]]$value))
-      colnames(out2)<-output[[i]]$colNames
-      outfile = file.path(Rproject,paste0("/output_",i))
-      outfile = paste0(outfile,".txt")
-      write.table(out2,file=outfile,row.names=FALSE,quote=FALSE) 
-    }
-    write.table(outinfo,file=file.path(Rproject,"/output.info"),row.names=FALSE,quote=TRUE) 
-  }
-  if(!(is.null(group)))
-  { write.table(group,file=file.path(Rproject,"/group.txt"),row.names=FALSE,col.names=FALSE,quote=FALSE) }
-  
-  # write out  treatment 
-  if(!(is.null(treatment)))
-  { 
-    #treatment$name = "doseRegmen"
-    #treatment$label = "source"
-    #treatment$colNames = colnames(outputFile)
-    #treatment$value = values of outputFile
-    treat2<-matrix(treatment$value,nrow=nrow(treatment$value),ncol=ncol(treatment$value))
-    colnames(treat2)<-treatment$colNames
-    write.table(treat2,file=file.path(Rproject,"/treatment.txt"),row.names=FALSE,quote=FALSE)
-  }
-  
-  
-  #-------  write executable R file
-  #
-  
+  #configure and write output 
   RprojectPath <- dirname(model)
   mlxtranfile = file_path_sans_ext(basename(project))
   projectExe <- file.path(RprojectPath,paste0(mlxtranfile,".R"))
-  
   cat(paste0("# File generated automatically on ", Sys.time(),"\n \n"), file =projectExe, fill = FALSE, labels = NULL,append = TRUE)
-  cat(paste0("model<-","\"",model,"\"","\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  cat(paste0("Rproject<- dirname(model)\n"), file =projectExe, fill = FALSE, labels = NULL,append = TRUE)
-  message1 <- " \n# read files and get all the  settings"
-  message2 <- " \n# call the simulator"
-  message3 <- " \n# display the results"
+  cat("library(mlxR) \nlibrary(gridExtra) \n \nsetwd(dirname(parent.frame(2)$ofile)) \n\n#model \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  cat(paste0("mod<-\"",modelname,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
-  tmp<-deparse(body(simulatorAutoExeCode1))  
-  # remove the first  and the last  braces delimiting the body of the function
-  tmp<-tmp[2:(length(tmp)-1)]  
-  write(tmp, projectExe, append = TRUE)
-  write(message1, projectExe, append = TRUE)
-  
-  tmp<-deparse(body(simulatorAutoExeCode2))  
-  # remove the first  and the last  braces delimiting the body of the function
-  tmp<-tmp[2:(length(tmp)-1)]  
-  write(tmp, projectExe, append = TRUE)
-  write(message2, projectExe, append = TRUE)
-  
-  tmp<-deparse(body(simulatorAutoExeCode3))  
-  # remove the first  and the last  braces delimiting the body of the function
-  tmp<-tmp[2:(length(tmp)-1)]  
-  write(tmp, projectExe, append = TRUE)
-  write(message3, projectExe, append = TRUE)
-  
-  tmp<-deparse(body(simulatorAutoExeCode4))  
-  # remove the first  and the last  braces delimiting the body of the function
-  tmp<-tmp[2:(length(tmp)-1)]  
-  write(tmp, projectExe, append = TRUE)
-  
-  # open the resulting code
-  file.edit(projectExe)
-  #execute the resulting code
-  #source(projectExe)
-}
-
-simulatorAutoExeCode1<-function()
-{ 
-  
-  library(gridExtra)
-  treatment = NULL
-  parameter = NULL
-  output = NULL
-  group = NULL  
-  
-}
-simulatorAutoExeCode2<-function()
-{ 
-  filetmp =file.path(Rproject,"/treatment.txt")
-  if(file.exists(filetmp))
-  {
-    treat2<- read.table(filetmp,header= TRUE)
-    treatment$name = "doseRegimen"
-    treatment$label = "source"
-    treatment$colNames <- colnames(treat2)
-    treatment$value <- as.matrix(treat2[,],nrow=nrow(treat2),ncol=ncol(treat2))
-  }  
-  
-  filetmp = file.path(Rproject,"/parameter.info")
-  
-  if(file.exists(filetmp))
-  {
-    paraminfo<- read.table(filetmp,header=TRUE)
-    parami<- NULL
-    for(i in seq(1:nrow(paraminfo)))
-    {    
-      namei <- as.character(paraminfo[i,1])
-      outfile = file.path(Rproject,paste0("/parameter_",i))
-      outfile = paste0(outfile,".txt")
-      value<-read.table(outfile,header=TRUE) 
-      if(is.na(namei))
-      {
-        parami<-NULL        
-        parami$name <-as.character(value[,1])
-        parami$value<-value[,2]
-        parameter <-c(parameter,list(parami))
-      }else{
-        parami<-NULL
-        parami$name <- namei
-        parami$label<- as.character(paraminfo[i,2])
-        parami$colNames <-colnames(value)
-        parami$value<-as.matrix(value[,],nrow=nrow(value),ncol=ncol(value))
-        parameter <-c(parameter,list(parami))
-      }
-      
+  # write  treatment 
+  if(!(is.null(treatment)))
+  { 
+    
+    treat2<-matrix(treatment$value,nrow=nrow(treatment$value),ncol=ncol(treatment$value))
+    colnames(treat2)<-treatment$colNames
+    write.table(treat2,file=file.path(Rproject,"/treatment.txt"),row.names=FALSE,quote=FALSE)
+    cat("\n# treatment\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    cat("value <- read.table(\"treatment.txt\", header = TRUE) \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    cat("name <- \"doseRegimen\" \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    cat("label <- \"source\" \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    cat(paste0("colNames <-c(\"",treatment$colNames[[1]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+    for(j in seq(2,length(treatment$colNames)))
+    {
+      cat(paste0(",\"",treatment$colNames[[j]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
     }
+    cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+    
+    cat(paste0("treat<-list(value=value, name=name,label=label,colNames=colNames)\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
     
   }
   
-  filetmp = file.path(Rproject,"/output.info")
-  if(file.exists(filetmp))
-  {
-    outinfo<- read.table(filetmp,header=TRUE)
-    outi<- NULL
-    for(i in seq(1:nrow(outinfo)))
-    {    
-      outi$name <- as.character(outinfo[i,1])
-      outi$label<- as.character(outinfo[i,2])
-      outfile = file.path(Rproject,paste0("/output_",i))
-      outfile = paste0(outfile,".txt")
-      value<-read.table(outfile,header=TRUE) 
-      outi$colNames <-  colnames(value)
-      outi$value<-as.matrix(value[,],nrow=nrow(value),ncol=ncol(value))
-      output <-c(output,list(outi))
+  # write  parameters   
+  if(!(is.null(parameter)))
+  {  
+    cat("\n#parameters \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    # many types of output could exist
+    for(i in seq(1:length(parameter)))
+    {  
+      if(!(is.null(parameter[[i]]$colNames)))
+      {
+        outfile = file.path(Rproject,paste0("/covariate.txt"))
+        
+        cat("cov<-NULL \ncov$value <- read.table(\"covariate.txt\", header = TRUE) \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        out2<-NULL
+        out2 <-matrix(parameter[[i]]$value,nrow=nrow(parameter[[i]]$value),ncol=ncol(parameter[[i]]$value))
+        cat(paste0("cov$colNames <-c(\"",parameter[[i]]$colNames[[1]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        for(j in seq(2,length(parameter[[i]]$colNames)))
+        {
+          cat(paste0(",\"",parameter[[i]]$colNames[[j]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        }
+        cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        
+        cat(paste0("cov$name <-\"",parameter[[i]]$name,"\" \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0("cov$label <-\"",parameter[[i]]$label,"\" \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+        colnames(out2)<-parameter[[i]]$colNames
+        write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
+      } else{
+        outfile = file.path(Rproject,paste0("/parameter.txt"))
+        write.table(parameter[[i]],file=outfile,row.names=FALSE,quote=FALSE)
+        cat("pop <- table2vector(\"parameter.txt\") \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+      }      
+    }
+    if(length(parameter)==2)
+    {     
+      cat("param <- list(pop, cov) \n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+    } else if(length(parameter)==1)
+    {
+      cat("param <- pop \n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+    } else
+    {
+      stop("more than two types of parameters:  case not implemented!!!", call.=FALSE)
+    }
+  }
+  # write groups
+  if(!(is.null(group)))
+  { 
+    cat("\n#groups \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    write.table(group,file=file.path(Rproject,"/group.txt"),row.names=FALSE,col.names=FALSE,quote=FALSE) 
+    cat("grp <- read.table(\"group.txt\",header= TRUE) \n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  }
+  
+  # write  requested output 
+  if(!(is.null(output)))
+  {  
+    cat("\n#output \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    
+    if(length(output)==1)
+    {
+      # many types of output could exist
+      cat(paste0("name<-\"",output[[1]]$name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      cat(paste0("label<-\"",output[[1]]$label,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      cat(paste0("colNames<-c(\"",output[[1]]$colNames[[1]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      for(j in seq(2,length(output[[1]]$colName)))
+      {
+        cat(paste0(",\"",output[[1]]$colNames[[j]],"\""),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      }
+      cat(")\n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      cat(paste0("value<-read.table(\"output.txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      
+      cat(paste0("out<-list(name=name,label=label,colNames=colNames, value=value) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      
+      out2 <-matrix(output[[1]]$value,nrow=nrow(output[[1]]$value),ncol=ncol(output[[1]]$value))
+      colnames(out2)<-output[[1]]$colNames
+      outfile = file.path(Rproject,"/output.txt")
+      write.table(out2,file=outfile,row.names=FALSE,quote=FALSE) 
+      cat("out<-list(out)\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    }else
+    {    # many types of output could exist
+      for(i in seq(1:length(output)))
+      {
+        cat(paste0("name<-\"",output[[i]]$name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        cat(paste0("label<-\"",output[[i]]$label,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        cat(paste0("colNames<-c(\"",output[[i]]$colNames[[1]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        for(j in seq(2,length(output[[i]]$colName)))
+        {
+          cat(paste0(",\"",output[[i]]$colNames[[j]],"\""),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        }
+        cat(")\n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        cat(paste0("value<-read.table(\"output",i,".txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        
+        cat(paste0("out",i,"<-list(name=name,label=label,colNames=colNames, value=value) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        
+        out2 <-matrix(output[[i]]$value,nrow=nrow(output[[i]]$value),ncol=ncol(output[[i]]$value))
+        colnames(out2)<-output[[i]]$colNames
+        outfile = file.path(Rproject,paste0("/output",i))
+        outfile = paste0(outfile,".txt")
+        write.table(out2,file=outfile,row.names=FALSE,quote=FALSE) 
+      }
+      
+      cat("out<-list(out1", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      for(i in seq(2,length(output)))
+      {
+        cat(paste0(",out",i), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)   
+      }
+      cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
     }
   }
   
-  filetmp =file.path(Rproject,"/group.txt")
-  if(file.exists(filetmp))
+  # call the simulator
+  cat("\n#call the simulator \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  cat("res <- simulx(model=mod", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  if(!(is.null(treatment)))
   {
-    group<- read.table(filetmp,header= TRUE)
+    cat(",treatment=treat",file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+  }
+  if(!(is.null(parameter)))
+  { 
+    cat(",parameter=param",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  }
+  if(!(is.null(group)))
+  { 
+    cat(",group=grp",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  }
+  if(!(is.null(output)))
+  {
+    cat(",output=out",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   }
   
-}
-simulatorAutoExeCode3<-function()
-{ 
-  res <- simulx(model=model, treatment=treatment,parameter=parameter,
-                output=output,group=group)
+  cat(")\n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
-}
-simulatorAutoExeCode4<-function()
-{ 
-  plotList<-NULL  
-  for(i in seq(1:length(output)))
-  {
-    yname=output[[i]]$name
-    plotList<-c(plotList, list(ggplot(data=res[[yname]])  +
-                                 geom_point(aes_string(x="time", y=yname,colour="id")) +
-                                 geom_line(aes_string(x="time", y=yname, colour="id")) + 
-                                 scale_x_continuous("Time") + scale_y_continuous(as.character(yname))))
+  if(graphics==TRUE)
+  {   
+    # write graphics
+    cat("\n#display the results \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    
+    if(length(output)==1)
+    {
+      cat(paste0("plot <- ggplot() + geom_line(data=res$",output[[i]]$name,"
+                 , aes(x=time, y=",output[[1]]$name,", colour=id)) +
+                 geom_point(data=res$",output[[1]]$name,", aes(x=time, y=",output[[1]]$name,",colour=id)) +
+                 scale_x_continuous(\"Time\") + scale_y_continuous(\"",output[[1]]$name,"\")\n"),
+          file =projectExe, fill = FALSE, labels = NULL, append = TRUE)      
+      cat("print(plot)\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    }else{    
+      
+      for(i in seq(1:length(output)))
+      {
+        cat(paste0("plot",i," <- ggplot() + geom_line(data=res$",output[[i]]$name,"
+                 , aes(x=time, y=",output[[i]]$name,", colour=id)) +
+                 geom_point(data=res$",output[[i]]$name,", aes(x=time, y=",output[[i]]$name,",colour=id)) +
+                 scale_x_continuous(\"Time\") + scale_y_continuous(\"",output[[i]]$name,"\")\n"),
+            file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      }
+      #theme(legend.position=\"none\") + ylab(\"",output[[i]]$label,"\")\n"),
+      #scale_x_continuous("Time") + scale_y_continuous(as.character(yname))))
+      cat("grid.arrange(plot1", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      for(i in seq(2,length(output)))
+      {
+        cat(paste0(",plot",i), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      }
+      cat(paste0(",ncol=",floor(sqrt(length(output))),")\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    }
   }
-  do.call(grid.arrange, c(plotList, ncol=floor(sqrt(length(output)))))
+  file.edit(projectExe)
   
 }
