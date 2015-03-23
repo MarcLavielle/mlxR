@@ -212,7 +212,7 @@ monolix2simulx <-function(project, graphics=FALSE)
     
     if(length(output)==1)
     {
-      cat(paste0("plot <- ggplot() + geom_line(data=res$",output[[i]]$name,"
+      cat(paste0("plot <- ggplot() + geom_line(data=res$",output[[1]]$name,"
                  , aes(x=time, y=",output[[1]]$name,", colour=id)) +
                  geom_point(data=res$",output[[1]]$name,", aes(x=time, y=",output[[1]]$name,",colour=id)) +
                  scale_x_continuous(\"Time\") + scale_y_continuous(\"",output[[1]]$name,"\")\n"),
