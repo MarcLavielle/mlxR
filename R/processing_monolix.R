@@ -340,7 +340,12 @@ readIndEstimate  <-  function(filename, estim=NULL)
     names(value) = header;
     value        = as.matrix(data[, c(1, idx)])
     #value       = data.matrix(data[, c(1, idx)])
-    param        = list( value= value, name=name, colNames=header)
+    if(!(is.null(estim)))
+    { 
+      param        = list( value= value, name=name, colNames=header,label=estim)
+    }else{
+      param        = list( value= value, name=name, colNames=header)
+    }
     return(param)
   }else
   {
