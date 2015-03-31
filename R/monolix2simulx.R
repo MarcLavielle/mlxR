@@ -55,7 +55,7 @@ monolix2simulx <-function(project,parameter=NULL)
   mlxtranfile = file_path_sans_ext(basename(project))
   projectExe <- file.path(RprojectPath,paste0(mlxtranfile,".R"))
   cat(paste0("# File generated automatically on ", Sys.time(),"\n \n"), file =projectExe, fill = FALSE, labels = NULL,append = TRUE)
-  cat("library(mlxR) \nlibrary(gridExtra) \n \nsetwd(dirname(parent.frame(2)$ofile)) \n\n# model \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  cat("library(mlxR)  \n \nsetwd(dirname(parent.frame(2)$ofile)) \n\n# model \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   cat(paste0("mod<-\"",modelname,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
   # write  treatment 
@@ -96,13 +96,18 @@ monolix2simulx <-function(project,parameter=NULL)
       } else{
         outfile = file.path(Rproject,paste0("/parameter.txt"))
         write.table(parameter[[i]],file=outfile,row.names=FALSE,quote=FALSE)
-        cat("pop <- table2vector(\"parameter.txt\") \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-      }      
+        if(length(parameter)==1)
+        {
+          cat("param <- read.vector(\"parameter.txt\") \n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+        } else {
+        cat("pop <- read.vector(\"parameter.txt\") \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+      }   
+      }
     }
-    if(length(parameter)==1)
-    {
-      cat("param <- pop \n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-    } else  
+    if(length(parameter)>1)
+#     {
+#       cat("param <- pop \n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+#     } else  
     { 
       cat("param <- list(pop",file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       for (i in seq(1:length(nameOtherParam)))
