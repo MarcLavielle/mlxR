@@ -95,19 +95,19 @@ monolix2simulx <-function(project,parameter=NULL)
         write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
       } else{
         outfile = file.path(Rproject,paste0("/parameter.txt"))
-        write.table(parameter[[i]],file=outfile,row.names=FALSE,quote=FALSE)
+        write.table(parameter[[i]],file=outfile,row.names=FALSE,col.names=FALSE,quote=FALSE)
         if(length(parameter)==1)
         {
           cat("param <- read.vector(\"parameter.txt\") \n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
         } else {
-        cat("pop <- read.vector(\"parameter.txt\") \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-      }   
+          cat("pop <- read.vector(\"parameter.txt\") \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+        }   
       }
     }
     if(length(parameter)>1)
-#     {
-#       cat("param <- pop \n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-#     } else  
+      #     {
+      #       cat("param <- pop \n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+      #     } else  
     { 
       cat("param <- list(pop",file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       for (i in seq(1:length(nameOtherParam)))
