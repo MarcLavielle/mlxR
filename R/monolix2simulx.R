@@ -2,7 +2,6 @@
 #' @param projectName : the name of a Monolix project 
 #' @param parameter : string $(NameOfTypeOfParameter), the type of specific parameters to use 
 #'                   example: "mode", "mean"...
-#' @param output : specific output in addition to the model's output
 #' @return  creates a folder projectNameR  containing files : 
 #' \itemize{
 #'   \item \code{projectName.R} :  executable R code for the simulator,
@@ -18,7 +17,9 @@
 #' the data inputs: treatment, parameters, output of monolix, group... 
 #' 
 #' @export
-monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
+
+#monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
+monolix2simulx <-function(project,parameter=NULL)
 { 
   #------- project to be converted into Simulx project
   
@@ -28,6 +29,8 @@ monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
   model=NULL
   group=NULL
   treatment=NULL  
+  #graphics=FALSE
+  output=NULL
   ans           <- processing_monolix(project,model,treatment,parameter,output,group)
   model         <- ans$model
   treatment     <- ans$treatment
@@ -63,18 +66,7 @@ monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
     colnames(treat2)<-treatment$colNames
     write.table(treat2,file=file.path(Rproject,"/treatment.txt"),row.names=FALSE,quote=FALSE)
     cat("\n# treatment\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    cat("value <- read.table(\"treatment.txt\", header = TRUE) \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    cat("name <- \"doseRegimen\" \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    cat("label <- \"source\" \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    cat(paste0("colNames <-c(\"",treatment$colNames[[1]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-    for(j in seq(2,length(treatment$colNames)))
-    {
-      cat(paste0(",\"",treatment$colNames[[j]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-    }
-    cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-    
-    cat(paste0("treat<-list(value=value, name=name,label=label,colNames=colNames)\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    
+    cat("treat <- read.table(\"treatment.txt\", header = TRUE) \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   }
   
   # write  parameters   
@@ -96,30 +88,9 @@ monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
         
         nameOtherParam<-c(nameOtherParam,namePi)
         outfile = file.path(Rproject,paste0("/",namePi,".txt"))      
-        cat(paste0(namePi,"<-NULL \n",namePi,"$value <- read.table(\"",namePi,".txt\", header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0(namePi,"<- read.table(\"",namePi,".txt\", header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
         out2<-NULL
         out2 <-matrix(parameter[[i]]$value,nrow=nrow(parameter[[i]]$value),ncol=ncol(parameter[[i]]$value))
-        cat(paste0(namePi,"$colNames <-c(\"",parameter[[i]]$colNames[[1]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-        for(j in seq(2,length(parameter[[i]]$colNames)))
-        {
-          cat(paste0(",\"",parameter[[i]]$colNames[[j]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-        }
-        cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-        
-        
-        if(length(parameter[[i]]$name)==1)
-        {
-          cat(paste0(namePi,"$name <-\"",parameter[[i]]$name,"\" \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-        }else{
-          cat(paste0(namePi,"$name <-c(\"",parameter[[i]]$name[[1]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-          for(j in seq(2,length(parameter[[i]]$name)))
-          {
-            cat(paste0(",\"",parameter[[i]]$name[[j]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-          }
-          cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-          
-        }
-        cat(paste0(namePi,"$label <-\"",parameter[[i]]$label,"\" \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
         colnames(out2)<-parameter[[i]]$colNames
         write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
       } else{
@@ -134,11 +105,11 @@ monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
     } else  
     { 
       cat("param <- list(pop",file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-     for (i in seq(1:length(nameOtherParam)))
-     {
-      cat(paste0(",",nameOtherParam[[i]]),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-     }
-     cat(")\n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      for (i in seq(1:length(nameOtherParam)))
+      {
+        cat(paste0(",",nameOtherParam[[i]]),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      }
+      cat(")\n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
     } 
   }
   # write groups
@@ -158,17 +129,8 @@ monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
     {
       # many types of output could exist
       cat(paste0("name<-\"",output[[1]]$name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      cat(paste0("label<-\"",output[[1]]$label,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      cat(paste0("colNames<-c(\"",output[[1]]$colNames[[1]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      for(j in seq(2,length(output[[1]]$colName)))
-      {
-        cat(paste0(",\"",output[[1]]$colNames[[j]],"\""),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      }
-      cat(")\n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       cat(paste0("value<-read.table(\"output.txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      
-      cat(paste0("out<-list(name=name,label=label,colNames=colNames, value=value) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      
+      cat(paste0("out<-list(name=name,time=value) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       out2 <-matrix(output[[1]]$value,nrow=nrow(output[[1]]$value),ncol=ncol(output[[1]]$value))
       colnames(out2)<-output[[1]]$colNames
       outfile = file.path(Rproject,"/output.txt")
@@ -181,16 +143,10 @@ monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
         cat(paste0("name<-\"",output[[i]]$name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         if(!(is.null(output[[i]]$colNames)))
         {
-          cat(paste0("label<-\"",output[[i]]$label,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-          cat(paste0("colNames<-c(\"",output[[i]]$colNames[[1]],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-          for(j in seq(2,length(output[[i]]$colName)))
-          {
-            cat(paste0(",\"",output[[i]]$colNames[[j]],"\""),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-          }
-          cat(")\n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+          
           cat(paste0("value<-read.table(\"output",i,".txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
           
-          cat(paste0("out",i,"<-list(name=name,label=label,colNames=colNames, value=value) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+          cat(paste0("out",i,"<-list(name=name,time=value) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
           
           out2 <-matrix(output[[i]]$value,nrow=nrow(output[[i]]$value),ncol=ncol(output[[i]]$value))
           colnames(out2)<-output[[i]]$colNames
@@ -233,38 +189,39 @@ monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
   
   cat(")\n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
-  if(graphics==TRUE)
-  {   
-    # write graphics
-    cat("\n# display the results \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    
-    if(length(output)==1)
-    {
-      cat(paste0("plot <- ggplot() + geom_line(data=res$",output[[1]]$name,"
-                 , aes(x=time, y=",output[[1]]$name,", colour=id)) +
-                 geom_point(data=res$",output[[1]]$name,", aes(x=time, y=",output[[1]]$name,",colour=id)) +
-                 scale_x_continuous(\"Time\") + scale_y_continuous(\"",output[[1]]$name,"\")\n"),
-          file =projectExe, fill = FALSE, labels = NULL, append = TRUE)      
-      cat("print(plot)\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    }else{    
-      
-      for(i in seq(1:length(output)))
-      {
-        cat(paste0("plot",i," <- ggplot() + geom_line(data=res$",output[[i]]$name,"
-                 , aes(x=time, y=",output[[i]]$name,", colour=id)) +
-                 geom_point(data=res$",output[[i]]$name,", aes(x=time, y=",output[[i]]$name,",colour=id)) +
-                 scale_x_continuous(\"Time\") + scale_y_continuous(\"",output[[i]]$name,"\")\n"),
-            file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      }
-      #theme(legend.position=\"none\") + ylab(\"",output[[i]]$label,"\")\n"),
-      #scale_x_continuous("Time") + scale_y_continuous(as.character(yname))))
-      cat("grid.arrange(plot1", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      for(i in seq(2,length(output)))
-      {
-        cat(paste0(",plot",i), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      }
-      cat(paste0(",ncol=",floor(sqrt(length(output))),")\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    }
-  }
+  #   if(graphics==TRUE)
+  #   {   
+  #     # write graphics
+  #     cat("\n# display the results \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  #     
+  #     if(length(output)==1)
+  #     {
+  #       cat(paste0("plot <- ggplot() + geom_line(data=res$",output[[1]]$name,"
+  #                  , aes(x=time, y=",output[[1]]$name,", colour=id)) +
+  #                  geom_point(data=res$",output[[1]]$name,", aes(x=time, y=",output[[1]]$name,",colour=id)) +
+  #                  scale_x_continuous(\"Time\") + scale_y_continuous(\"",output[[1]]$name,"\")\n"),
+  #           file =projectExe, fill = FALSE, labels = NULL, append = TRUE)      
+  #       cat("print(plot)\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  #     }else{    
+  #       
+  #       for(i in seq(1:length(output)))
+  #       {
+  #         cat(paste0("plot",i," <- ggplot() + geom_line(data=res$",output[[i]]$name,"
+  #                  , aes(x=time, y=",output[[i]]$name,", colour=id)) +
+  #                  geom_point(data=res$",output[[i]]$name,", aes(x=time, y=",output[[i]]$name,",colour=id)) +
+  #                  scale_x_continuous(\"Time\") + scale_y_continuous(\"",output[[i]]$name,"\")\n"),
+  #             file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  #       }
+  #       #theme(legend.position=\"none\") + ylab(\"",output[[i]]$label,"\")\n"),
+  #       #scale_x_continuous("Time") + scale_y_continuous(as.character(yname))))
+  #       cat("grid.arrange(plot1", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  #       for(i in seq(2,length(output)))
+  #       {
+  #         cat(paste0(",plot",i), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  #       }
+  #       cat(paste0(",ncol=",floor(sqrt(length(output))),")\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  #     }
+  #   }
+  
   file.edit(projectExe)  
 }

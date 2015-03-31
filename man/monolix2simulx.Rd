@@ -4,11 +4,9 @@
 \alias{monolix2simulx}
 \title{Convert a Monolix Project  into an executable for the simulator  Simulx}
 \usage{
-monolix2simulx(project, graphics = FALSE, output = NULL, parameter = NULL)
+monolix2simulx(project, parameter = NULL)
 }
 \arguments{
-\item{output}{: specific output in addition to the model's output}
-
 \item{parameter}{: string $(NameOfTypeOfParameter), the type of specific parameters to use
 example: "mode", "mean"...}
 
