@@ -20,7 +20,7 @@ convertmlx <- function(data, dataIn){
     for(k in seq(1,length(g))){
       pgk <- prod(g[[k]]$size)
       gr=c(gr,rep(k,pgk))
-      if(max(pgk)>1)
+#       if(max(pgk)>1)
         iop.group=1
     }
   }  
