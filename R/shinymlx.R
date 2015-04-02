@@ -1,8 +1,39 @@
-#' shinymlx
+#' Automatic code generation for Shiny applications
+#' 
+#' Creates a Shiny application for longitudinal data model  
+#' 
+#' shinymlx automatically generates files ui.R and server.R required 
+#' for a Shiny application.
 #' 
 #' 
-#' 
-#' 
+#' See http://simulx.webpopix.org for more details.      
+#' @param model a \code{Mlxtran} or \code{PharmML} model used for the simulation
+#' @param output a list with fields: 
+#' \itemize{
+#'   \item \code{name}: a vector of output names
+#'   \item \code{time}: a vector of times, or a vector (min, max, step)
+#' }
+#' @param data a datafile to display with the plot
+#' @param parameter a vector of parameters with their names and values, or vectors (value, min, max, step)
+#' @param treatment a list with fields 
+#' \itemize{
+#'   \item \code{tfd} : first time of dose (value, min, max, step),
+#'   \item \code{amount} : amount (value, min, max, step),
+#'   \item \code{nd} : number of doses (value, min, max, step),
+#'   \item \code{ii} : interdose interval (value, min max, step),
+#'   \item \code{type} : the type of input (value, max),
+#' }
+#' If no sliders need to be created for \code{treatment}, 
+#' input argument of Simulx can also be used,  i.e. a list with fields
+#' \itemize{
+#'   \item \code{time} : a vector of input times,
+#'   \item \code{amount} : a scalar or a vector of amounts,
+#'   \item \code{rate} : a scalar or a vector of infusion rates (default=\code{Inf}),
+#'   \item \code{tinf} : a scalar or a vector of infusion times (default=0),
+#'   \item \code{type} : the type of input (default=1),
+#'   \item \code{target} : the target compartment (default=NULL). 
+#' }
+#' @return A directory temp_dir with files ui.R, server.R and temp_model.txt
 #' 
 #' @export         
 shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,data=NULL)
@@ -10,7 +41,6 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,data=NULL)
   dir.create(file.path(mainDir="tempdir"), showWarnings = FALSE)
   file.copy(model,file.path("tempdir","temp_model.txt"),overwrite=TRUE)
 #   model <- basename(model)
-  
   i.data=0
   if (!is.null(data)){
     i.data=1
