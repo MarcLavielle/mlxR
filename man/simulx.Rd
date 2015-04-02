@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulx.R
 \name{simulx}
 \alias{simulx}
-\title{Simulation and of mixed effects models and longitudinal data}
+\title{Simulation of mixed effects models and longitudinal data}
 \usage{
 simulx(model = NULL, group = NULL, treatment = NULL, parameter = NULL,
   output = NULL, data = NULL, project = NULL, settings = NULL,

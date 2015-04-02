@@ -1,4 +1,4 @@
-#' Simulation and of mixed effects models and longitudinal data
+#' Simulation of mixed effects models and longitudinal data
 #'
 #' Compute predictions and sample data from \code{Mlxtran} and \code{PharmML} models
 #' 
@@ -78,7 +78,6 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   #--------------------------------------------------
   
   initMlxLibrary()
-  
   session=Sys.getenv("session.simulx")
   Sys.setenv(LIXOFT_HOME=session)
   
