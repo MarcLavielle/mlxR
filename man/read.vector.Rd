@@ -10,7 +10,7 @@ read.vector(f, header = FALSE, sep = "", quote = "\\"'")
 \item{f:}{the table}
 }
 \value{
-the vector
+v: the vector
 }
 \description{
 Reads  a table into a vector
