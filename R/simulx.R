@@ -118,8 +118,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
       output        <- ans$output
       group         <- ans$group
     }
-    
-    #--------------------------------------------------
+       #--------------------------------------------------
     lv <- list(treatment=treatment,
                parameter=parameter,
                output=output,
@@ -147,6 +146,8 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   
   if(data.in==F){
     dot_call <- .Call
+    
+   # argList<- c(argList,list(TASK="PDF"))
     dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
     Sys.setenv(LIXOFT_HOME="")
     dataOut  <- convertmlx(dataOut,dataIn)
