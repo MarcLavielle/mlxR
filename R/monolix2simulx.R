@@ -39,7 +39,7 @@ monolix2simulx <-function(project,parameter=NULL)
   group         <- ans$group
   mlxtranpath <- dirname(project)
   mlxtranfile = file_path_sans_ext(basename(project))
-  Rproject <- file.path(mlxtranpath,paste0(mlxtranfile,"R"))
+  Rproject <- file.path(mlxtranpath,paste0(mlxtranfile,"_simulx"))
   if(file.exists(Rproject) )
   {
     unlink(Rproject, recursive = TRUE, force = TRUE)
@@ -134,8 +134,8 @@ monolix2simulx <-function(project,parameter=NULL)
     {
       # many types of output could exist
       cat(paste0("name<-\"",output[[1]]$name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      cat(paste0("value<-read.table(\"output.txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      cat(paste0("out<-list(name=name,time=value) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      cat(paste0("time<-read.table(\"output.txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      cat(paste0("out<-list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       out2 <-matrix(output[[1]]$value,nrow=nrow(output[[1]]$value),ncol=ncol(output[[1]]$value))
       colnames(out2)<-output[[1]]$colNames
       outfile = file.path(Rproject,"/output.txt")
@@ -149,9 +149,9 @@ monolix2simulx <-function(project,parameter=NULL)
         if(!(is.null(output[[i]]$colNames)))
         {
           
-          cat(paste0("value<-read.table(\"output",i,".txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+          cat(paste0("time<-read.table(\"output",i,".txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
           
-          cat(paste0("out",i,"<-list(name=name,time=value) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+          cat(paste0("out",i,"<-list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
           
           out2 <-matrix(output[[i]]$value,nrow=nrow(output[[i]]$value),ncol=ncol(output[[i]]$value))
           colnames(out2)<-output[[i]]$colNames

@@ -1,6 +1,6 @@
 #' Reads  a table into a vector 
 #' @param f: the table 
-#' @return  v: the vector
+#' @return  the vector
 #'  @export
 #' 
 read.vector <- function(f, header=FALSE, sep="", quote = "\"'") 
