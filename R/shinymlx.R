@@ -217,7 +217,7 @@ server <- function(input, output) {
     pl <- pl + guides(colour=guide_legend(title=NULL)) + theme(legend.position=c(.9, .8))")
   }
   if (i.data==1){
-    txt.data <- paste0("    pl <- pl + geom_point(data=data,aes(x=",names(data)[1],",y=",names(data)[2],"),color='#6666CC')")
+    txt.data <- paste0("    pl <- pl + geom_point(data=data,aes(x=",names(data)[1],",y=",names(data)[2],"),size=3.5,color='#6666CC')")
     txt.server5 <- paste0(txt.server5,"\n",txt.data)
   }
   txt.server6 <- ("
