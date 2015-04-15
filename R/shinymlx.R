@@ -38,9 +38,11 @@
 #' @export         
 shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,data=NULL)
 {
+  library(shiny)
+  
   dir.create(file.path(mainDir="tempdir"), showWarnings = FALSE)
   file.copy(model,file.path("tempdir","temp_model.txt"),overwrite=TRUE)
-#   model <- basename(model)
+  #   model <- basename(model)
   i.data=0
   if (!is.null(data)){
     i.data=1
@@ -62,7 +64,6 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,data=NULL)
     }
   }
   n.trt <- length(treatment)
-  
   out.time <- output$time
   if ((length(out.time)!=3) | (out.time[3]>out.time[2])){
     output$time <- c(range(out.time), diff(range(out.time))/(length(out.time)-1))
@@ -90,8 +91,8 @@ ui <- shinyUI(fluidPage(
   space.ui <- ("                      ")
   txt.ui3 <- paste0("  
                ),
-               column(",col2,",br(),br(),br(),
-                      plotOutput('plot',  height='500px'))
+               column(",col2,",br(),
+                      plotOutput('plot'))
              )),
     tabPanel('Mlxtran', pre(includeText('temp_model.txt'))),
     tabPanel('ui.R', pre(includeText('ui.R'))),
@@ -169,33 +170,29 @@ ui <- shinyUI(fluidPage(
     nk <- names.out[k]
     txt.nameo <- paste0(txt.nameo,"'",nk,"', ")
   }
-  
   txt.nameo <- substr(txt.nameo,1,(nchar(txt.nameo)-2))
   t.out <- output$time
-  if (i.data==1){
-    txt.server1 <- paste0("server <- function(input, output) {\n",txt.data,"\n  res <- reactive({\n")
-  }else{
-    txt.server1 <- ("
-server <- function(input, output) {
-  res <- reactive({  
-")
-  }
+  txt.server1 <- "server <- function(input, output) {\n"
+  if (no>1)
+    txt.server1 <- paste0("library(reshape)\n",txt.server1)
+  txt.out <- paste0("  f <- list(name=c(",txt.nameo,"), time=seq(",t.out[1],",",t.out[2],",by=",t.out[3],"))")
+  txt.server1 <- paste0(txt.server1,txt.out,"\n")
+  if (i.trt==2)
+    txt.server1 <- paste0(txt.server1,txt.adm,"\n")
+  if (i.data==1)
+    txt.server1 <- paste0(txt.server1,txt.data,"\n")
+  txt.server1 <- paste0(txt.server1,"  res <- reactive({\n")
   txt.server2 <- paste0("    p <- list(name=c(",txt.namep,"),\n              value=c(",txt.input,"))")
-  txt.server3 <- paste0("    f <- list(name=c(",txt.nameo,"), time=seq(",t.out[1],",",t.out[2],",by=",t.out[3],"))")
+  if (i.trt==1)
+    txt.server2 <- paste0(txt.server2,"\n",txt.adm,"\n")
   
   txt.server4 <- paste0("
     res <- simulx( model     = 'temp_model.txt',
                    parameter = p,
 ")
-  if (i.trt>=1){
-    txt.server3 <- paste0(txt.server3,txt.adm)
-    txt.server4 <- paste0(txt.server4,"                   treatment = adm,")
-    #   }else if(i.trt==2){
-    #     txt.server3 <- paste0(txt.server3,txt.adm)
-    #     txt.server4 <- paste0(txt.server4,"                   treatment = adm,")
-  }
-  txt.server4 <- paste0(txt.server4,("
-                   output    = f)
+  if (i.trt>=1)
+    txt.server4 <- paste0(txt.server4,"                   treatment = adm,\n")
+  txt.server4 <- paste0(txt.server4,("                   output    = f)
     return(res)
   })  
 
@@ -225,7 +222,7 @@ server <- function(input, output) {
   })
 }
 ")
-  txt.server <- paste0(txt.server1,txt.server2,'\n',txt.server3,txt.server4,txt.server5,txt.server6)
+  txt.server <- paste0(txt.server1,txt.server2,txt.server4,txt.server5,txt.server6)
   # txt.server <- paste0(txt.server1,'\n',txt.server2,'\n',txt.server3,'\n',txt.server4,'\n',txt.server5)
   
   #   txt.app <- paste0(txt.ui,'\n\n',txt.server,'\n\n','shinyApp(ui = ui, server = server)')
@@ -239,7 +236,6 @@ server <- function(input, output) {
 
 list2str <- function(y){
   K <- length(y)
-  adm.txt <- NULL
   for (k in (1:K)){
     if (K==1){
       txt <- "adm <- list("
@@ -249,27 +245,31 @@ list2str <- function(y){
     x <- y[[k]]
     length.x <- length(x)
     names.x  <- names(x)
-    for (k in (1:length.x)){
-      xk <- x[[k]]
+    for (m in (1:length.x)){
+      xk <- x[[m]]
       n <- length(xk)
       txtk <- as.character(xk[1])
       if (length(xk)>1){
         for (j in (2:length(xk)))
           txtk <- paste0(txtk,",",as.character(xk[j]))
-        txt <- paste0(txt,names.x[k],"=c(",txtk,"),")
+        txt <- paste0(txt,names.x[m],"=c(",txtk,"),")
       }else{
-        txt <- paste0(txt,names.x[k],"=",txtk,",")
+        txt <- paste0(txt,names.x[m],"=",txtk,",")
       }  
     }
     substr(txt,nchar(txt),nchar(txt))<- ')'
-    adm.txt <- paste0(adm.txt,"\n    ",txt)
+    if (k==1){
+      adm.txt <- paste0("  ",txt)
+    }else{
+      adm.txt <- paste0(adm.txt,"\n  ",txt)
+    }
   }
   if (K>1){
     txt <- "adm <- list(adm1"
     for (k in (2:K))
       txt <- paste0(txt,", adm",as.character(k))
     txt <- paste0(txt,")")
-    adm.txt <- paste0(adm.txt,"\n    ",txt)
+    adm.txt <- paste0(adm.txt,"\n  ",txt)
   }
   return(adm.txt)
 }
@@ -278,7 +278,7 @@ trtstr <- function(y){
   K <- length(y)
   adm.txt <- NULL
   for (k in (1:K)){
-      txt <- "    adm"
+    txt <- "    adm"
     if (K>1)    
       txt <- paste0(txt,as.character(k))
     x <- y[[k]]
