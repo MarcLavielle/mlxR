@@ -1,5 +1,5 @@
 
-convertmlx <- function(data, dataIn){
+convertmlx <- function(data, dataIn,iop.group){
   
   g <- dataIn$group
   iop.gout <- 0
@@ -14,15 +14,15 @@ convertmlx <- function(data, dataIn){
   if (length(unique(var$id))==1)
     var$id <- NULL
   
-  iop.group <- 0
+  #   iop.group <- 0
   if (length(g)>1){
     gr=numeric(0)
     for(k in seq(1,length(g))){
       pgk <- prod(g[[k]]$size)
       gr=c(gr,rep(k,pgk))
-#       if(max(pgk)>1)
-        iop.group=1
     }
+  }else{
+    iop.group=0
   }  
   
   gr=numeric(0)
