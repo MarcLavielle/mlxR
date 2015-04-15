@@ -39,7 +39,9 @@ monolix2simulx <-function(project,parameter=NULL)
   group         <- ans$group
   mlxtranpath <- dirname(project)
   mlxtranfile = file_path_sans_ext(basename(project))
-  Rproject <- file.path(mlxtranpath,paste0(mlxtranfile,"_simulx"))
+  mypath <- getwd()
+  Rproject <- file.path(mypath,paste0(mlxtranfile,"_simulx"))
+  #   Rproject <- file.path(mlxtranpath,paste0(mlxtranfile,"_simulx"))
   if(file.exists(Rproject) )
   {
     unlink(Rproject, recursive = TRUE, force = TRUE)
@@ -56,7 +58,7 @@ monolix2simulx <-function(project,parameter=NULL)
   projectExe <- file.path(RprojectPath,paste0(mlxtranfile,".R"))
   cat(paste0("# File generated automatically on ", Sys.time(),"\n \n"), file =projectExe, fill = FALSE, labels = NULL,append = TRUE)
   cat("library(mlxR)  \n \nsetwd(dirname(parent.frame(2)$ofile)) \n\n# model \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  cat(paste0("mod<-\"",modelname,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  cat(paste0("model<-\"",modelname,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
   # write  treatment 
   if(!(is.null(treatment)))
@@ -66,7 +68,7 @@ monolix2simulx <-function(project,parameter=NULL)
     colnames(treat2)<-treatment$colNames
     write.table(treat2,file=file.path(Rproject,"/treatment.txt"),row.names=FALSE,quote=FALSE)
     cat("\n# treatment\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    cat("treat <- read.table(\"treatment.txt\", header = TRUE) \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    cat("trt <- read.table(\"treatment.txt\", header = TRUE) \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   }
   
   # write  parameters   
@@ -174,10 +176,10 @@ monolix2simulx <-function(project,parameter=NULL)
   
   # call the simulator
   cat("\n# call the simulator \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  cat("res <- simulx(model=mod", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  cat("res <- simulx(model=model", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   if(!(is.null(treatment)))
   {
-    cat(",treatment=treat",file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+    cat(",treatment=trt",file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
   }
   if(!(is.null(parameter)))
   { 
@@ -228,5 +230,6 @@ monolix2simulx <-function(project,parameter=NULL)
   #     }
   #   }
   
-  file.edit(projectExe)  
+  file.edit(projectExe) 
+  setwd(mypath)
 }
