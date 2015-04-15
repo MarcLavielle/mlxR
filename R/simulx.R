@@ -76,7 +76,6 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   #
   #  simulx.R was developed by Marc Lavielle and the Inria popix team for the DDMoRe project. 
   #--------------------------------------------------
-  
   initMlxLibrary()
   session=Sys.getenv("session.simulx")
   Sys.setenv(LIXOFT_HOME=session)
@@ -117,6 +116,9 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
       output        <- ans$output
       group         <- ans$group
     }
+    iop.group <- 1
+    if (is.null(group))
+      iop.group <- 0
        #--------------------------------------------------
     lv <- list(treatment=treatment,
                parameter=parameter,
@@ -126,6 +128,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
                group=group,
                model=model
     )
+    
     doseRegimen <- lv$treatment
     lv  <- hformat(lv)
     
@@ -149,7 +152,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
    # argList<- c(argList,list(TASK="PDF"))
     dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
     Sys.setenv(LIXOFT_HOME="")
-    dataOut  <- convertmlx(dataOut,dataIn)
+    dataOut  <- convertmlx(dataOut,dataIn,iop.group)
     if (!(is.null(project)))  {
       nd <- length(dataOut)
       if(!(is.null(doseRegimen)))
