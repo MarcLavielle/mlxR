@@ -84,18 +84,18 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
     datas <- append(datas,list(covariate=covariate))
   }
   if (!is.null(group)){
-    if ((length(names(group))>1) | (is.null(group$size)))
+    if ((length(names(group[[1]]))>1) | (is.null(group[[1]]$size)))
       stop("When simulx is used with a monolix project, 'group' should be a list with only one field 'size'")
-    datas <- resample.data(datas,group$size)
+    datas <- resample.data(datas,group[[1]]$size)
   }
   
   ##************************************************************************
   #       treatment (TREATMENT)
   #**************************************************************************
-  if (is.null(treatment))
-    treatment = datas$sources
-  
-  
+  if (is.null(treatment)){
+    treatment = data.frame(datas$sources$value)
+    names(treatment) <- datas$sources$colNames 
+  }
   ##************************************************************************
   #       PARAMETERS
   #**************************************************************************
