@@ -60,6 +60,7 @@
 #'   \item \code{seed} : initialization of the random number generator (integer),
 #'   \item \code{load.design} : TRUE/FALSE (if load.design is not defined, a test is automatically performed to check if a new design has been defined),
 #'   \item \code{data.in} : TRUE/FALSE (default=FALSE)
+#'   \item \code{Nmax} : maximum group size used in a single call of mlxCompute (default=100)
 #' }       
 #' 
 #' @return A list of data frames. Each data frame is an output of simulx
@@ -79,7 +80,107 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   initMlxLibrary()
   session=Sys.getenv("session.simulx")
   Sys.setenv(LIXOFT_HOME=session)
+  #   Nmax <- 10
+  test.group <- FALSE
+  if ((!is.null(group))  & (is.null(settings$data.in)) & (is.null(settings$record.file))){
+    if  (!is.null(names(group)))
+      group <- list(group)
+    N <- 0
+    M <- length(group)
+    for (m in (1:M))
+      N <- N + prod(group[[m]]$size)
+    if ((!is.null(settings)) & (!is.null(settings$Nmax))){
+      Nmax <- settings$Nmax
+    }else{
+      Nmax <- 100
+    }
+    if (N > Nmax)
+      test.group <- TRUE
+  }
   
+  
+  if (test.group==TRUE){
+    r <- NULL
+    rgr <- list()
+    for (m in (1:M)){
+      gm <- group[[m]]
+      sm <- group[[m]]$size
+      Nm <- prod(sm)
+      if (!isfield(gm,'level')){
+        model.info <- parse.model(model)
+        gm$level <- model.info$level
+      }
+      gm$level <- tolower(gm$level)
+      sms <- NULL
+      sml <- NULL
+      i1 <- which(gm$level=="population")
+      if (length(i1)==1){
+        sms <- c(sms,sm[i1])
+        sml <- c(sml,"population")
+      }
+      i1 <- which(gm$level=="covariate")
+      if (length(i1)==1){
+        sms <- c(sms,sm[i1])
+        sml <- c(sml,"covariate")
+      }
+      i1 <- which(gm$level=="individual")
+      if (length(i1)==1){
+        sms <- c(sms,sm[i1])
+        sml <- c(sml,"individual")
+      }
+      i1 <- which(gm$level=="longitudinal")
+      if (length(i1)==1){
+        sms <- c(sms,sm[i1])
+        sml <- c(sml,"longitudinal")
+      }
+      gm$size <- sms
+      gm$level <- sml
+      smk <- sms
+      if (length(smk)>1){
+        nm2 <- prod(smk[2:length(sm)])
+      }else{
+        nm2 <- 1
+      }
+      Km <- ceiling(sms[1]/ceiling(Nmax/nm2))
+      smk[1] <- ceiling(Nmax/nm2)
+      gmk <- gm
+      gmk$size <- smk
+      nmk <- prod(smk)
+      settings$data.in=TRUE
+      dataIn <- simulxunit(model=model,group=gmk,treatment=treatment,parameter=parameter,
+                           output=output,data=data,project=project,settings=settings,
+                           regressor=regressor,varlevel=varlevel)
+      settings$data.in=FALSE
+      Nmk <- 0
+      for (k in (1:Km)){
+        if (!is.null(settings$seed))
+          settings$seed <- settings$seed +10
+        Nmk <- Nmk + nmk
+        rmk <- simulxunit(data=dataIn,settings=settings)
+        Ntest <- NULL
+        if (Nmk > Nm )
+          Ntest <- Nm
+        if (M>1){
+          r <- mergeres(r,rmk,m=m,N=Ntest)
+        }else{
+          r <- mergeres(r,rmk,N=Ntest)          
+        }
+      }
+      rgr[[m]] <- list(size=gm$size, level=gm$level)
+    }
+    r$group <- rgr
+  }else{
+    r <- simulxunit(model=model,group=group,treatment=treatment,parameter=parameter,
+                    output=output,data=data,project=project,settings=settings,
+                    regressor=regressor,varlevel=varlevel)
+  }
+  Sys.setenv(LIXOFT_HOME="")
+  return(r)
+}
+
+simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NULL,
+                       data=NULL, project=NULL, settings=NULL, regressor=NULL, varlevel=NULL)
+{ 
   #--------------------------------------------------
   # Manage settings
   #--------------------------------------------------
@@ -119,7 +220,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
     iop.group <- 1
     if (is.null(group))
       iop.group <- 0
-       #--------------------------------------------------
+    #--------------------------------------------------
     lv <- list(treatment=treatment,
                parameter=parameter,
                output=output,
@@ -134,10 +235,11 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
     
     dataIn    <-  hgdata(lv)
     dataIn$model <- model
-    
+    dataIn$iop.group <- iop.group
   }else{
-    dataIn=data
-    group=NULL
+    dataIn <- data
+    iop.group <- data$iop.group
+#     group=NULL
   }
   
   if (length(s)==0){
@@ -145,20 +247,17 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   } else {
     argList <- list(DATA=dataIn, SETTINGS=s)       
   }
-  
+
   if(data.in==F){
     dot_call <- .Call
-    
-   # argList<- c(argList,list(TASK="PDF"))
     dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
-    Sys.setenv(LIXOFT_HOME="")
-    dataOut  <- convertmlx(dataOut,dataIn,iop.group)
+     dataOut  <- convertmlx(dataOut,dataIn,iop.group)
+#      dataOut  <- convertmlx(dataOut,dataIn)
     if (!(is.null(project)))  {
       nd <- length(dataOut)
-      if(!(is.null(doseRegimen)))
-      {
+      if(!is.null(doseRegimen)){
         dataOut[[nd+1]] <- doseRegimen
-        names(dataOut)[nd+1] <- "doseRegimen"
+        names(dataOut)[nd+1] <- "treatment"
       }
     }
     return(dataOut)
@@ -166,3 +265,40 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
     return(dataIn)
   }
 }
+
+mergeres <- function(r,s,m=NULL,N=NULL){
+  K <- length(s)
+  if (is.null(r)){
+    if (!is.null(m)){
+      for (k in (1:K))
+        if ("id" %in% names(s[[k]])){
+          s[[k]]$group <- factor(m) 
+          i1 <- which(names(s[[k]])=="id")
+          i2 <- which(names(s[[k]])=="group")
+          s[[k]] <- s[[k]][,c((1:i1),i2,((i1+1):(i2-1)))]
+        }  
+    }
+    u <- s
+  }else{
+    u <- r
+    for (k in (1:K)){
+      if (is.data.frame(s[[k]])){
+        if (!is.null(m))
+          s[[k]]$group <- factor(m)      
+        
+        if ("id" %in% names(s[[k]])){
+          ir <- as.numeric(tail(r[[k]]$id,1))
+          skid <- as.numeric(s[[k]]$id) + ir
+          s[[k]]$id <- factor(skid) 
+          if (!is.null(N))
+            s[[k]] <- s[[k]][skid<=N,]
+        }
+        #         u[[k]] <- merge(r[[k]],s[[k]],all=TRUE)
+        u[[k]] <- rbind(r[[k]],s[[k]])
+        attr(u[[k]],"name")=attr(s[[k]],"name")
+      }
+    }
+  } 
+  return(u)
+}
+
