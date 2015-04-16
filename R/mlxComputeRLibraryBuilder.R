@@ -15,7 +15,9 @@ mlxComputeRLibraryBuilder <- function(lixoftHOME){
     }
     
     fileConn <- file(makeVarsFile, open="w")
-    writeLines("PKG_CPPFLAGS += -DCONNECTOR_R", con = fileConn, sep = "\n", useBytes = FALSE)
+    
+    writeLines("PKG_CPPFLAGS +=  -DCONNECTOR_R", con = fileConn, sep = "\n", useBytes = FALSE)
+    
     writeLines("PKG_LIBS=`Rscript -e \"Rcpp:::LdFlags()\"`", con = fileConn, sep = "\n", useBytes = FALSE)
     
     if (myOS == "Linux"){

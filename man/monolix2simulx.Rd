@@ -2,32 +2,28 @@
 % Please edit documentation in R/monolix2simulx.R
 \name{monolix2simulx}
 \alias{monolix2simulx}
-\title{Convert a Monolix Project  into an executable for the simulator  Simulx}
+\title{Convert a Monolix Project  into an executable R script for the simulator  Simulx}
 \usage{
 monolix2simulx(project, parameter = NULL)
 }
 \arguments{
-\item{parameter}{: string $(NameOfTypeOfParameter), the type of specific parameters to use
-example: "mode", "mean"...}
+\item{project}{: the name of a Monolix project}
 
-\item{projectName}{: the name of a Monolix project}
+\item{parameter}{: string, the type of specific parameters to use: "mode" or "mean"...}
 }
 \value{
-creates a folder projectNameR  containing files :
+creates a folder containing files :
 \itemize{
-  \item \code{projectName.R} :  executable R code for the simulator,
-  \item \code{treatment.txt} :  contains the treatment informations,
-  \item \code{parameters.txt} : contains the  population parameters ouput from Monolix,
-  \item \code{group.txt} : contains the group informations,
-  \item \code{outputi.txt} : contains the output number i informations (time, id),
-  \item \code{covariates.txt} : contains the covariates parameters,
-  \item \code{$(NameOfTypeOfParameter)s.txt} : contains the specific parameter used.
+  \item \code{project.R}:  executable R code for the simulator,
+  \item \code{treatment.txt}:   dose design informations,
+  \item \code{parameters.txt}: population parameters ouput from Monolix,
+  \item \code{group.txt}: group informations,
+  \item \code{outputk.txt}: informations for the k-th output  (time, id),
+  \item \code{covariates.txt}: individual covariates,
+  \item \code{mode.txt} or \code{mean.txt}: specific individual parameters used for the simulation.
 }
-
-A list of data frames. Each data frame is an output of simulx the mlxtran model
-the data inputs: treatment, parameters, output of monolix, group...
 }
 \description{
-Convert a Monolix Project  into an executable for the simulator  Simulx
+Convert a Monolix Project  into an executable R script for the simulator  Simulx
 }
 
