@@ -1,0 +1,177 @@
+#' Computation of AUC, Cmax and Cmin
+#'
+#' Compute the area under the curve, the maximum and minimum values of a fucntion of time over an interval
+#' 
+#' Input arguments are the input arguments of Simulx
+#'  
+#' Specific input arguments can be also used for computing the exposure at steady state,
+#' i.e. after the administration of an "infinite" number of doses.  ()            
+#'
+#' See http://simulx.webpopix.org for more details. 
+#' @param output a list  with fields: 
+#' \itemize{
+#'   \item \code{name}: a vector of output names
+#'   \item \code{time}: = 'steady.state' (mandatory)
+#'   \item \code{ntp}: number of time points used for computing the exposure (default=100) 
+#'   \item \code{tol}: tolerance number, between 0 and 1, for approximating steaty-state  (default=0.01) 
+#'   \item \code{ngc}: number of doses used for estimating the convergence rate to steaty-state  (default=4) 
+#' }
+#' @param treatment a list with fields
+#' \itemize{
+#'   \item \code{tfd} : time of first dose (default=0),
+#'   \item \code{ii} : inter dose interval (mandatory),
+#'   \item \code{amount} : the amount for each dose,
+#'   \item \code{rate} : the infusion rate  (default=\code{Inf}),
+#'   \item \code{tinf} : the time of infusion  (default=0),
+#'   \item \code{type} : the type of input (default=1),
+#'   \item \code{target} : the target compartment (default=NULL). 
+#' }
+#' 
+#' @return A list of data frames
+#' 
+#' @export
+exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
+                     data=NULL, project=NULL, settings=NULL, regressor=NULL, varlevel=NULL)
+{   
+  if (identical(output$time,"steady.state")){
+    
+    if (is.null(output$ntp)) {ntp<-100}  else {ntp<-output$ntp}
+    if (is.null(output$ngc)) {ngc<-4}    else {ngc<-output$ngc}
+    if (is.null(output$tol)) {tol<-0.01} else {tol<-output$tol}
+    
+    # treatment
+    if (!is.null(names(treatment)))  
+      treatment <- list(treatment) 
+    
+    pmtau=1
+    tfd <- Inf
+    for (k in seq(1,length(treatment))){
+      trtk <- treatment[[k]]
+      if (is.null(trtk$ii))
+        stop("inter dose interval (ii) should be an element of treatment when exposure at steady state is computed")
+      pmtau <- ppcm(pmtau,trtk$ii) 
+      if(!any("tfd" %in% names(trtk)))
+        treatment[[k]]$tfd <- 0
+      tfd <- min(tfd, treatment[[k]]$tfd)
+    }
+    
+    #--------------------------------
+    mgc <- 2
+    T <- ngc*pmtau
+    trt1 <- treatment
+    for (k in seq(1,length(treatment))){
+      trtk <- treatment[[k]]
+      trtk$time <- seq(trtk$tfd,T+trtk$tfd,by=trtk$ii)   
+      trtk$ii <- NULL
+      trt1[[k]] <- trtk
+    }
+    out1 <- list(name=output$name, time=seq(tfd,T+tfd-pmtau/mgc,by=pmtau/mgc))
+    r1 <- simulx(model=model,group=group,treatment=trt1,parameter=parameter,
+                 output=out1,settings=settings,varlevel=varlevel)
+    r.names <- names(r1)
+    alpha <- Inf
+    for (k in seq(1:length(r1))){
+      namek <- r.names[k]
+      rk <- r1[[k]]
+      if (any("time" %in% names(rk))){
+        i.id <- any("id" %in% names(rk))
+        if (!i.id) {rk$id <- factor(1)}
+        N <- nlevels(rk$id)
+        i2 <- 0
+        for (i in (1:N)){
+          i1 <- i2 + 1 
+          i2 <- i2 + ngc*mgc
+          rki <- rk[i1:i2,]
+          fki <- matrix(rki[namek][[1]],ncol=ngc)
+          dki <- diff(apply(fki,2,mean))
+          #           print(dki)
+          alpha <- min(alpha,-mean(diff(log(abs(dki)))))
+        }
+      }
+    }
+    M <- round(-log(tol)/alpha)
+    #----------------------------------
+    
+    T <- M*pmtau + tfd
+    for (k in seq(1,length(treatment))){
+      trtk <- treatment[[k]]
+      trtk$time <- seq(trtk$tfd,T+trtk$tfd,by=trtk$ii)   
+      trtk$ii <- NULL
+      treatment[[k]] <- trtk
+    }
+    output <- list(name=output$name, time=seq(T-pmtau,T,length=ntp))
+    
+  }
+  t <- output$time
+  t.min <- min(t)
+  t.max <- max(t)
+  t.n   <- length(t)
+  t.step <- (t.max - t.min)/(t.n-1)
+  t.time <- seq(t.min,t.max, by=t.step)
+  output$time <- t.time
+  
+  r.simul <- simulx(model=model,group=group,treatment=treatment,parameter=parameter,
+                    output=output,data=data,project=project,settings=settings,
+                    regressor=regressor,varlevel=varlevel)
+  
+  r.names <- names(r.simul)
+  res <- list()
+  kk <- 0
+  for (k in seq(1:length(r.simul))){
+    namek <- r.names[k]
+    rk <- r.simul[[k]]
+    if (any("time" %in% names(rk))){
+      kk <- kk+1
+      i.id <- any("id" %in% names(rk))
+      if (!i.id){
+        rk$id <- 1
+      }
+      N <- nlevels(rk$id)
+      cmin=vector(length=N)
+      tmin=vector(length=N)
+      cmax=vector(length=N)
+      tmax=vector(length=N)
+      auc=vector(length=N)
+      i2 <- 0
+      for (i in (1:N)){
+        i1 <- i2 + 1 
+        i2 <- i2 + t.n
+        rki <- rk[i1:i2,]
+        tki <- rki["time"][[1]]
+        fki <- rki[namek][[1]]
+        imin <- which.min(fki)
+        tmin[i] <- tki[imin]
+        cmin[i] <- fki[imin]
+        imax <- which.max(fki)
+        tmax[i] <- tki[imax]
+        cmax[i] <- fki[imax]
+        auc[i] <- ((fki[1]+fki[t.n])/2+sum(fki[2:(t.n-1)]))*t.step
+      }
+      if (!i.id){
+        res[[kk]] <- data.frame(t1=t.min, t2=t.max, step=t.step, auc, 
+                                tmax, cmax, tmin, cmin)
+      }else{
+        res[[kk]] <- data.frame(id=factor(1:N), t1=t.min, t2=t.max, step=t.step, auc, 
+                                tmax, cmax, tmin, cmin)
+      }
+      names(res)[kk] <- namek
+    }
+  }
+  res$output <- r.simul
+  return(res)
+}
+
+
+pgcd <- function(a,b){ 
+  if (abs(b-0)<1e-7) { 
+    pgs <- a 
+  } 
+  else { 
+    r <- a%%b 
+    pgs <- pgcd(b,r) 
+  } 
+  return(pgs) 
+} 
+
+ppcm<-function(a,b) a*b/(pgcd(a,b))
+
