@@ -6,6 +6,7 @@ before_install:
   - ./travis-tool.sh bootstrap
   
 install:
+  - ./travis-tool.sh r_binary_install gridExtra
   - ./travis-tool.sh r_binary_install ggplot2
   - ./travis-tool.sh r_binary_install reshape2
   - ./travis-tool.sh r_binary_install XML
