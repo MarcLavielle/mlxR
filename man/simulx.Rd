@@ -49,6 +49,7 @@ simulx(model = NULL, group = NULL, treatment = NULL, parameter = NULL,
   \item \code{seed} : initialization of the random number generator (integer),
   \item \code{load.design} : TRUE/FALSE (if load.design is not defined, a test is automatically performed to check if a new design has been defined),
   \item \code{data.in} : TRUE/FALSE (default=FALSE)
+  \item \code{Nmax} : maximum group size used in a single call of mlxCompute (default=100)
 }}
 
 \item{regressor}{a list, or a list of lists, with fields
