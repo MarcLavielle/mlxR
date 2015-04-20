@@ -1,20 +1,20 @@
 #' Computation of AUC, Cmax and Cmin
 #'
-#' Compute the area under the curve, the maximum and minimum values of a fucntion of time over an interval
+#' Compute the area under the curve, the maximum and minimum values of a funcstion of time over an interval
 #' 
-#' Input arguments are the input arguments of Simulx
+#' Input arguments are the input arguments of Simulx (http://simulx.webpopix.org)
 #'  
 #' Specific input arguments can be also used for computing the exposure at steady state,
-#' i.e. after the administration of an "infinite" number of doses.  ()            
-#'
+#' i.e. after the administration of an "infinite" number of doses.              
 #' See http://simulx.webpopix.org for more details. 
+#' 
 #' @param output a list  with fields: 
 #' \itemize{
 #'   \item \code{name}: a vector of output names
 #'   \item \code{time}: = 'steady.state' (mandatory)
 #'   \item \code{ntp}: number of time points used for computing the exposure (default=100) 
 #'   \item \code{tol}: tolerance number, between 0 and 1, for approximating steaty-state  (default=0.01) 
-#'   \item \code{ngc}: number of doses used for estimating the convergence rate to steaty-state  (default=4) 
+#'   \item \code{ngc}: number of doses used for estimating the convergence rate to steaty-state  (default=5) 
 #' }
 #' @param treatment a list with fields
 #' \itemize{
@@ -27,16 +27,28 @@
 #'   \item \code{target} : the target compartment (default=NULL). 
 #' }
 #' 
-#' @return A list of data frames
+#' @return A list of data frames. One data frame per output is created with columns \code{id} (if number of subject >1),
+#' \code{group} (if number of groups >1), \code{t1} (beginning of time interval), \code{t2} (end of time interval),
+#' \code{step} (time step), \code{auc} (area under the curve), \code{tmax} (time of maximum value), \code{cmax} (maximum value),
+#' \code{tmin} (time of minimum value), \code{cmin} (minimum value).
 #' 
 #' @export
 exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
                      data=NULL, project=NULL, settings=NULL, regressor=NULL, varlevel=NULL)
-{   
+{  
+  if (!is.null(group)){
+    if (!is.null(group$output))
+      stop("\n'output' cannot be defined in 'group' with exposure\n")
+  }
   if (identical(output$time,"steady.state")){
     
+    if  (!is.null(group) & is.null(names(group)))
+      stop("\nOnly one group can be defined when exposure is computed at steady state\n")
+    if (!is.null(group$treatment))
+      stop("\n'treatment' cannot be defined in 'group' when exposure is computed at steady state\n")
+    
     if (is.null(output$ntp)) {ntp<-100}  else {ntp<-output$ntp}
-    if (is.null(output$ngc)) {ngc<-4}    else {ngc<-output$ngc}
+    if (is.null(output$ngc)) {ngc<-5}    else {ngc<-output$ngc}
     if (is.null(output$tol)) {tol<-0.01} else {tol<-output$tol}
     
     # treatment
@@ -84,12 +96,17 @@ exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
           rki <- rk[i1:i2,]
           fki <- matrix(rki[namek][[1]],ncol=ngc)
           dki <- diff(apply(fki,2,mean))
-          #           print(dki)
-          alpha <- min(alpha,-mean(diff(log(abs(dki)))))
+          alphai <- diff(log(abs(dki)))
+          if (max(alphai) <0){
+            alpha <- min(alpha,-tail(alphai,n=1))
+          }else if (min(alphai)>0){
+            stop("\n\nSorry... exposure was not able to estimate the rate of convergence to steady state...
+Try increasing ngc, or fix the number of doses")
+          }
         }
       }
     }
-    M <- round(-log(tol)/alpha)
+    M <- ceiling(-log(tol)/alpha)+1
     #----------------------------------
     
     T <- M*pmtau + tfd
@@ -123,15 +140,17 @@ exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
     if (any("time" %in% names(rk))){
       kk <- kk+1
       i.id <- any("id" %in% names(rk))
+      i.group <- any("group" %in% names(rk))
       if (!i.id){
         rk$id <- 1
       }
       N <- nlevels(rk$id)
-      cmin=vector(length=N)
-      tmin=vector(length=N)
-      cmax=vector(length=N)
-      tmax=vector(length=N)
-      auc=vector(length=N)
+      cmin <- vector(length=N)
+      tmin <- vector(length=N)
+      cmax <- vector(length=N)
+      tmax <- vector(length=N)
+      auc  <- vector(length=N)
+      gr   <- vector(length=N)
       i2 <- 0
       for (i in (1:N)){
         i1 <- i2 + 1 
@@ -146,13 +165,17 @@ exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
         tmax[i] <- tki[imax]
         cmax[i] <- fki[imax]
         auc[i] <- ((fki[1]+fki[t.n])/2+sum(fki[2:(t.n-1)]))*t.step
+        if (i.group){ gr[i] <- rki$group[1]  }
       }
       if (!i.id){
         res[[kk]] <- data.frame(t1=t.min, t2=t.max, step=t.step, auc, 
                                 tmax, cmax, tmin, cmin)
-      }else{
+      }else if (!i.group){
         res[[kk]] <- data.frame(id=factor(1:N), t1=t.min, t2=t.max, step=t.step, auc, 
                                 tmax, cmax, tmin, cmin)
+      }else{
+        res[[kk]] <- data.frame(id=factor(1:N), group=as.factor(gr), t1=t.min, t2=t.max, step=t.step, auc, 
+                                tmax, cmax, tmin, cmin)        
       }
       names(res)[kk] <- namek
     }
