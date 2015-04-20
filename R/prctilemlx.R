@@ -10,7 +10,7 @@
 #'   \item \code{number} the number of intervals (i.e. the number of percentiles minus 1).
 #'   \item \code{level} the largest interval (i.e. the difference between the lowest and the highest percentile).
 #' }
-#' @param y.lim vector of length 2, giving the y coordinate range
+#' @param y.lim the use of y.lim is deprecated. You can use prctile(...)+ylim(...) instead.
 #' @param plot if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}
 #' the values of the percentiles are returned
 #' 
@@ -74,6 +74,9 @@
 #' @export         
 prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
 {
+  if (!is.null(y.lim))
+    warning("The use of y.lim is deprecated. You can use  prctile(...) +ylim(...) instead.")
+
   alpha <- band$level
   m <- band$number
   
@@ -149,8 +152,6 @@ prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
     
     bq <- as.character(rev(vq))
     sfm = scale_fill_manual(name="proba",values=colq,breaks=bq)
-    if (is.null(y.lim))
-      y.lim <- c(min(y[1,]),max(y[nq,]))
     
     pr <- NULL
     for (j in (1:(nq-1)))
@@ -158,7 +159,9 @@ prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
     
     datapoly <- data.frame(x,pr,v,vf)    
     pk<-ggplotmlx(datapoly, aes(x=x, y=pr)) + geom_polygon(aes(fill=vf, group=vf)) +
-      xlab("time")+ylab(y.label)+ylim(y.lim) 
+      xlab("time")+ylab(y.label) 
+    if (!is.null(y.lim))
+       pk <- pk + ylim(y.lim) 
     pk <- pk +sfm
     if (m.test==1){
       data0 <- data.frame(y=y[(nq+1)/2,],x=t)
