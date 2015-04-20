@@ -42,43 +42,69 @@ exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
   }
   if (identical(output$time,"steady.state")){
     
-    if  (!is.null(group) & is.null(names(group)))
-      stop("\nOnly one group can be defined when exposure is computed at steady state\n")
-    if (!is.null(group$treatment))
-      stop("\n'treatment' cannot be defined in 'group' when exposure is computed at steady state\n")
-    
     if (is.null(output$ntp)) {ntp<-100}  else {ntp<-output$ntp}
     if (is.null(output$ngc)) {ngc<-5}    else {ngc<-output$ngc}
     if (is.null(output$tol)) {tol<-0.01} else {tol<-output$tol}
+        
+    # groups and treatment
+    if (is.null(group))
+      group <- list(NULL)
     
-    # treatment
-    if (!is.null(names(treatment)))  
-      treatment <- list(treatment) 
+    if (!is.null(names(group)))  
+      group <- list(group) 
+    G <- length(group)
     
+    if (!is.null(treatment)){
+      for (g in (1:G))
+        group[[g]]$treatment <- treatment
+      treatment <- NULL
+    }
+    for (g in (1:G)){
+      if (!is.null(names(group[[g]]$treatment)))  
+        group[[g]]$treatment <- list(group[[g]]$treatment) 
+    } 
+    
+    # ppcm
     pmtau=1
     tfd <- Inf
-    for (k in seq(1,length(treatment))){
-      trtk <- treatment[[k]]
-      if (is.null(trtk$ii))
-        stop("inter dose interval (ii) should be an element of treatment when exposure at steady state is computed")
-      pmtau <- ppcm(pmtau,trtk$ii) 
-      if(!any("tfd" %in% names(trtk)))
-        treatment[[k]]$tfd <- 0
-      tfd <- min(tfd, treatment[[k]]$tfd)
-    }
     
+    for (g in (1:G)){
+      for (k in seq(1,length(group[[g]]$treatment))){
+        trtk <- group[[g]]$treatment[[k]]
+        if (is.null(trtk$ii))
+          stop("inter dose interval (ii) should be an element of treatment when exposure at steady state is computed")
+        pmtau <- ppcm(pmtau,trtk$ii) 
+        if(!any("tfd" %in% names(trtk)))
+          group[[g]]$treatment[[k]]$tfd <- 0
+        tfd <- min(tfd, group[[g]]$treatment[[k]]$tfd)
+      }
+    }
     #--------------------------------
     mgc <- 2
     T <- ngc*pmtau
-    trt1 <- treatment
-    for (k in seq(1,length(treatment))){
-      trtk <- treatment[[k]]
-      trtk$time <- seq(trtk$tfd,T+trtk$tfd,by=trtk$ii)   
-      trtk$ii <- NULL
-      trt1[[k]] <- trtk
+    gr1 <- group
+    for (g in (1:G)){
+      trtg <- group[[g]]$treatment
+      trt1 <- trtg
+      for (k in seq(1,length(trtg))){
+        trtk <- trtg[[k]]
+        trtk$time <- seq(trtk$tfd,T+trtk$tfd,by=trtk$ii)   
+        trtk$ii <- NULL
+        trtk$tfd <- NULL
+        trt1[[k]] <- trtk
+      }
+      gr1[[g]]$treatment <- trt1
     }
     out1 <- list(name=output$name, time=seq(tfd,T+tfd-pmtau/mgc,by=pmtau/mgc))
-    r1 <- simulx(model=model,group=group,treatment=trt1,parameter=parameter,
+    if (length(gr1)==1){
+      trt1 <- gr1[[1]]$treatment
+      gr1[[1]]$treatment <- NULL
+      if (length(gr1[[1]])==0)
+        gr1 <- NULL
+    }else{
+      trt1 <- NULL
+    }   
+    r1 <- simulx(model=model,group=gr1,treatment=trt1, parameter=parameter,
                  output=out1,settings=settings,varlevel=varlevel)
     r.names <- names(r1)
     alpha <- Inf
@@ -110,14 +136,24 @@ Try increasing ngc, or fix the number of doses")
     #----------------------------------
     
     T <- M*pmtau + tfd
-    for (k in seq(1,length(treatment))){
-      trtk <- treatment[[k]]
-      trtk$time <- seq(trtk$tfd,T+trtk$tfd,by=trtk$ii)   
-      trtk$ii <- NULL
-      treatment[[k]] <- trtk
+    for (g in (1:G)){
+      trtg <- group[[g]]$treatment
+      for (k in seq(1,length(trtg))){
+        trtk <- trtg[[k]]
+        trtk$time <- seq(trtk$tfd,T+trtk$tfd,by=trtk$ii)   
+        trtk$ii <- NULL
+        trtk$tfd <- NULL
+        trtg[[k]] <- trtk
+      }
+      group[[g]]$treatment <- trtg
     }
     output <- list(name=output$name, time=seq(T-pmtau,T,length=ntp))
-    
+    if (length(group)==1){
+      treatment <- group[[1]]$treatment
+      group[[1]]$treatment <- NULL
+      if (length(group[[1]])==0)
+        group <- NULL
+    }
   }
   t <- output$time
   t.min <- min(t)
@@ -130,7 +166,6 @@ Try increasing ngc, or fix the number of doses")
   r.simul <- simulx(model=model,group=group,treatment=treatment,parameter=parameter,
                     output=output,data=data,project=project,settings=settings,
                     regressor=regressor,varlevel=varlevel)
-  
   r.names <- names(r.simul)
   res <- list()
   kk <- 0
