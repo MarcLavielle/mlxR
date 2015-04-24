@@ -250,7 +250,6 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
   }
   
   dot_call <- .Call
-  print(argList.SETTINGS)
   dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
   if(data.in==F){
     dataOut  <- convertmlx(dataOut,dataIn,iop.group)
