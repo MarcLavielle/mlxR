@@ -188,10 +188,12 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
   s <- cc[[2]]
   data.in <- cc[[1]]
   
+  if (data.in==TRUE)
+    s$loadDesign <- TRUE
   
   if(is.null(data)){
     
-    dataIn          <- list()    
+    dataIn <- list()    
     #--------------------------------------------------
     #    MODEL
     #--------------------------------------------------
@@ -239,7 +241,6 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
   }else{
     dataIn <- data
     iop.group <- data$iop.group
-#     group=NULL
   }
   
   if (length(s)==0){
@@ -247,12 +248,12 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
   } else {
     argList <- list(DATA=dataIn, SETTINGS=s)       
   }
-
+  
+  dot_call <- .Call
+  print(argList.SETTINGS)
+  dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
   if(data.in==F){
-    dot_call <- .Call
-    dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
-     dataOut  <- convertmlx(dataOut,dataIn,iop.group)
-#      dataOut  <- convertmlx(dataOut,dataIn)
+    dataOut  <- convertmlx(dataOut,dataIn,iop.group)
     if (!(is.null(project)))  {
       nd <- length(dataOut)
       if(!is.null(doseRegimen)){
