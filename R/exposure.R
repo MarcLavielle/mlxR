@@ -1,17 +1,17 @@
 #' Computation of AUC, Cmax and Cmin
 #'
-#' Compute the area under the curve, the maximum and minimum values of a funcstion of time over an interval
+#' Compute the area under the curve, the maximum and minimum values of a function of time over a given interval or at steady state
 #' 
 #' Input arguments are the input arguments of Simulx (http://simulx.webpopix.org)
 #'  
 #' Specific input arguments can be also used for computing the exposure at steady state,
 #' i.e. after the administration of an "infinite" number of doses.              
-#' See http://simulx.webpopix.org for more details. 
+#' See http://simulx.webpopix.org/exposure/ for more details. 
 #' 
 #' @param output a list  with fields: 
 #' \itemize{
 #'   \item \code{name}: a vector of output names
-#'   \item \code{time}: = 'steady.state' (mandatory)
+#'   \item \code{time}: = 'steady.state' 
 #'   \item \code{ntp}: number of time points used for computing the exposure (default=100) 
 #'   \item \code{tol}: tolerance number, between 0 and 1, for approximating steaty-state  (default=0.01) 
 #'   \item \code{ngc}: number of doses used for estimating the convergence rate to steaty-state  (default=5) 
