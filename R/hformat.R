@@ -434,7 +434,8 @@ merge.regressor <- function(reg, N)
           }else{
             ri <- merge(ri,rik,
                         by.x=c("id","time"), by.y=c("id","time"),
-                        all.x=TRUE,all.y=TRUE)   
+                        all.x=TRUE,all.y=TRUE) 
+            ri <- ri[order(ri$time),]
           }
       }
       r <- rbind(r,ri)
