@@ -79,15 +79,48 @@ pkmodel <- function(time,treatment,parameter){
     jid <- which(np=="id")
     parameter <- list(name=np[-jid], colNames=np, value=as.matrix(parameter))
   }
-     pn=parameter$name
+  pn=parameter$name
   
-#   pn=names(parameter)
+  #   pn=names(parameter)
   if(length(grep("ke0",pn))>0){iop.ke0=1}else{iop.ke0=0}
   if(iop.ke0==0){
     out <- list(name="cc",time=time)
   }
   else{
     out <- list(name=c("cc","ce"),time=time)
+  }
+  
+  
+  if ("V2" %in% parameter$name){
+    if ("V1" %in% parameter$name){
+      iv1 <- which(parameter$name=="V1")
+      parameter$name[iv1]="V"
+    }
+    if ("Q" %in% parameter$name){
+      iq <- which(parameter$name=="Q")
+      parameter$name[iq]="Q2"
+    }
+    iv1 <- which(parameter$name=="V")
+    iv2 <- which(parameter$name=="V2")
+    iq2 <- which(parameter$name=="Q2")
+    k12 <- parameter$value[iq2]/parameter$value[iv1]
+    k21 <- parameter$value[iq2]/parameter$value[iv2]
+    parameter$value[iq2] <- k12
+    parameter$value[iv2] <- k21
+    parameter$name[iq2]  <- "k12"
+    parameter$name[iv2]  <- "k21"
+  }
+  
+  if ("V3" %in% parameter$name){
+    iv1 <- which(parameter$name=="V")
+    iv3 <- which(parameter$name=="V3")
+    iq3 <- which(parameter$name=="Q3")
+    k13 <- parameter$value[iq3]/parameter$value[iv1]
+    k31 <- parameter$value[iq3]/parameter$value[iv3]
+    parameter$value[iq3] <- k13
+    parameter$value[iv3] <- k31
+    parameter$name[iq3]  <- "k13"
+    parameter$name[iv3]  <- "k31"
   }
   
   data <- simulx(model="pkmodel",parameter=parameter,output=out,treatment=treatment)
@@ -98,9 +131,9 @@ pkmodel <- function(time,treatment,parameter){
     r=merge(data$cc,data$ce)
   }
   
-  if (isfield(r,"id")){
-  if (length(levels(r[,"id"]))==1)
-    r[,"id"]=NULL
+  if (!is.null(r$id)){
+    if (length(levels(r[,"id"]))==1)
+      r[,"id"]=NULL
   }
   
   return(r)
