@@ -1,6 +1,6 @@
 
-convertmlx <- function(data, dataIn,iop.group){
-  
+convertmlx <- function(data, dataIn,iop.group,id.out){
+    
   g <- dataIn$group
   iop.gout <- 0
   for(k in seq(1,length(g))){
@@ -22,8 +22,9 @@ convertmlx <- function(data, dataIn,iop.group){
       gr=c(gr,rep(k,pgk))
     }
   }else{
-    iop.group=0
+    iop.group <- 0
   }  
+  
   
   gr=numeric(0)
   for(k in seq(1,length(g))){
@@ -94,6 +95,19 @@ convertmlx <- function(data, dataIn,iop.group){
       }
     }
     names(dk)[names(dk)=="value"] <- ak$name
+    
+    if (id.out==TRUE){
+      if (is.null(dk$id)){
+        dk$id <- 1
+        nk <- length(dk)
+        dk <- dk[,c(nk,(1:(nk-1)))]
+      }
+      if (is.null(dk$group)){
+        dk$group <- 1
+        nk <- length(dk)
+        dk <- dk[,c(1,nk,(2:(nk-1)))]
+      }
+    }
     if (iop.tk==0){
       if(iop.id==0){
         df <- c(df,dk)
@@ -120,6 +134,7 @@ convertmlx <- function(data, dataIn,iop.group){
     
     attr(dk,"name")=ak$name
     dd[[ak$name]] = dk
+    
   }
   
   #   if (length(df)>0){
@@ -151,7 +166,7 @@ convertmlx <- function(data, dataIn,iop.group){
       vv$id <- NULL
     }
     for(k in seq(1,length(dd))){
-      if (!isfield(dd[[k]],"time")){
+      if (is.null(dd[[k]]$time)){
         vdk <- cbind(vv, dd[[k]])
         j=which(names(vdk)=="group")
         if (length(j)>0){
@@ -169,6 +184,7 @@ convertmlx <- function(data, dataIn,iop.group){
     dd$varlevel <- v
     
   }
+  
   if (iop.gout==1)
     dd$group=g
   

@@ -60,6 +60,7 @@
 #'   \item \code{seed} : initialization of the random number generator (integer),
 #'   \item \code{load.design} : TRUE/FALSE (if load.design is not defined, a test is automatically performed to check if a new design has been defined),
 #'   \item \code{data.in} : TRUE/FALSE (default=FALSE)
+#'   \item \code{id.out}  : add columns id (when N=1) and group (when #group=1), TRUE/FALSE (default=FALSE)
 #'   \item \code{Nmax} : maximum group size used in a single call of mlxCompute (default=100)
 #' }       
 #' 
@@ -185,8 +186,9 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
   # Manage settings
   #--------------------------------------------------
   cc  <-  processing_setting(settings)
-  s <- cc[[2]]
-  data.in <- cc[[1]]
+  s <- cc[[1]]
+  data.in <- cc[[2]]
+  id.out  <- cc[[3]]
   
   if (data.in==TRUE)
     s$loadDesign <- TRUE
@@ -252,7 +254,7 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
   dot_call <- .Call
   dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
   if(data.in==F){
-    dataOut  <- convertmlx(dataOut,dataIn,iop.group)
+    dataOut  <- convertmlx(dataOut,dataIn,iop.group,id.out)
     if (!(is.null(project)))  {
       nd <- length(dataOut)
       if(!is.null(doseRegimen)){
