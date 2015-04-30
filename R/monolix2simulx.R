@@ -1,21 +1,17 @@
-#' Convert a Monolix Project  into an executable for the simulator  Simulx 
-#' @param projectName : the name of a Monolix project 
-#' @param parameter : string $(NameOfTypeOfParameter), the type of specific parameters to use 
-#'                   example: "mode", "mean"...
-#' @return  creates a folder projectNameR  containing files : 
+#' Convert a Monolix Project  into an executable R script for the simulator  Simulx 
+#' @param project : the name of a Monolix project 
+#' @param parameter : string, the type of specific parameters to use: "mode" or "mean"...
+#' @return  creates a folder containing files : 
 #' \itemize{
-#'   \item \code{projectName.R} :  executable R code for the simulator,
-#'   \item \code{treatment.txt} :  contains the treatment informations,
-#'   \item \code{parameters.txt} : contains the  population parameters ouput from Monolix,
-#'   \item \code{group.txt} : contains the group informations,
-#'   \item \code{outputi.txt} : contains the output number i informations (time, id),
-#'   \item \code{covariates.txt} : contains the covariates parameters,
-#'   \item \code{$(NameOfTypeOfParameter)s.txt} : contains the specific parameter used.
+#'   \item \code{project.R}:  executable R code for the simulator,
+#'   \item \code{treatment.txt}:   dose design informations,
+#'   \item \code{parameters.txt}: population parameters ouput from Monolix,
+#'   \item \code{group.txt}: group informations,
+#'   \item \code{outputk.txt}: informations for the k-th output  (time, id),
+#'   \item \code{covariates.txt}: individual covariates,
+#'   \item \code{mode.txt} or \code{mean.txt}: specific individual parameters used for the simulation.
 #' }       
 #'  
-#' @return A list of data frames. Each data frame is an output of simulx the mlxtran model
-#' the data inputs: treatment, parameters, output of monolix, group... 
-#' 
 #' @export
 
 #monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
