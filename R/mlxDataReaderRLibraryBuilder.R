@@ -109,7 +109,7 @@ library("Rcpp");
 if (myOS == "Windows" )
 { 
 	myOldENVPATH = Sys.getenv('PATH');
-	myNewENVPATH = sprintf("%s;%s/tools/MinGW/bin", myOldENVPATH, lixoftHOME);
+        myNewENVPATH = sprintf("%s;%s/../tools/MinGW/bin;%s/tools/MinGW/bin",myOldENVPATH,lixoftHOME,lixoftHOME);
 	Sys.setenv('PATH'=myNewENVPATH);
 	dirWheremlxDataReaderRIsInstalled = sprintf("%s/lib", lixoftHOME);
 	myCallingPath<-setwd(dirWheremlxDataReaderRIsInstalled);
