@@ -1,17 +1,21 @@
-#' Convert a Monolix Project  into an executable R script for the simulator  Simulx 
-#' @param project : the name of a Monolix project 
-#' @param parameter : string, the type of specific parameters to use: "mode" or "mean"...
-#' @return  creates a folder containing files : 
+#' Convert a Monolix Project  into an executable for the simulator  Simulx 
+#' @param projectName : the name of a Monolix project 
+#' @param parameter : string $(NameOfTypeOfParameter), the type of specific parameters to use 
+#'                   example: "mode", "mean"...
+#' @return  creates a folder projectNameR  containing files : 
 #' \itemize{
-#'   \item \code{project.R}:  executable R code for the simulator,
-#'   \item \code{treatment.txt}:   dose design informations,
-#'   \item \code{parameters.txt}: population parameters ouput from Monolix,
-#'   \item \code{group.txt}: group informations,
-#'   \item \code{outputk.txt}: informations for the k-th output  (time, id),
-#'   \item \code{covariates.txt}: individual covariates,
-#'   \item \code{mode.txt} or \code{mean.txt}: specific individual parameters used for the simulation.
+#'   \item \code{projectName.R} :  executable R code for the simulator,
+#'   \item \code{treatment.txt} :  contains the treatment informations,
+#'   \item \code{parameters.txt} : contains the  population parameters ouput from Monolix,
+#'   \item \code{group.txt} : contains the group informations,
+#'   \item \code{outputi.txt} : contains the output number i informations (time, id),
+#'   \item \code{covariates.txt} : contains the covariates parameters,
+#'   \item \code{$(NameOfTypeOfParameter)s.txt} : contains the specific parameter used.
 #' }       
 #'  
+#' @return A list of data frames. Each data frame is an output of simulx the mlxtran model
+#' the data inputs: treatment, parameters, output of monolix, group... 
+#' 
 #' @export
 
 #monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
@@ -37,7 +41,6 @@ monolix2simulx <-function(project,parameter=NULL)
   mlxtranfile = file_path_sans_ext(basename(project))
   mypath <- getwd()
   Rproject <- file.path(mypath,paste0(mlxtranfile,"_simulx"))
-  #   Rproject <- file.path(mlxtranpath,paste0(mlxtranfile,"_simulx"))
   if(file.exists(Rproject) )
   {
     unlink(Rproject, recursive = TRUE, force = TRUE)
@@ -57,12 +60,13 @@ monolix2simulx <-function(project,parameter=NULL)
   cat(paste0("model<-\"",modelname,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
   # write  treatment 
-  if(!(is.null(treatment)))
-  { 
-    
+  if(!(is.null(treatment))){ 
+    if (!is.null(treatment$value)){
     treat2<-matrix(treatment$value,nrow=nrow(treatment$value),ncol=ncol(treatment$value))
     colnames(treat2)<-treatment$colNames
-    write.table(treat2,file=file.path(Rproject,"/treatment.txt"),row.names=FALSE,quote=FALSE)
+    treatment <- treat2
+    }
+    write.table(treatment,file=file.path(Rproject,"/treatment.txt"),row.names=FALSE,quote=FALSE)
     cat("\n# treatment\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
     cat("trt <- read.table(\"treatment.txt\", header = TRUE) \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   }
