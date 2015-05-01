@@ -189,6 +189,7 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
   s <- cc[[1]]
   data.in <- cc[[2]]
   id.out  <- cc[[3]]
+  id.ori  <- NULL
   
   if (data.in==TRUE)
     s$loadDesign <- TRUE
@@ -236,6 +237,7 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
     
     doseRegimen <- lv$treatment
     lv  <- hformat(lv)
+    id.ori <- lv$id.ori
     
     dataIn    <-  hgdata(lv)
     dataIn$model <- model
@@ -250,11 +252,10 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
   } else {
     argList <- list(DATA=dataIn, SETTINGS=s)       
   }
-  
   dot_call <- .Call
   dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
   if(data.in==F){
-    dataOut  <- convertmlx(dataOut,dataIn,iop.group,id.out)
+    dataOut  <- convertmlx(dataOut,dataIn,iop.group,id.out,id.ori)
     if (!(is.null(project)))  {
       nd <- length(dataOut)
       if(!is.null(doseRegimen)){

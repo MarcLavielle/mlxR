@@ -101,16 +101,21 @@ hformat  <-  function(list.input)
       group[[i]] <- list(size=1)
   }
   
+  id.ori=list()
+  
   #---  parameters
   iv <- which(nv=="parameter")
   parameter <- vector("list", N)
   if (!is.null(lv[[iv]])){
-    parameter <- format.parameter(parameter,lv[[iv]],seq(1,N))
+    r <- format.parameter(parameter,lv[[iv]],seq(1,N))
+    if (length(r$id)>0) {id.ori=c(id.ori,r$id)}
+    parameter <- r$parameter
   }
   for (i in seq(1,N)){
     gi <- group[[i]]
     if (isfield(gi,'parameter')) {
-      parameter <- format.parameter(parameter,gi$parameter,i)
+      r <- format.parameter(parameter,gi$parameter,i)
+      parameter <- r$parameter
       group[[i]]$parameter <- NULL
     }
   }
@@ -124,11 +129,14 @@ hformat  <-  function(list.input)
     output$group[[i]]=list(name=NULL)
   }
   iv <- which(nv=="output")
-  output <- format.output(output,lv[[iv]],seq(1,N))
+  r <- format.output(output,lv[[iv]],seq(1,N))
+  if (length(r$id)>0) {id.ori=c(id.ori,r$id)}
+  output <- r$output
   for (i in seq(1,N)){
     gi <- group[[i]]
     if (isfield(gi,'output')) {
-      output <- format.output(output,gi$output,i)
+      r <- format.output(output,gi$output,i)
+      output <- r$output
     }
     group[[i]]$output <- output$group[[i]]$name
   }
@@ -138,12 +146,15 @@ hformat  <-  function(list.input)
   #---  treatments
   iv <- which(nv=="treatment")
   if (!is.null(lv[[iv]])){
-    treatment <- format.treatment(lv[[iv]],seq(1,N))
+    r <- format.treatment(lv[[iv]],seq(1,N))
+    if (length(r$id)>0) {id.ori=c(id.ori,r$id)}
+    treatment <- r$treatment
   }
   for (i in seq(1,N)){
     gi <- group[[i]]
     if (isfield(gi,'treatment')) {
-      pgi <- format.treatment(gi$treatment,i)
+      r <- format.treatment(gi$treatment,i)
+      pgi <- r$treatment
       treatment <- c(treatment, pgi)
       group[[i]]$treatment <- NULL
     }
@@ -156,12 +167,15 @@ hformat  <-  function(list.input)
   #---  regressor
   iv <- which(nv=="regressor")
   if (!is.null(lv[[iv]])){
-    regressor <- format.regressor(lv[[iv]],seq(1,N))
+    r <- format.regressor(lv[[iv]],seq(1,N))
+    if (length(r$id)>0) {id.ori=c(id.ori,r$id)}
+    regressor <- r$regressor
   }
   for (i in seq(1,N)){
     gi <- group[[i]]
     if (isfield(gi,'regressor')) {
-      pgi <- format.regressor(gi$regressor,i)
+      r <- format.regressor(gi$regressor,i)
+      pgi <- r$regressor
       regressor <- c(regressor, pgi)
       group[[i]]$regressor <- NULL
     }
@@ -172,12 +186,15 @@ hformat  <-  function(list.input)
   #---  varlevel
   iv <- which(nv=="varlevel")
   if (!is.null(lv[[iv]])){
-    varlevel <- format.varlevel(lv[[iv]],seq(1,N))
+    r <- format.varlevel(lv[[iv]],seq(1,N))
+    if (length(r$id)>0) {id.ori=c(id.ori,r$id)}
+    varlevel <- r$varlevel
   }
   for (i in seq(1,N)){
     gi <- group[[i]]
     if (isfield(gi,'varlevel')) {
-      pgi <- format.varlevel(gi$varlevel,i)
+      r <- format.varlevel(gi$varlevel,i)
+      pgi <- r$varlevel
       varlevel <- c(varlevel, pgi)
       group[[i]]$varlevel <- NULL
     }
@@ -185,6 +202,16 @@ hformat  <-  function(list.input)
   if (!is.null(varlevel))
     list.output$varlevel <- merge.varlevel(varlevel,N)
   
+  #--------------------
+  if (length(unique(id.ori))>0){
+    if (length(unique(id.ori))>1){
+      stop("\n\nid's should be the same in the different input arguments (parameters, treatment, output,...)\n")
+    }else{
+      list.output$id.ori <- unique(id.ori)[[1]]
+    }
+  }else{
+    list.output$id.ori <- NULL
+  }
   
   #--------------------
   list.output$group=group
@@ -198,7 +225,7 @@ format.treatment <- function(treatment,uN)
   if (!is.null(names(treatment))){  
     treatment <- list(treatment) 
   }
-  
+  id.ori <- list()
   for (k in seq(1,length(treatment))){
     trtk <- treatment[[k]]
     if (isfield(trtk,'colNames')){
@@ -210,6 +237,13 @@ format.treatment <- function(treatment,uN)
       n <- nrow(trtk)
       trtk <- trtk[rep(1:n,each=N),] 
       trtk$id <- rep(uN,n)
+    }else{
+      idk <- sort(unique(trtk$id))
+      if (any(idk != uN)) {
+        id.ori[[length(id.ori)+1]]<-idk 
+        trtk$id <- match(trtk$id, idk)
+      }
+      
     }
     names(trtk)[names(trtk)=="amt"] <- "amount"
     names(trtk)[names(trtk)=="adm"] <- "type"
@@ -221,7 +255,8 @@ format.treatment <- function(treatment,uN)
       trtk$rate <- Inf
     treatment[[k]] <- trtk   
   }
-  return(treatment)
+  r <- list(treatment=treatment, id=id.ori)
+  return(r)
 }
 #--------------------------
 merge.treatment <- function(treatment,N)  
@@ -275,6 +310,7 @@ format.parameter <- function(parameter,param,uN)
   if (!is.null(names(param))){  
     param=list(param) 
   }
+  id.ori <- list()
   
   for (k in seq(1,length(param))){
     paramk <- param[[k]]
@@ -283,6 +319,7 @@ format.parameter <- function(parameter,param,uN)
       names(pp)=paramk$colNames
       paramk=pp
     }
+    id <- uN
     if (!is.data.frame(paramk)){
       if (!is.list(paramk)){
         paramk <- list(name=names(paramk),value=as.vector(paramk))
@@ -297,10 +334,17 @@ format.parameter <- function(parameter,param,uN)
       if (!isfield(paramk,"id")){
         paramk <- paramk[rep(1,each=N),] 
         paramk$id <- uN
+      }else{
+        idk <- sort(unique(paramk$id))
+        if (any(idk != uN)){
+          id.ori[[length(id.ori)+1]]<-idk    
+          paramk$id <- match(paramk$id, idk)
+        }
       }
     }
     for (i in uN){
       pki <- paramk[paramk$id==i,]
+      pki$id <- i
       if (is.null(parameter[[i]])){
         parameter[[i]] <- pki
       }else{
@@ -308,7 +352,8 @@ format.parameter <- function(parameter,param,uN)
       }
     }
   }
-  return(parameter)
+  r <- list(parameter=parameter, id=id.ori)
+  return(r)
 }
 #-----------------------------
 merge.parameter <- function(parameter) 
@@ -339,6 +384,7 @@ format.output <- function(output, out,uN)
   
   ioutput <- output$individual
   goutput <- output$group
+  id.ori <- list()
   
   for (k in seq(1,length(out))){
     outk <- out[[k]]
@@ -352,9 +398,10 @@ format.output <- function(output, out,uN)
       outk$design=pp
     }
     if (isfield(outk,'design')){      
-      id <- unique(outk$design$id)
-      for (i in id){
-        ji <- which(outk$design$id == i)
+      id <- sort(unique(outk$design$id))
+      if (any(id != uN)) id.ori[[length(id.ori)+1]]<-id        
+      for (i in uN){
+        ji <- which(outk$design$id == id[i])
         ti <- sort(outk$design$time[ji])
         oitime <- vector("list" , nok)
         for (j in seq(1,nok)){
@@ -381,7 +428,8 @@ format.output <- function(output, out,uN)
   }
   output$individual <- ioutput 
   output$group <- goutput
-  return(output)
+  r <- list(output=output, id=id.ori)
+  return(r)
 }
 
 #-----------------------------
@@ -392,7 +440,7 @@ format.regressor <- function(reg, uN)
     reg=list(reg) 
   
   regressor <- vector("list",length(reg))
-  
+  id.ori <- list()
   for (k in seq(1,length(reg))){
     regk <- reg[[k]]
     if (!is.data.frame(regk)){
@@ -413,10 +461,16 @@ format.regressor <- function(reg, uN)
       colNames <- names(regk)
       #      mk <- data.matrix(regk)
       mk <- matrix(as.numeric(unlist(regk)),nrow=nrow(regk))
-    } 
+      idk <- sort(unique(mk$id))
+      if (any(idk != uN)) {
+        id.ori[[length(id.ori)+1]]<-idk 
+        mk$id <- match(mk$id, idk)
+      }
+    }
     regressor[[k]] <- regk
   }
-  return(regressor)
+  r <- list(regressor=regressor, id=id.ori)
+  return(r)
 }
 
 #-----------------------------
@@ -479,15 +533,17 @@ format.varlevel <- function(var, uN)
       }
       vark <- data.frame(mk)
       names(vark) <- colNames
+    }else{
+      idk <- sort(unique(vark$id))
+      if (any(idk != uN)) {
+        id.ori[[length(id.ori)+1]]<-idk 
+        vark$id <- match(vark$id, idk)
+      }
     }
-    #     else{
-    #       colNames <- names(vark)
-    #       mk <- matrix(as.numeric(vark),nrow=nrow(vark))
-    #      mk <- data.matrix(vark)
-    #    } 
     varlevel[[k]] <- vark
   }
-  return(varlevel)
+  r <- list(varlevel=varlevel, id=id.ori)
+  return(r)
 }
 
 #-----------------------------

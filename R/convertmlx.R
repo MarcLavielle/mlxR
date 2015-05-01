@@ -1,6 +1,6 @@
 
-convertmlx <- function(data, dataIn,iop.group,id.out){
-    
+convertmlx <- function(data, dataIn,iop.group,id.out=FALSE,id.ori=NULL){
+  
   g <- dataIn$group
   iop.gout <- 0
   for(k in seq(1,length(g))){
@@ -183,6 +183,14 @@ convertmlx <- function(data, dataIn,iop.group,id.out){
     }
     dd$varlevel <- v
     
+  }
+  
+  if (!is.null(id.ori)){
+    for(k in seq(1,length(dd))){
+      if (!is.null(dd[[k]]$id)){
+        dd[[k]]$id <- id.ori[dd[[k]]$id]
+      }
+    }
   }
   
   if (iop.gout==1)
