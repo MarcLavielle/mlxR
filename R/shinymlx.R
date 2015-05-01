@@ -83,7 +83,7 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,data=NULL)
   
   txt.ui1 <- paste0("  
 ui <- shinyUI(fluidPage(
-  tabsetPanel(
+  navbarPage('',
     tabPanel('Plot',
              fluidRow(
                column(",col1,",br(),\n")
