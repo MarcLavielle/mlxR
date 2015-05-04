@@ -72,7 +72,7 @@
 #'   print(p4$y[1:5,])
 #' }
 #' @export         
-prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
+prctilemlx2 <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
 {
   if (!is.null(y.lim))
     warning("The use of y.lim is deprecated. You can use  prctile(...) +ylim(...) instead.")
@@ -82,15 +82,21 @@ prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
   
   q1=(1-alpha/100)/2
   q2=1-q1
-  q=seq(q1,q2,length.out=m+1)
-  if (m%%2==0){
+
+
+  if (m%%2!=0){
+    m.test <- 0
+    q=seq(q1,q2,length.out=(m+1))
+    q <- append(q,0.5,(m+1)/2) 
+    m <- m+1
+  }else{
+    m.test <- 1
+    q=seq(q1,q2,length.out=m+1)
     q <- append(q,0.5,m/2) 
     q[m/2+2] <- 0.5
     m <- m+1
-    m.test <- 1
-  }else{
-    m.test <- 0
   }
+  
   
   N <- length(unique(r$id))
   n <- length(which(r$id==r$id[1]))
@@ -108,7 +114,7 @@ prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
   }else{
     cl=hsv(.8,.8,.7,seq(0.2,0.93,length.out=ncol)) 
   }
-  if (m.test==1)
+   if (m.test==1)
     cl[ncol] <- hsv(.8,1,.5)
   color <- c(cl,rev(cl))
   
