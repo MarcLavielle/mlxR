@@ -72,7 +72,7 @@
 #'   print(p4$y[1:5,])
 #' }
 #' @export         
-prctilemlx2 <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
+prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
 {
   if (!is.null(y.lim))
     warning("The use of y.lim is deprecated. You can use  prctile(...) +ylim(...) instead.")
