@@ -93,8 +93,12 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   #       treatment (TREATMENT)
   #**************************************************************************
   if (is.null(treatment)){
+    if (is.null(datas$sources)){ 
+      treatment = datas$sources
+    } else{
     treatment = data.frame(datas$sources$value)
     names(treatment) <- datas$sources$colNames 
+    }
   }
   ##************************************************************************
   #       PARAMETERS
