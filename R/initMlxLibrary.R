@@ -13,14 +13,13 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
 
   #--- ensuring mlx library from lixsoft is installed
   myOS <- Sys.info()['sysname'];
-  LIXOFT_HOME <- "" #Sys.getenv( "LIXOFT_HOME" )
-  lixoft.path <- if( identical( LIXOFT_HOME, "" ) ){
+    lixoft.path <- {
     if (myOS == "Windows"){ 
        file.path(Sys.getenv("USERPROFILE"),"lixoft")
     } else {
        file.path(Sys.getenv("HOME"),"lixoft")
     }
-  } else LIXOFT_HOME
+  } 
   
   lixoft.ini  <- file.path(lixoft.path,"lixoft.ini")
   if (!file.exists(lixoft.ini)){
