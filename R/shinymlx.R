@@ -119,7 +119,7 @@ testout <- function(out){
 }
 
 foutput <- function(out){
-  if (!is.list(out[[1]]))
+  if (!is.null(names(out)))
     out <- list(out)
   for (k in seq(1,length(out))){
     outk <- out[[k]]
@@ -138,7 +138,7 @@ foutput <- function(out){
 
 
 ftreatment <- function(trt){
-  if (!is.list(trt[[1]]))
+  if (!is.null(names(trt)))
     trt <- list(trt)
   for (k in seq(1,length(trt))){
     trtk <- trt[[k]]
