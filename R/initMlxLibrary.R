@@ -3,10 +3,12 @@ NULL
 
 NAMESPACE <- environment()
 mlx_library_ready <- FALSE
-
+SYS_PATH_mlx_library<-""
 initMlxLibrary <- function(){
-  if( mlx_library_ready ) return()
-
+  if( mlx_library_ready ){
+    Sys.setenv('PATH'=NAMESPACE[["SYS_PATH_mlx_library"]])
+   return()
+}
   mess.mlxlibrary="\n\nMlxlibrary has probably not been installed. 
 You can install it from  http://download.lixoft.com/?software=mlxlibrary\n
 Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
@@ -59,10 +61,12 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
   
  #--- load C++ Data reader for Mlxlibrary
  mlxDataReaderRLibraryBuilder(mlxlibrary.path)
-
+ 
   unlock <- unlockBinding
   unlock( "mlx_library_ready", NAMESPACE )
   NAMESPACE[["mlx_library_ready"]] <- TRUE
+ unlock( "SYS_PATH_mlx_library", NAMESPACE )
+ NAMESPACE[["SYS_PATH_mlx_library"]] <-Sys.getenv('PATH')
   
 }
 

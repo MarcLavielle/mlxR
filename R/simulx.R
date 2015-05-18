@@ -78,9 +78,12 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   #
   #  simulx.R was developed by Marc Lavielle and the Inria popix team for the DDMoRe project. 
   #--------------------------------------------------
+  myOldENVPATH = Sys.getenv('PATH');
   initMlxLibrary()
   session=Sys.getenv("session.simulx")
-  Sys.setenv(LIXOFT_HOME=session)
+  Sys.setenv(LIXOFT_HOME=session)  
+ 
+ 
   #   Nmax <- 10
   test.group <- FALSE
   if ((!is.null(group))  & (is.null(settings$data.in)) & (is.null(settings$record.file))){
@@ -176,6 +179,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
                     regressor=regressor,varlevel=varlevel)
   }
   Sys.setenv(LIXOFT_HOME="")
+  Sys.setenv('PATH'=myOldENVPATH);
   return(r)
 }
 

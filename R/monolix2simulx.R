@@ -18,7 +18,7 @@
 monolix2simulx <-function(project,parameter=NULL)
 { 
   #------- project to be converted into Simulx project
-  
+  myOldENVPATH = Sys.getenv('PATH');
   initMlxLibrary()
   session=Sys.getenv("session.simulx")
   Sys.setenv(LIXOFT_HOME=session)
@@ -225,7 +225,8 @@ monolix2simulx <-function(project,parameter=NULL)
   #       cat(paste0(",ncol=",floor(sqrt(length(output))),")\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   #     }
   #   }
-  
+  Sys.setenv(LIXOFT_HOME="")
+  Sys.setenv('PATH'=myOldENVPATH);
   file.edit(projectExe) 
   setwd(mypath)
 }

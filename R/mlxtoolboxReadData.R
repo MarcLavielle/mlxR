@@ -14,7 +14,8 @@
 #' @export       
 
 mlxtoolboxReadData <- function(dataFile,colTypes)
-{  
+{ 
+  myOldENVPATH = Sys.getenv('PATH');
   initMlxLibrary()
   session=Sys.getenv("session.simulx")
   Sys.setenv(LIXOFT_HOME=session)
@@ -76,6 +77,7 @@ mlxtoolboxReadData <- function(dataFile,colTypes)
     }
     datas <- append(datas,list(covariate=covariate))
   }
-  
+  Sys.setenv(LIXOFT_HOME="")
+  Sys.setenv('PATH'=myOldENVPATH);
   return(datas)
 }
