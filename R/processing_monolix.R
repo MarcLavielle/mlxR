@@ -17,6 +17,7 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   #       XML FILENUL
   #*************************************************************************
   infoProject <- getInfoXml(project)
+  n.output <- length(infoProject$output)
   
   ##************************************************************************
   #       DATA FILE
@@ -63,6 +64,7 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
     sources =NULL
   }
   observation <-c()
+  obsi <- min(obsi, n.output)
   for(i in  1:obsi)
   {
     obsvalue=matrix(unlist(datas2[[idobservation[i]]]$values),nrow=length(datas2[[idobservation[i]]]$values),byrow = TRUE)
@@ -166,14 +168,15 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
     }
   }
   #**************************************************************************
-  test.colNames <- testC(list(treatment,param,output))
-  if (test.colNames==TRUE){
-    group=NULL
-  }else{
-    group=NULL
-    # TODO BUG  !!!!!!!! *************************
-    #group <- list(size=c(group$size, 1) , level=c("individual","longitudinal"))
-  }
+  #  TO CHECK:
+  #   test.colNames <- testC(list(treatment,param,output))
+  #   if (test.colNames==TRUE){
+  #     group=NULL
+  #   }else{
+  #     group=NULL
+  #     # TODO BUG  !!!!!!!! *************************
+  #     #group <- list(size=c(group$size, 1) , level=c("individual","longitudinal"))
+  #   }
   ans = list(model=model, treatment=treatment, param=param, output=output, group=group)
   return(ans)
 }
