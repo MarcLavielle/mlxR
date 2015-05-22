@@ -12,10 +12,10 @@ exposure(model, output, group = NULL, treatment = NULL, parameter = NULL,
 \item{output}{a list  with fields:
 \itemize{
   \item \code{name}: a vector of output names
-  \item \code{time}: = 'steady.state' (mandatory)
+  \item \code{time}: = 'steady.state'
   \item \code{ntp}: number of time points used for computing the exposure (default=100)
   \item \code{tol}: tolerance number, between 0 and 1, for approximating steaty-state  (default=0.01)
-  \item \code{ngc}: number of doses used for estimating the convergence rate to steaty-state  (default=4)
+  \item \code{ngc}: number of doses used for estimating the convergence rate to steaty-state  (default=5)
 }}
 
 \item{treatment}{a list with fields
@@ -30,17 +30,19 @@ exposure(model, output, group = NULL, treatment = NULL, parameter = NULL,
 }}
 }
 \value{
-A list of data frames
+A list of data frames. One data frame per output is created with columns \code{id} (if number of subject >1),
+\code{group} (if number of groups >1), \code{t1} (beginning of time interval), \code{t2} (end of time interval),
+\code{step} (time step), \code{auc} (area under the curve), \code{tmax} (time of maximum value), \code{cmax} (maximum value),
+\code{tmin} (time of minimum value), \code{cmin} (minimum value).
 }
 \description{
-Compute the area under the curve, the maximum and minimum values of a fucntion of time over an interval
+Compute the area under the curve, the maximum and minimum values of a function of time over a given interval or at steady state
 }
 \details{
-Input arguments are the input arguments of Simulx
+Input arguments are the input arguments of Simulx (http://simulx.webpopix.org)
 
 Specific input arguments can be also used for computing the exposure at steady state,
-i.e. after the administration of an "infinite" number of doses.  ()
-
-See http://simulx.webpopix.org for more details.
+i.e. after the administration of an "infinite" number of doses.
+See http://simulx.webpopix.org/exposure/ for more details.
 }
 

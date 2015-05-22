@@ -5,14 +5,15 @@
 \title{Automatic code generation for Shiny applications}
 \usage{
 shinymlx(model, parameter = NULL, output = NULL, treatment = NULL,
-  data = NULL)
+  data = NULL, appname = "shinymlxApp", style = "dashboard1",
+  settings = NULL, title = " ")
 }
 \arguments{
 \item{model}{a \code{Mlxtran} or \code{PharmML} model used for the simulation}
 
-\item{parameter}{a vector of parameters with their names and values, or vectors (value, min, max, step)}
+\item{parameter}{a vector - or a list of vectors - of parameters with their names and values}
 
-\item{output}{a list with fields:
+\item{output}{a list - or a list of lists - with fields:
 \itemize{
   \item \code{name}: a vector of output names
   \item \code{time}: a vector of times, or a vector (min, max, step)
@@ -20,14 +21,13 @@ shinymlx(model, parameter = NULL, output = NULL, treatment = NULL,
 
 \item{treatment}{a list with fields
 \itemize{
-  \item \code{tfd} : first time of dose (value, min, max, step),
-  \item \code{amount} : amount (value, min, max, step),
-  \item \code{nd} : number of doses (value, min, max, step),
-  \item \code{ii} : interdose interval (value, min max, step),
-  \item \code{type} : the type of input (value, max),
+  \item \code{tfd} : first time of dose,
+  \item \code{amount} : amount,
+  \item \code{nd} : number of doses,
+  \item \code{ii} : interdose interval,
+  \item \code{type} : the type of input,
 }
-If no sliders need to be created for \code{treatment},
-input argument of Simulx can also be used,  i.e. a list with fields
+Input argument of Simulx can also be used,  i.e. a list with fields
 \itemize{
   \item \code{time} : a vector of input times,
   \item \code{amount} : a scalar or a vector of amounts,
@@ -38,9 +38,30 @@ input argument of Simulx can also be used,  i.e. a list with fields
 }}
 
 \item{data}{a datafile to display with the plot}
+
+\item{appname}{the name of the application (and possibly its path)}
+
+\item{style}{the style of the Shiny app
+\itemize{
+  \item \code{"dashboard1"} : Shiny dashboard,
+  \item \code{"amount"navbar1"}: navigation bar and tabPanels (including outputs)
+  \item \code{"amount"navbar2"}: navigation bar and tabPanels (outputs separated)
+  \item \code{"basic"}: basic Shiny app with one side bar
+}}
+
+\item{settings}{a list of settings
+\itemize{
+  \item \code{"tabstyle"} : look of the tabs c("tabs","pills"),
+  \item \code{"select.x"} : display the x variables available c(TRUE,FALSE),
+  \item \code{"select.y"} : display the y variables available c(TRUE,FALSE),
+  \item \code{"select.log"} : log scale option c(TRUE,FALSE),
+  \item \code{"select.ref"} : reference curves option c(TRUE,FALSE)
+}}
+
+\item{title}{the title of the application}
 }
 \value{
-A directory temp_dir with files ui.R, server.R and temp_model.txt
+A Shiny app with files ui.R, server.R and model.txt
 }
 \description{
 Creates a Shiny application for longitudinal data model
@@ -49,6 +70,12 @@ Creates a Shiny application for longitudinal data model
 shinymlx automatically generates files ui.R and server.R required
 for a Shiny application.
 
-See http://simulx.webpopix.org for more details.
+Elements of \code{parameters} and \code{treatment} can be either scalars or lists.
+A scalar automatically generates a slider with default minimum and maximum values and default step.
+A list may contain the type of widget ("slider", "select", "numeric") and the settings defining the widget:
+(value, min, max, step) for \code{slider}, (selected, choices) for \code{select} and
+value for \code{numeric}.
+
+See http://simulx.webpopix.org/mlxr/shinymlx/ for more details.
 }
 

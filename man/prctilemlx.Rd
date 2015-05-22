@@ -17,7 +17,7 @@ The times should be the same for each individual.}
   \item \code{level} the largest interval (i.e. the difference between the lowest and the highest percentile).
 }}
 
-\item{y.lim}{vector of length 2, giving the y coordinate range}
+\item{y.lim}{the use of y.lim is deprecated. You can use prctile(...)+ylim(...) instead.}
 
 \item{plot}{if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}
 the values of the percentiles are returned}

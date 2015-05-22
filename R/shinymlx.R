@@ -46,13 +46,15 @@
 #'   \item \code{"amount"navbar1"}: navigation bar and tabPanels (including outputs)
 #'   \item \code{"amount"navbar2"}: navigation bar and tabPanels (outputs separated)
 #'   \item \code{"basic"}: basic Shiny app with one side bar
+#' }
 #' @param settings a list of settings
 #' \itemize{
 #'   \item \code{"tabstyle"} : look of the tabs c("tabs","pills"),
 #'   \item \code{"select.x"} : display the x variables available c(TRUE,FALSE),
 #'   \item \code{"select.y"} : display the y variables available c(TRUE,FALSE),
 #'   \item \code{"select.log"} : log scale option c(TRUE,FALSE),
-#'   \item \code{"select.ref"} : reference curves option c(TRUE,FALSE),
+#'   \item \code{"select.ref"} : reference curves option c(TRUE,FALSE)
+#' }   
 #' @return A Shiny app with files ui.R, server.R and model.txt
 #' 
 #' @export         
