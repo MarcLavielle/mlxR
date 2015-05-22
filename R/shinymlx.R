@@ -132,7 +132,7 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
     style <- "navbar1"
   ui.txt <- uiTemplate(title,sui$content,sui$output,style,tabstyle)
   write(ui.txt,file.path(appname,"ui.R"))
-  server.txt <- serverTemplate(c(s1,s2r,s2f,s3,s4),select,sui$i.output)
+  server.txt <- serverTemplate(c(s1,s2r,s2f,s3,s4),select,sui$i.output,select$y)
   write(server.txt,file.path(appname,"server.R"))
   
   stools.txt <- stoolsmlx(select$x)
@@ -563,7 +563,7 @@ body
 
 #-------------------------------------------------------
 
-serverTemplate <- function(s, select,i.output)
+serverTemplate <- function(s, select, i.output, select.y)
 {
   if (select$x==TRUE){
     spl <- paste0("   pj <- paste0('pl <- pl + geom_path(data=res, aes(x=',xj,',y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
@@ -616,8 +616,11 @@ serverTemplate <- function(s, select,i.output)
   }
   
   if (i.output==TRUE){
-  splot <- paste0('
-  eval(parse(text=paste0("inputyj=input$out",j)))
+    if (select.y)
+      sply <- 'eval(parse(text=paste0("inputyj=input$out",j)))'
+    else
+      sply <-  'inputyj <- name.fj'
+    splot <- paste0('\n   ',sply,'  
   i.plot=FALSE
   if (!is.null(inputyj)){
     ij <- which(name.fj %in% inputyj)
