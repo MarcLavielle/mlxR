@@ -78,4 +78,41 @@ value for \code{numeric}.
 
 See http://simulx.webpopix.org/mlxr/shinymlx/ for more details.
 }
+\examples{
+\dontrun{
+library(mlxR)
+PKPDmodel <- inlineModel("
+[LONGITUDINAL]
+input={ka,V,Cl,Imax,IC50,S0,kout}
+EQUATION:
+C     = pkmodel(ka, V, Cl)
+E_0   = S0
+ddt_E = kout*((1-Imax*C/(C+IC50))*S0- E)
+")
+
+p1  <- c(ka=0.5, V=10, Cl=1)
+p2  <- c(Imax=0.5, IC50=0.03, S0=100, kout=0.1)
+adm <- list(tfd=5, nd=15, ii=12, amount=1)
+f1  <- list(name = 'C', time = seq(0, 250, by=1))
+f2  <- list(name = 'E', time = seq(0, 250, by=1))
+f   <- list(f1, f2)
+
+shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f)
+
+#------------------------------------------------------------------------
+p1 <- list(
+  ka    = list(widget="slider", value=0.5, min=0.1, max=2,  step=0.1),
+  V     = list(widget="slider", value=10,  min=2,   max=20, step=2),
+  Cl    = list(widget="slider", value=1,   min=0.1, max=2,  step=0.1)
+)
+adm <- list(
+  tfd    = list(widget="slider", value=5,  min=0, max=100, step=5),
+  nd     = list(widget="numeric", value=15),
+  ii     = list(widget="select", selected=12, choices=c(3,6,12,18,24)),
+  amount = list(widget="slider", value=40, min=0, max=50, step=5)
+)
+shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f,
+         style="navbar1", settings=list(select.x=FALSE, select.y=FALSE))
+}
+}
 
