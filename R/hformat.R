@@ -516,7 +516,7 @@ format.varlevel <- function(var, uN)
     var=list(var) 
   
   varlevel <- vector("list",length(var))
-  
+  id.ori <- NULL
   for (k in seq(1,length(var))){
     vark <- var[[k]]
     if (!is.data.frame(vark)){

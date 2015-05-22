@@ -154,7 +154,7 @@ convertmlx <- function(data, dataIn,iop.group,id.out=FALSE,id.ori=NULL){
       mval <- NULL
       for (k in (1:length(g))){
         ik <- which(vval[,jid]==k)
-        mk <- matrix( rep( t( vval[ik,] ) , g[[k]]$size ) , 
+        mk <- matrix( rep( t( vval[ik,] ) , prod(g[[k]]$size) ) , 
                       ncol = ncol(vval) , byrow = TRUE )
         mval <- rbind(mval, mk)
       }
