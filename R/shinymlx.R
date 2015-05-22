@@ -5,7 +5,12 @@
 #' shinymlx automatically generates files ui.R and server.R required 
 #' for a Shiny application.
 #' 
-#' 
+#' Elements of \code{parameters} and \code{treatment} can be either scalars or lists.
+#' A scalar automatically generates a slider with default minimum and maximum values and default step. 
+#' A list may contain the type of widget ("slider", "select", "numeric") and the settings defining the widget: 
+#' (value, min, max, step) for \code{slider}, (selected, choices) for \code{select} and
+#' value for \code{numeric}.
+#'
 #' See http://simulx.webpopix.org/mlxr/shinymlx/ for more details.      
 #' @param model a \code{Mlxtran} or \code{PharmML} model used for the simulation
 #' @param output a list - or a list of lists - with fields: 
@@ -13,15 +18,14 @@
 #'   \item \code{name}: a vector of output names
 #'   \item \code{time}: a vector of times, or a vector (min, max, step)
 #' }
-#' @param data a datafile to display with the plot
-#' @param parameter a vector - or a list of vectors - of parameters with their names and values, or vectors (value, min, max, step)
+#' @param parameter a vector - or a list of vectors - of parameters with their names and values
 #' @param treatment a list with fields 
 #' \itemize{
-#'   \item \code{tfd} : first time of dose (value, min, max, step),
-#'   \item \code{amount} : amount (value, min, max, step),
-#'   \item \code{nd} : number of doses (value, min, max, step),
-#'   \item \code{ii} : interdose interval (value, min max, step),
-#'   \item \code{type} : the type of input (value, max),
+#'   \item \code{tfd} : first time of dose,
+#'   \item \code{amount} : amount,
+#'   \item \code{nd} : number of doses,
+#'   \item \code{ii} : interdose interval,
+#'   \item \code{type} : the type of input,
 #' }
 #' Input argument of Simulx can also be used,  i.e. a list with fields
 #' \itemize{
@@ -32,13 +36,45 @@
 #'   \item \code{type} : the type of input (default=1),
 #'   \item \code{target} : the target compartment (default=NULL). 
 #' }
-#' @return A directory temp_dir with files ui.R, server.R and temp_model.txt
+#'
+#' @param data a datafile to display with the plot
+#' @param title the title of the application
+#' @param appname the name of the application (and possibly its path)
+#' @param style the style of the Shiny app
+#' \itemize{
+#'   \item \code{"dashboard1"} : Shiny dashboard,
+#'   \item \code{"amount"navbar1"}: navigation bar and tabPanels (including outputs)
+#'   \item \code{"amount"navbar2"}: navigation bar and tabPanels (outputs separated)
+#'   \item \code{"basic"}: basic Shiny app with one side bar
+#' @param settings a list of settings
+#' \itemize{
+#'   \item \code{"tabstyle"} : look of the tabs c("tabs","pills"),
+#'   \item \code{"select.x"} : display the x variables available c(TRUE,FALSE),
+#'   \item \code{"select.y"} : display the y variables available c(TRUE,FALSE),
+#'   \item \code{"select.log"} : log scale option c(TRUE,FALSE),
+#'   \item \code{"select.ref"} : reference curves option c(TRUE,FALSE),
+#' @return A Shiny app with files ui.R, server.R and model.txt
 #' 
 #' @export         
 shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
-                     data=NULL,appname="tempdir",title=" ",display=3, select.x=TRUE)
+                      data=NULL,appname="shinymlxApp",style="dashboard1",
+                      settings=NULL,title=" ")
 {
-  library(shiny)
+
+  check.shiny <- require("shiny")
+  if (check.shiny==FALSE)
+    stop("Please, install the shiny library before running shinymlx.")
+  select=list()
+  select$x <- set.settings(settings$select.x,style)
+  select$y <- set.settings(settings$select.y,style)
+  select$log <- set.settings(settings$select.log,style)
+  select$ref <- set.settings(settings$select.ref,style)
+  
+  if (is.null(settings$tabstyle)) 
+    tabstyle <- "tabs"
+  else  
+    tabstyle <- settings$tabstyle
+  
   s1 <- ""
   s2r <- ""
   s2f <- ""
@@ -48,8 +84,8 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
   output <- foutput(output)  
   out.txt <- out2str(output)
   s1 <- paste0(out.txt,"\n")
-  if (select.x==TRUE)
-  select.x <- testout(output)
+  if (select$x==TRUE)
+    select$x <- testout(output)
   
   i.data=0
   if (!is.null(data)){
@@ -89,16 +125,16 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
   else
     s4 <- ""
   
-  server.txt <- server.template1(c(s1,s2r,s2f,s3,s4),select.x)
-  write(server.txt,file.path(appname,"server.R"))
-  sui <- list2ui(parameter,treatment,output,select.x,display)
-  for (k in (1:length(sui)))
-    cat(sui[[k]],"\n\n")
-  ui.txt <- ui.template1(c(title,sui),display)
+  sui <- list2ui(parameter,treatment,output,select,style,tabstyle)
+  if ((sui$i.output == FALSE) & (identical(style,"navbar2")))
+    style <- "navbar1"
+  ui.txt <- uiTemplate(title,sui$content,sui$output,style,tabstyle)
   write(ui.txt,file.path(appname,"ui.R"))
+  server.txt <- serverTemplate(c(s1,s2r,s2f,s3,s4),select,sui$i.output)
+  write(server.txt,file.path(appname,"server.R"))
   
-  stools.txt <- stoolsmlx(select.x)
-  write(stools.txt,file.path(appname,"shinymlx_tools.R"))
+  stools.txt <- stoolsmlx(select$x)
+  write(stools.txt,file.path(appname,"shinymlxTools.R"))
   
   runApp(appname)
 }
@@ -298,7 +334,7 @@ widgtxt <- function(x,txt,k){
 }
 
 #------------------------------------------------------
-out2str <- function(out, sp.out="    "){
+out2str <- function(out){
   K <- length(out)
   out.txt <- NULL
   for (k in (1:K)){
@@ -308,10 +344,10 @@ out2str <- function(out, sp.out="    "){
     }else{    
       soutk <- paste0("out",as.character(k))
     }
-    txt <- paste0(sp.out,soutk," <- list(time=t.dose, ")
+    txt <- paste0(soutk," <- list(time=t.dose, ")
     txt.nameo <- vect2str(outk$name)
     t.out <- outk$time
-    out.txt <- paste0(out.txt,"\n",sp.out,soutk," <- list(name=",txt.nameo,
+    out.txt <- paste0(out.txt,"\n",soutk," <- list(name=",txt.nameo,
                       ", time=seq(",t.out[1],",",t.out[2],",by=",t.out[3],"))")
   }
   if (K>1){
@@ -319,7 +355,7 @@ out2str <- function(out, sp.out="    "){
     for (k in (2:K))
       txt <- paste0(txt,", out",as.character(k))
     txt <- paste0(txt,")")
-    out.txt <- paste0(out.txt,"\n",sp.out,txt)
+    out.txt <- paste0(out.txt,"\n",txt)
   }else{
     out.txt <- paste0(out.txt,"\nf <- list(f)\n")
   }
@@ -379,19 +415,32 @@ param2str <- function(p, sp.param="    "){
   return(txt) 
 }
 
+#-------------------------------------------------------
 
-#--------------------------------------
-
-ui.template1 <- function(s,display)
+uiTemplate <- function(title,s.content,s.output,style,tabstyle)
 {
-  if (display==1){
+  if (identical(style,"basic")){
     ui.out <- paste0('
 ui <- shinyUI(fluidPage(
-navbarPage("',s[1],'",
+fluidRow(
+column(3,br(),
+',s.content,'
+),
+column(9,br(),            
+plotOutput("plot")
+)
+)
+))
+')    
+    
+  }else if (identical(style,"navbar1")){
+    ui.out <- paste0('
+ui <- shinyUI(fluidPage(
+navbarPage("',title,'",
 tabPanel("Plot",
 fluidRow(
-column(3,\n',
-                     s[2],'
+column(3,br(),
+',s.content,'
 ),
 column(9,br(),            
 plotOutput("plot")
@@ -405,20 +454,18 @@ tabPanel("server.R", pre(includeText("server.R")))
 ))
 ')    
     
-  }else if (display==2){
+  }else if (identical(style,"navbar2")){
     ui.out <- paste0('
 ui <- shinyUI(fluidPage(
-navbarPage("',s[1],'",
+navbarPage("',title,'",
 tabPanel("Plot",
 fluidRow(
-column(2,\n',
-                     s[2],'\n
+column(2,
+',s.content,'
 ),
 column(2,
-tabsetPanel(type="pills",
-tabPanel("outputs",
-br(),\n',
-                     s[3],'\n)\n)\n
+br(),
+',s.output,'
 ),
 column(8,br(),            
 plotOutput("plot")
@@ -433,6 +480,19 @@ tabPanel("server.R", pre(includeText("server.R")))
 ')
     
   }else{
+    if (!is.null(s.output)){
+      sout <- paste0('
+hr(),
+fluidRow(               
+column(1),
+column(9,\n',
+                     s.output,'
+)
+),   
+')   
+    }else{
+      sout <- NULL
+    }
     ui.out <- paste0('
 library(shinydashboard)
 
@@ -444,16 +504,10 @@ menuItem("Codes",  icon = icon("file-text-o"),
 menuSubItem("Mlxtran", tabName = "mlxtran", icon = icon("angle-right")),
 menuSubItem("ui.R", tabName = "ui", icon = icon("angle-right")),
 menuSubItem("server.R", tabName = "server", icon = icon("angle-right")),
-menuSubItem("shinymlx_tools.R", tabName = "tools", icon = icon("angle-right"))
+menuSubItem("shinymlxTools.R", tabName = "tools", icon = icon("angle-right"))
 )
 ),
-hr(),
-fluidRow(               
-column(1),
-column(9,\n',
-                     s[3],'
-)
-),   
+',sout,'
 hr()
 )
 
@@ -461,8 +515,8 @@ body <- dashboardBody(
 tabItems(
 tabItem(tabName = "plot",
 fluidRow(               
-box(width = 3,   status = "primary",\n',
-                     s[2],'          
+box(width = 3,   status = "primary",
+',s.content,'          
 ),
 box(width = 9,   height=530, status = "primary",
 plotOutput("plot")
@@ -486,7 +540,7 @@ pre(includeText("server.R"))
 ),
 tabItem(tabName = "tools",
 box( width = NULL, status = "primary", solidHeader = TRUE, title="server.R",
-pre(includeText("shinymlx_tools.R"))
+pre(includeText("shinymlxTools.R"))
 )
 )
 #       tabItem(tabName = "about", includeMarkdown("../../about/about.Rmd"))
@@ -494,7 +548,7 @@ pre(includeText("shinymlx_tools.R"))
 )
 
 dashboardPage(
-dashboardHeader(title = "',s[1],'"),
+dashboardHeader(title = "',title,'"),
 sidebar,
 body
 )
@@ -505,15 +559,119 @@ body
   return(ui.out)
 }
 
-#--------------------------------------
-server.template1 <- function(s, select.x)
+#-------------------------------------------------------
+
+serverTemplate <- function(s, select,i.output)
 {
-  if (select.x==TRUE){
-    spl <- paste0("      pj <- paste0('pl <- pl + geom_path(data=res, aes(x=',xj,',y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')") 
-    srf <- paste0("      pj <- paste0('pl <- pl + geom_path(data=ref, aes(x=',xj,',y=',name.fj[k],'),colour=",'"grey",',"size=0.75)')") 
+  if (select$x==TRUE){
+    spl <- paste0("   pj <- paste0('pl <- pl + geom_path(data=res, aes(x=',xj,',y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
+                      eval(parse(text=pj))") 
+    if (select$ref==TRUE){
+      srf <- paste0("   if (input$boxref==TRUE){
+                          pj <- paste0('pl <- pl + geom_path(data=ref, aes(x=',xj,',y=',name.fj[k],'),colour=",'"grey",',"size=0.75)')
+                          eval(parse(text=pj))
+                        }") 
+    }else{
+      srf=""
+    }
   }else{
-    spl <- paste0("      pj <- paste0('pl <- pl + geom_path(data=res[[j]], aes(x=',xj,',y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')") 
-    srf <- paste0("      pj <- paste0('pl <- pl + geom_path(data=ref[[j]], aes(x=',xj,',y=',name.fj[k],'),colour=",'"grey",',"size=0.75)')") 
+    spl <- paste0("   pj <- paste0('pl <- pl + geom_path(data=res[[j]], aes(x=time,y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
+                      eval(parse(text=pj))") 
+    if (select$ref==TRUE){
+      srf <- paste0("   if (input$boxref==TRUE){
+                          pj <- paste0('pl <- pl + geom_path(data=ref[[j]], aes(x=time,y=',name.fj[k],'),colour=",'"grey",',"size=0.75)')
+                          eval(parse(text=pj))
+                        }") 
+    }else{
+      srf=""
+    }
+  }
+  srfpl <- paste0(srf,'\n',spl) 
+  
+  if (select$log==TRUE){
+    slog <- "        
+    if (input$ilog==TRUE)
+      pl=pl + scale_y_log10()
+" 
+  }else{
+    slog=""
+  }
+  
+  if (select$ref==TRUE){
+    sref1 <- paste0("
+  ref <- reactive({
+    input$butref
+    ",s[3],"
+    ",s[4],"
+    ref <- merge_res(r,f)
+    return(ref)
+  })
+")
+    sref2 <- "   ref=ref()"
+  }else{
+    sref1 <- ""
+    sref2 <- ""
+  }
+  
+  if (i.output==TRUE){
+  splot <- paste0('
+  eval(parse(text=paste0("inputyj=input$out",j)))
+  i.plot=FALSE
+  if (!is.null(inputyj)){
+    ij <- which(name.fj %in% inputyj)
+    if (length(ij>0)){
+      eval(parse(text=paste0("inputxj=input$x",j)))
+      if (!is.null(inputxj))
+        xj <- inputxj
+    }
+    i.plot=TRUE
+  }
+  else if (is.null(inputyj) & length(f)==1){
+    ij=1
+    i.plot=TRUE
+  }
+  if (i.plot){
+    pl <- ggplotmlx()
+    nfj <- length(name.fj)
+    for (k in (1:nfj)){
+      if (k %in% ij){
+        ',srfpl,'
+      }  
+    }
+    pl <- pl + scale_colour_manual(values=info[[j]]$values, labels=info[[j]]$labels)
+    if (length(ij)>1){
+      if (!is.null(input$legend) && input$legend==TRUE)
+        pl <- pl + guides(colour=guide_legend(title=NULL)) + theme(legend.position=c(.9, .8))
+      else
+        pl <- pl + theme(legend.position="none")
+      pl <- pl + ylab("")
+    }else{
+      pl <- pl + theme(legend.position="none")
+    }
+  ',s[5],'
+  ',slog,'
+    eval(parse(text=paste0("pl",j," <- pl")))
+    gr.txt <- paste0(gr.txt,"pl",j,",")
+  }
+')
+  }else{
+    splot <- paste0('
+      pl <- ggplotmlx()
+      nfj <- length(name.fj)
+      for (k in (1:nfj)){
+        ',srfpl,'
+      }
+      pl <- pl + scale_colour_manual(values=info[[j]]$values, labels=info[[j]]$labels)
+      if (length(name.fj)>1)
+        pl <- pl + guides(colour=guide_legend(title=NULL)) + theme(legend.position=c(.9, .8))
+      else
+        pl <- pl + theme(legend.position="none")
+      pl <- pl + ylab("")
+      ',s[5],'
+      ',slog,'
+      eval(parse(text=paste0("pl",j," <- pl")))
+      gr.txt <- paste0(gr.txt,"pl",j,",")
+')  
   }
   
   server.out <- paste0('
@@ -521,81 +679,30 @@ server.template1 <- function(s, select.x)
 library("mlxR")
 library("reshape")
 library("gridExtra")
-source("shinymlx_tools.R")
+source("shinymlxTools.R")
 ',
                        s[1],'
 nf <- length(f)
 info <- info_res(f)
 
 server <- function(input, output) {
-    ref <- reactive({
-    input$butref \n',
-                       s[3],
-                       s[4],
-                       '    ref <- merge_res(r,f)
-    return(ref)
+',sref1,'  
+  res <- reactive({
+',s[2],'                     
+',s[4],'                     
+  res <- merge_res(r,f)
+  return(res)
   })  
-
-    res <- reactive({\n',
-                       s[2],
-                       s[4],
-                       '    res <- merge_res(r,f)
-    return(res)
-  })  
-
+  
   output$plot <- renderPlot({
     res=res()
-    ref=ref()
-
+',sref2,'    
     gr.txt <- "grid.arrange("
     for (j in (1:length(f))){
       xj <- "time"
       fj <- f[[j]]
       name.fj <- fj$name
-      eval(parse(text=paste0("inputyj=input$out",j)))
-      i.plot=FALSE
-      if (!is.null(inputyj)){
-        ij <- which(name.fj %in% inputyj)
-        if (length(ij>0)){
-          eval(parse(text=paste0("inputxj=input$x",j)))
-          if (!is.null(inputxj))
-            xj <- inputxj
-        }
-        i.plot=TRUE
-      }
-      else if (is.null(inputyj) & length(f)==1){
-        ij=1
-        i.plot=TRUE
-      }
-      if (i.plot){
-        pl <- ggplotmlx()
-        nfj <- length(name.fj)
-        for (k in (1:nfj)){
-          if (k %in% ij){
-              if (input$boxref==TRUE){\n',
-                       srf,'
-              eval(parse(text=pj))\n}\n',
-                       spl,'
-              eval(parse(text=pj))
-          }
-        }
-        
-        pl <- pl + scale_colour_manual(values=info[[j]]$values, labels=info[[j]]$labels)
-        if (length(ij)>1){
-          if (input$legend==TRUE)
-            pl <- pl + guides(colour=guide_legend(title=NULL)) + theme(legend.position=c(.9, .8))
-        else
-          pl <- pl + theme(legend.position="none")
-          pl <- pl + ylab("")
-        }else{
-          pl <- pl + theme(legend.position="none")
-        }\n',
-                       s[5],'
-        if (input$ilog==TRUE)
-           pl=pl + scale_y_log10()
-        eval(parse(text=paste0("pl",j," <- pl")))
-        gr.txt <- paste0(gr.txt,"pl",j,",")
-      }
+',splot,'
     }
     gr.txt <- paste0(gr.txt,"ncol=1)")
     eval(parse(text=gr.txt))
@@ -603,10 +710,11 @@ server <- function(input, output) {
 }
 ')
   return(server.out)
+  
 }
 
-#--------------------------------------
-list2ui <- function(y.p=NULL,y.a=NULL, y.o=NULL, select.x=TRUE, display=1){
+#-------------------------------------------------------
+list2ui <- function(y.p=NULL,y.a=NULL, y.o=NULL, select, style, tabstyle){
   x.p <- list()
   x.a <- list()
   
@@ -639,7 +747,7 @@ list2ui <- function(y.p=NULL,y.a=NULL, y.o=NULL, select.x=TRUE, display=1){
   i.leg <- FALSE
   for (k in (1:length(y.o))){
     name.out <- c(name.out, y.o[[k]]$name)
-    if (length(y.o[[k]]$name)>1)
+    if (length(y.o[[k]]$name)>1 & select$y==TRUE)
       i.leg <- TRUE
   }
   
@@ -647,16 +755,13 @@ list2ui <- function(y.p=NULL,y.a=NULL, y.o=NULL, select.x=TRUE, display=1){
   n.a <- length(x.a)
   n.o <- length(name.out)
   K <- n.p + n.a
-  i.panel <- TRUE
-  if (display==3 && K==1)
-    i.panel <- FALSE
   x.type <- c(rep("param",n.p),rep("adm",n.a))
-  txt <- NULL
-  if (i.panel==TRUE)
-    txt <- paste0("tabsetPanel(type='pills',\n")
   
   k.a <- k.p <- 0
+  tab.content <- list()
+  tab.label <- vector(length=K)
   for (k in (1:K)){
+    txt <- NULL
     if (x.type[k]=="param"){
       k.p <- k.p+1
       xk <- x.p[[k.p]]
@@ -670,8 +775,6 @@ list2ui <- function(y.p=NULL,y.a=NULL, y.o=NULL, select.x=TRUE, display=1){
       if (n.a>1)
         label <- paste0(label,k.a)
     }
-    if (i.panel==TRUE)
-      txt <- paste0(txt,"tabPanel('",label,"',br(),\n")
     for (j in (1:length(xk))){
       xkj <- xk[[j]] 
       nxkj <- names(xk[j])
@@ -684,79 +787,101 @@ list2ui <- function(y.p=NULL,y.a=NULL, y.o=NULL, select.x=TRUE, display=1){
         txt <- paste0(txt,uikj,",\n")
       }
     }
-    txt <- paste0(txt,"br()\n")
-    if (K>1){
-      if (k<K){
-        txt <- paste0(txt,"),\n")
-      }
-    }
+    if (!identical(style,"basic"))
+      txt <- paste0(txt,'br()')
+    tab.content[[k]] <- txt
+    tab.label[k] <- label
   }
-  if (i.panel==TRUE){
-    if (display==1){
-      txt <- paste0(txt,"),\n")
-    } else {
-      txt <- paste0(txt,")\n)\n")
-    }
-  }
-  
-  
-  if (display==1){
-    out.txt <- paste0('tabPanel("out",br(),\n')
-  } else{
-    out.txt <- NULL
-  }
+  out.txt <- NULL
   if (n.o>1){
     name.x <- c("time",name.out)
     names(name.x <- name.x)
     
     if (length(y.o)==1){
-      nout <- vect2str(name.out)
-      out.txt <- paste0(out.txt, 'checkboxGroupInput("out1", label="plot", choices=',
-                        nout,', selected=',nout,'),')
-      if (select.x==1)
+      if (select$y==TRUE){
+        nout <- vect2str(name.out)
+        out.txt <- paste0(out.txt, 'checkboxGroupInput("out1", label="plot", choices=',
+                          nout,', selected=',nout,'),')
+      }
+      if (select$x==TRUE)
         out.txt <- paste0(out.txt,'\nselectInput("x1", label="v.s.",',vect2str(name.x),'),')       
-      out.txt <- paste0(out.txt, 'hr(),\n')
-    }else{
-      #       out.txt <- paste0('tabPanel("out",\n')
-      for (k in (1:length(y.o))){
-        noutk <- vect2str(y.o[[k]]$name)
-        #         out.txt <- paste0(out.txt,'br(),\nh4("Graphic ',k,'"),\n')        
-        #         out.txt <- paste0(out.txt,'hr(),\n')        
-        out.txt <- paste0(out.txt,'checkboxGroupInput("out',k,'", label="plot ',k,'", choices=',
-                          noutk,', selected=',noutk,'),\n')        
-        if (select.x==1)
-          out.txt <- paste0(out.txt,'\nselectInput("x',k,'", label="v.s.",',vect2str(name.x),'),\n')       
+      if ((select$y==TRUE) | (select$x==TRUE))
         out.txt <- paste0(out.txt, 'hr(),\n')
+    }else{
+      for (k in (1:length(y.o))){
+        if (select$y==TRUE){
+          noutk <- vect2str(y.o[[k]]$name)
+          out.txt <- paste0(out.txt,'checkboxGroupInput("out',k,'", label="plot ',k,'", choices=',
+                            noutk,', selected=',noutk,'),\n') 
+        }
+        if (select$x==TRUE)
+          out.txt <- paste0(out.txt,'\nselectInput("x',k,'", label="v.s.",',vect2str(name.x),'),\n')       
+        if ((select$y==TRUE) | (select$x==TRUE))
+          out.txt <- paste0(out.txt, 'hr(),\n')
       }
     }
-    out.txt <- paste0(out.txt, 'h5("add"),\n')
+    if (select$ref | select$y)
+      out.txt <- paste0(out.txt, 'strong("add"),\n')
     if (i.leg)
       out.txt <- paste0(out.txt,'checkboxInput("legend", label="legend", value=TRUE),\n') 
   }
   
-  sref1 <- ('
+  if (select$ref){
+    sref1 <- ('
 fluidRow(
 column(5,checkboxInput("boxref", label="%s")),
 column(4,actionButton("butref", label = "Reset"))
 ),
-')  
-  if (display==1)
-    sref1 <- sprintf(sref1,"reference")
-  else
-    sref1 <- sprintf(sref1,"ref.")
-  
-  out.txt <- paste0(out.txt, sref1,'hr(),\n')
-  out.txt <- paste0(out.txt,'radioButtons("ilog", "scale", c("linear" = FALSE,"log" = TRUE), inline=TRUE)')       
-  
-  if (display==1){
-    txt <- paste0(txt,"\n",out.txt,"\n)\n)")
-  }else{
-    txt <- list(txt,out.txt)
+              ')  
+    if (identical(style,'navbar1'))
+      sref1 <- sprintf(sref1,"reference")
+    else
+      sref1 <- sprintf(sref1,"ref.")  
+    out.txt <- paste0(out.txt, sref1,'hr(),\n')
   }
-  return(txt)
+  if (select$log)
+    out.txt <- paste0(out.txt,'radioButtons("ilog", "scale", c("linear" = FALSE,"log" = TRUE), inline=TRUE),')       
+  
+  if ((!is.null(out.txt)) & (!identical(style,"basic")) ){
+    out.txt <- paste0(out.txt,'\nbr()')
+    i.out <- TRUE
+  } else {
+    i.out <- FALSE
+  }
+  
+  if (identical(style,"basic")){
+    if (is.null(out.txt))
+      tc <- tab.content[[1]]
+    else
+      tc <- paste0(out.txt,'\nhr(),\n',tab.content[[1]])
+    if (length(tab.content)>1){
+      for (k in (2:length(tab.content)))
+        tc <- list(paste0(tc,'\nhr(),\n',tab.content[[k]]))
+    }
+    tc <- paste0(tc,'br()')
+    tb <- NULL
+    to <- NULL
+  } else if (identical(style,"navbar1")) {
+    tc <- c(tab.content,out.txt)
+    tb <- c(tab.label,"output")
+    to <- NULL
+  } else {
+    tc <- tab.content
+    tb <- tab.label
+    to <- out.txt
+  }
+  if (length(tc)>1){
+    txt <- paste0("tabsetPanel(type='",tabstyle,"',\n")
+    for (k in (1:length(tc)))
+      txt <- paste0(txt,"tabPanel('",tb[k],"',br(),\n",tc[[k]],"\n),\n")
+    txt <- paste0(txt,'br()\n)\n')
+    tc <- txt
+  }
+  tab <- list(content=tc, output=to, i.output=i.out)
+  
+  return(tab)
 }
-
-#-------------------------------------------------------
+#--------------------------------------------------------------
 
 widgetui <- function(xkj,id, nxkj){
   if (xkj$widget=="slider")
@@ -774,3 +899,15 @@ widgetui <- function(xkj,id, nxkj){
   return(uikj)
 }
 
+#-------------------------------------------------------
+
+set.settings <- function(s,style){
+  if (is.null(s)){
+    if (identical(style,"basic"))
+      r <- FALSE
+    else
+      r <- TRUE}
+  else  
+    r <- s
+  return(r)
+}
