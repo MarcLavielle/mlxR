@@ -81,9 +81,11 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   myOldENVPATH = Sys.getenv('PATH');
   initMlxLibrary()
   session=Sys.getenv("session.simulx")
-  Sys.setenv(LIXOFT_HOME=session)  
- 
- 
+  Sys.setenv(LIXOFT_HOME=session)
+  
+  if (is.null(settings$seed))
+    settings$seed <- round(as.numeric(Sys.time())*100)%%10000
+  
   #   Nmax <- 10
   test.group <- FALSE
   if ((!is.null(group))  & (is.null(settings$data.in)) & (is.null(settings$record.file))){
