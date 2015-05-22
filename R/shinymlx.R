@@ -43,9 +43,9 @@
 #' @param style the style of the Shiny app
 #' \itemize{
 #'   \item \code{"dashboard1"} : Shiny dashboard,
-#'   \item \code{"amount"navbar1"}: navigation bar and tabPanels (including outputs)
-#'   \item \code{"amount"navbar2"}: navigation bar and tabPanels (outputs separated)
-#'   \item \code{"basic"}: basic Shiny app with one side bar
+#'   \item \code{"navbar1"}: navigation bar and tabPanels (including outputs)
+#'   \item \code{"navbar2"}: navigation bar and tabPanels (outputs separated)
+#'   \item \code{"basic"}: basic Shiny app with a single side bar
 #' }
 #' @param settings a list of settings
 #' \itemize{
