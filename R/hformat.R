@@ -461,6 +461,8 @@ format.regressor <- function(reg, uN)
       colNames <- names(regk)
       #      mk <- data.matrix(regk)
       mk <- matrix(as.numeric(unlist(regk)),nrow=nrow(regk))
+      mk <- as.data.frame(mk)
+      names(mk) <- colNames
       idk <- sort(unique(mk$id))
       if (any(idk != uN)) {
         id.ori[[length(id.ori)+1]]<-idk 
