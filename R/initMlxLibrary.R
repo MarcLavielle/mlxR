@@ -14,16 +14,15 @@ You can install it from  http://download.lixoft.com/?software=mlxlibrary\n
 Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
 
   #--- ensuring mlx library from lixsoft is installed
-  myOS <- Sys.info()['sysname'];
-  LIXOFT_HOME <- Sys.getenv( "LIXOFT_HOME" )
-  lixoft.path <- if( identical( LIXOFT_HOME, "" ) ){
+  myOS <- Sys.info()['sysname']; 
+  lixoft.path <- {
     if (myOS == "Windows"){ 
        file.path(Sys.getenv("USERPROFILE"),"lixoft")
     } else {
        file.path(Sys.getenv("HOME"),"lixoft")
     }
-  } else LIXOFT_HOME
-  
+  } 
+
   lixoft.ini  <- file.path(lixoft.path,"lixoft.ini")
   if (!file.exists(lixoft.ini)){
     stop("The file ",lixoft.ini," does not exists.",mess.mlxlibrary)
