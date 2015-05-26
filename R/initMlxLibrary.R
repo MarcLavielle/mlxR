@@ -7,22 +7,23 @@ SYS_PATH_mlx_library<-""
 initMlxLibrary <- function(){
   if( mlx_library_ready ){
     Sys.setenv('PATH'=NAMESPACE[["SYS_PATH_mlx_library"]])
-   return()
-}
+    return()
+  }
   mess.mlxlibrary="\n\nMlxlibrary has probably not been installed. 
 You can install it from  http://download.lixoft.com/?software=mlxlibrary\n
-Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
-
+Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe \n 
+or run  setMlxLibraryPath(<Mlxlibrary PATH>) and launch again"
+  
   #--- ensuring mlx library from lixsoft is installed
   myOS <- Sys.info()['sysname']; 
   lixoft.path <- {
     if (myOS == "Windows"){ 
-       file.path(Sys.getenv("USERPROFILE"),"lixoft")
+      file.path(Sys.getenv("USERPROFILE"),"lixoft")
     } else {
-       file.path(Sys.getenv("HOME"),"lixoft")
+      file.path(Sys.getenv("HOME"),"lixoft")
     }
   } 
-
+  
   lixoft.ini  <- file.path(lixoft.path,"lixoft.ini")
   if (!file.exists(lixoft.ini)){
     stop("The file ",lixoft.ini," does not exists.",mess.mlxlibrary)
@@ -34,7 +35,7 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
     rx <- sprintf( "%s=", name)
     line <- grep( rx, lines, fixed=TRUE, value=TRUE)
     if( length(line) ){
-        normalizePath( gsub( rx, "", line[1L] ) )
+      normalizePath( gsub( rx, "", line[1L] ) )
     }
   }
   
@@ -54,18 +55,32 @@ Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe"
       Sys.setenv(session.mlxplore=mlxplore.path)    
     }
   }
-
+  
   #--- load Mlxlibrary
   mlxComputeRLibraryBuilder(mlxlibrary.path)
   
- #--- load C++ Data reader for Mlxlibrary
- mlxDataReaderRLibraryBuilder(mlxlibrary.path)
- 
+  #--- load C++ Data reader for Mlxlibrary
+  mlxDataReaderRLibraryBuilder(mlxlibrary.path)
+  
   unlock <- unlockBinding
   unlock( "mlx_library_ready", NAMESPACE )
   NAMESPACE[["mlx_library_ready"]] <- TRUE
- unlock( "SYS_PATH_mlx_library", NAMESPACE )
- NAMESPACE[["SYS_PATH_mlx_library"]] <-Sys.getenv('PATH')
+  unlock( "SYS_PATH_mlx_library", NAMESPACE )
+  NAMESPACE[["SYS_PATH_mlx_library"]] <-Sys.getenv('PATH')
   
 }
 
+#' Sets the MlxLibrary path in order to tell mlxR where is the MlxLibrary to use
+#'     
+#' @param mlxLibraryPath  the absolute path to the location of MlxLibrary 
+#' @export
+setMlxLibraryPath <- function(mlxLibraryPath){
+  myOS <- Sys.info()['sysname']; 
+  if (myOS == "Windows"){
+    lauchCommand<-paste0(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch.exe")
+    
+  } else {
+    lauchCommand<-paste0(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch")
+  }
+  system(lauchCommand)
+}
