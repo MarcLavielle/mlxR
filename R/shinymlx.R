@@ -18,7 +18,7 @@
 #'   \item \code{name}: a vector of output names
 #'   \item \code{time}: a vector of times, or a vector (min, max, step)
 #' }
-#' @param parameter a vector - or a list of vectors - of parameters with their names and values
+#' @param parameter a vector, or a list of shiny widgets
 #' @param treatment a list with fields 
 #' \itemize{
 #'   \item \code{tfd} : first time of dose,
@@ -27,31 +27,24 @@
 #'   \item \code{ii} : interdose interval,
 #'   \item \code{type} : the type of input,
 #' }
-#' Input argument of Simulx can also be used,  i.e. a list with fields
-#' \itemize{
-#'   \item \code{time} : a vector of input times,
-#'   \item \code{amount} : a scalar or a vector of amounts,
-#'   \item \code{rate} : a scalar or a vector of infusion rates (default=\code{Inf}),
-#'   \item \code{tinf} : a scalar or a vector of infusion times (default=0),
-#'   \item \code{type} : the type of input (default=1),
-#'   \item \code{target} : the target compartment (default=NULL). 
-#' }
-#'
+#' Input argument of Simulx can also be used,  i.e. a list with fields \code{time}, 
+#' \code{amount}, \code{rate}, \code{tinf}, \code{type}, \code{target}.
+#' 
 #' @param data a datafile to display with the plot
 #' @param title the title of the application
 #' @param appname the name of the application (and possibly its path)
 #' @param style the style of the Shiny app
 #' \itemize{
-#'   \item \code{"dashboard1"} : Shiny dashboard,
+#'   \item \code{"basic"}: basic Shiny app with a single side bar (default)
 #'   \item \code{"navbar1"}: navigation bar and tabPanels (including outputs)
 #'   \item \code{"navbar2"}: navigation bar and tabPanels (outputs separated)
-#'   \item \code{"basic"}: basic Shiny app with a single side bar
+#'   \item \code{"dashboard1"} : Shiny dashboard,
 #' }
 #' @param settings a list of settings
 #' \itemize{
 #'   \item \code{"tabstyle"} : look of the tabs c("tabs","pills"),
-#'   \item \code{"select.x"} : display the x variables available c(TRUE,FALSE),
-#'   \item \code{"select.y"} : display the y variables available c(TRUE,FALSE),
+#'   \item \code{"select.x"} : display the list of variables available for the x-axis c(TRUE,FALSE),
+#'   \item \code{"select.y"} : display the list of variables available for the y-axis c(TRUE,FALSE),
 #'   \item \code{"select.log"} : log scale option c(TRUE,FALSE),
 #'   \item \code{"select.ref"} : reference curves option c(TRUE,FALSE)
 #' }   
@@ -75,7 +68,8 @@
 #' f2  <- list(name = 'E', time = seq(0, 250, by=1))
 #' f   <- list(f1, f2)
 #' 
-#' shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f)
+#' shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f,
+#'          style="dashboard1")
 #' 
 #' #------------------------------------------------------------------------
 #' p1 <- list(
@@ -89,16 +83,16 @@
 #'   ii     = list(widget="select", selected=12, choices=c(3,6,12,18,24)),
 #'   amount = list(widget="slider", value=40, min=0, max=50, step=5)
 #' )
-
+#' s <- list(select.x=FALSE, select.y=FALSE)
 #' shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f, 
-#'          style="navbar1", settings=list(select.x=FALSE, select.y=FALSE))
+#'          style="navbar1", settings=s)
 #' }
 #' @export         
 shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
-                      data=NULL,appname="shinymlxApp",style="dashboard1",
-                      settings=NULL,title=" ")
+                     data=NULL,appname="shinymlxApp",style="basic",
+                     settings=NULL,title=" ")
 {
-
+  
   check.shiny <- require("shiny")
   if (check.shiny==FALSE)
     stop("Please, install the shiny library before running shinymlx.")
@@ -113,15 +107,14 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
   else  
     tabstyle <- settings$tabstyle
   
-  s1 <- ""
   s2r <- ""
   s2f <- ""
+  unlink(file.path(mainDir=appname), recursive = TRUE, force = TRUE)
   dir.create(file.path(mainDir=appname), showWarnings = FALSE)
   file.copy(model,file.path(appname,"model.txt"),overwrite=TRUE)
   
   output <- foutput(output)  
-  out.txt <- out2str(output)
-  s1 <- paste0(out.txt,"\n")
+  s1 <- out2str(output)
   if (select$x==TRUE)
     select$x <- testout(output)
   
@@ -129,28 +122,28 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
   if (!is.null(data)){
     i.data=1
     file.copy(data,file.path(appname,basename(data)),overwrite=TRUE)
-    data.txt <- paste0("  datax <- read.csv(file='",basename(data),"', header=TRUE, sep='\\t', quote='\')\n")
-    s1 <- paste0(s1, data.txt)
+    data.txt <- paste0("datax <- read.csv(file='",basename(data),"', header=TRUE, sep='\\t', quote='\')")
+    s1 <- paste0(s1,'\n',data.txt)
     data <- read.csv(file=data, header=TRUE, sep="\t", quote="\"")
   }
   parameter <- fparameter(parameter)
   ptxt <- param2str(parameter)
-  s2r <- paste0(s2r, ptxt[[1]],"\n")
-  s2f <- paste0(s2f, ptxt[[2]],"\n")
+  s2r <- paste0(s2r, ptxt[[1]])
+  s2f <- paste0(s2f, ptxt[[2]])
   if (!is.null(treatment)){
     treatment <- ftreatment(treatment)
     ttxt <- adm2str(treatment)
-    s2r <- paste0(s2r, ttxt[[1]],"\n")
-    s2f <- paste0(s2f, ttxt[[2]],"\n")
-    s3 <- ("
-    r <- simulx( model     = 'model.txt',
+    s2r <- paste0(s2r, ttxt[[1]])
+    s2f <- paste0(s2f, ttxt[[2]])
+    s3 <- (
+"    r <- simulx( model     = 'model.txt',
                  treatment = adm,
                  parameter = p,
                  output    = f)
 ")    
   }else{
-    s3 <- ("
-    r <- simulx( model     = 'model.txt',
+    s3 <- (
+"    r <- simulx( model     = 'model.txt',
                  parameter = p,
                  output    = f)
 ")    
@@ -374,19 +367,23 @@ widgtxt <- function(x,txt,k){
 #------------------------------------------------------
 out2str <- function(out){
   K <- length(out)
-  out.txt <- NULL
   for (k in (1:K)){
     outk <- out[[k]]
+    txt.nameo <- vect2str(outk$name)
+    t.out <- outk$time
     if (K==1){
       soutk <- "f"
     }else{    
       soutk <- paste0("out",as.character(k))
     }
     txt <- paste0(soutk," <- list(time=t.dose, ")
-    txt.nameo <- vect2str(outk$name)
-    t.out <- outk$time
-    out.txt <- paste0(out.txt,"\n",soutk," <- list(name=",txt.nameo,
-                      ", time=seq(",t.out[1],",",t.out[2],",by=",t.out[3],"))")
+    if (k==1){
+      out.txt <- paste0(soutk," <- list(name=",txt.nameo,
+                        ", time=seq(",t.out[1],",",t.out[2],",by=",t.out[3],"))")
+    }else{    
+      out.txt <- paste0(out.txt,"\n",soutk," <- list(name=",txt.nameo,
+                        ", time=seq(",t.out[1],",",t.out[2],",by=",t.out[3],"))")
+    }
   }
   if (K>1){
     txt <- "f  <- list(out1"
@@ -395,7 +392,7 @@ out2str <- function(out){
     txt <- paste0(txt,")")
     out.txt <- paste0(out.txt,"\n",txt)
   }else{
-    out.txt <- paste0(out.txt,"\nf <- list(f)\n")
+    out.txt <- paste0(out.txt,"\nf <- list(f)")
   }
   return(out.txt)
 }
@@ -602,24 +599,28 @@ body
 serverTemplate <- function(s, select, i.output, select.y)
 {
   if (select$x==TRUE){
-    spl <- paste0("   pj <- paste0('pl <- pl + geom_path(data=res, aes(x=',xj,',y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
-                      eval(parse(text=pj))") 
+    spl <- paste0(
+"   pj <- paste0('pl <- pl + geom_path(data=res, aes(x=',xj,',y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
+    eval(parse(text=pj))") 
     if (select$ref==TRUE){
-      srf <- paste0("   if (input$boxref==TRUE){
-                          pj <- paste0('pl <- pl + geom_path(data=ref, aes(x=',xj,',y=',name.fj[k],'),colour=",'"grey",',"size=0.75)')
-                          eval(parse(text=pj))
-                        }") 
+      srf <- paste0(
+"   if (input$boxref==TRUE){
+      pj <- paste0('pl <- pl + geom_path(data=ref, aes(x=',xj,',y=',name.fj[k],'),colour=",'"grey",',"size=0.75)')
+      eval(parse(text=pj))
+    }") 
     }else{
       srf=""
     }
   }else{
-    spl <- paste0("   pj <- paste0('pl <- pl + geom_path(data=res[[j]], aes(x=time,y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
-                      eval(parse(text=pj))") 
+    spl <- paste0(
+"       pj <- paste0('pl <- pl + geom_path(data=res[[j]], aes(x=time,y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
+       eval(parse(text=pj))") 
     if (select$ref==TRUE){
-      srf <- paste0("   if (input$boxref==TRUE){
-                          pj <- paste0('pl <- pl + geom_path(data=ref[[j]], aes(x=time,y=',name.fj[k],'),colour=",'"grey",',"size=0.75)')
-                          eval(parse(text=pj))
-                        }") 
+      srf <- paste0(
+"   if (input$boxref==TRUE){
+      pj <- paste0('pl <- pl + geom_path(data=ref[[j]], aes(x=time,y=',name.fj[k],'),colour=",'"grey",',"size=0.75)')
+      eval(parse(text=pj))
+    }") 
     }else{
       srf=""
     }
@@ -627,24 +628,23 @@ serverTemplate <- function(s, select, i.output, select.y)
   srfpl <- paste0(srf,'\n',spl) 
   
   if (select$log==TRUE){
-    slog <- "        
-    if (input$ilog==TRUE)
-      pl=pl + scale_y_log10()
-" 
+    slog <-         
+"    if (input$ilog==TRUE)
+       pl=pl + scale_y_log10()"
+
   }else{
     slog=""
   }
   
   if (select$ref==TRUE){
-    sref1 <- paste0("
-  ref <- reactive({
+    sref1 <- paste0(
+"  ref <- reactive({
     input$butref
-    ",s[3],"
-    ",s[4],"
+",s[3],"
+",s[4],"
     ref <- merge_res(r,f)
     return(ref)
-  })
-")
+  })\n")
     sref2 <- "   ref=ref()"
   }else{
     sref1 <- ""
@@ -681,10 +681,10 @@ serverTemplate <- function(s, select, i.output, select.y)
     }
     pl <- pl + scale_colour_manual(values=info[[j]]$values, labels=info[[j]]$labels)
     if (length(ij)>1){
-      if (!is.null(input$legend) && input$legend==TRUE)
-        pl <- pl + guides(colour=guide_legend(title=NULL)) + theme(legend.position=c(.9, .8))
-      else
+      if (!is.null(input$legend) && input$legend==FALSE)
         pl <- pl + theme(legend.position="none")
+      else
+        pl <- pl + guides(colour=guide_legend(title=NULL)) + theme(legend.position=c(.9, .8))
       pl <- pl + ylab("")
     }else{
       pl <- pl + theme(legend.position="none")
@@ -693,14 +693,13 @@ serverTemplate <- function(s, select, i.output, select.y)
   ',slog,'
     eval(parse(text=paste0("pl",j," <- pl")))
     gr.txt <- paste0(gr.txt,"pl",j,",")
-  }
-')
+  }')
   }else{
     splot <- paste0('
       pl <- ggplotmlx()
       nfj <- length(name.fj)
-      for (k in (1:nfj)){
-        ',srfpl,'
+      for (k in (1:nfj)){',
+        srfpl,'
       }
       pl <- pl + scale_colour_manual(values=info[[j]]$values, labels=info[[j]]$labels)
       if (length(name.fj)>1)
@@ -711,18 +710,16 @@ serverTemplate <- function(s, select, i.output, select.y)
       ',s[5],'
       ',slog,'
       eval(parse(text=paste0("pl",j," <- pl")))
-      gr.txt <- paste0(gr.txt,"pl",j,",")
-')  
+      gr.txt <- paste0(gr.txt,"pl",j,",")')  
   }
   
-  server.out <- paste0('
-
-library("mlxR")
+  server.out <- paste0(
+'library("mlxR")
 library("reshape")
 library("gridExtra")
 source("shinymlxTools.R")
-',
-                       s[1],'
+
+',s[1],'
 nf <- length(f)
 info <- info_res(f)
 
@@ -731,8 +728,8 @@ server <- function(input, output) {
   res <- reactive({
 ',s[2],'                     
 ',s[4],'                     
-  res <- merge_res(r,f)
-  return(res)
+    res <- merge_res(r,f)
+    return(res)
   })  
   
   output$plot <- renderPlot({
@@ -873,7 +870,7 @@ fluidRow(
 column(5,checkboxInput("boxref", label="%s")),
 column(4,actionButton("butref", label = "Reset"))
 ),
-              ')  
+')  
     if (identical(style,'navbar1'))
       sref1 <- sprintf(sref1,"reference")
     else
