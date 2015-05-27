@@ -28,12 +28,18 @@ You can also run the following R command from the console:
     }
   } 
   
+  
+  opt.inner <- options( show.error.messages=FALSE) 
+  on.exit( options( opt.inner)) 
+
   lixoft.ini  <- file.path(lixoft.path,"lixoft.ini")
   if (!file.exists(lixoft.ini)){
     wm <- paste0("\nThe file ",lixoft.ini," does not exists.",mess.mlxlibrary)
-    warning(wm, immediate.=TRUE)
-     mlx.path <- setMlxLibraryPath()
-     stop("\nYou can now try to run again your R script",call.=FALSE)
+    warning(wm, immediate.=TRUE, call.=FALSE)
+      mlx.path <- setMlxLibraryPath()
+    cat("\nYou can now try to run again your R script\n")
+    stop("",call.=FALSE)
+    
   } 
   lines <- readLines(lixoft.ini)
   
@@ -51,8 +57,9 @@ You can also run the following R command from the console:
   if (is.null(mlxlibrary.path) || !file.exists(file.path(mlxlibrary.path,'lib')) ) {
     wm <- paste0("\n",mess.mlxlibrary)
     warning(wm, immediate.=TRUE)
-    mlx.path <- setMlxLibraryPath()
-    stop("\nYou can now try to run again your R script",call.=FALSE)
+     mlx.path <- setMlxLibraryPath()
+    cat("\nYou can now try to run again your R script\n")
+    stop("",call.=FALSE)
   }
   Sys.setenv(session.simulx=mlxlibrary.path)
   
