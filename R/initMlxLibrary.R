@@ -9,10 +9,14 @@ initMlxLibrary <- function(){
     Sys.setenv('PATH'=NAMESPACE[["SYS_PATH_mlx_library"]])
     return()
   }
-  mess.mlxlibrary="\n\nMlxlibrary has probably not been installed. 
-You can install it from  http://download.lixoft.com/?software=mlxlibrary\n
-Otherwise, execute <Mlxlibrary PATH>/lib/mlxLibraryFirstLaunch.exe \n 
-or run  setMlxLibraryPath(<Mlxlibrary PATH>) and launch again"
+  mess.mlxlibrary="\n\nMlxlibrary has probably not been installed. You can install it from  
+http://download.lixoft.com/?software=mlxlibrary
+
+Otherwise, provide the path of the Mlxlibrary using the directory browser.
+
+You can also run the following R command from the console:
+> setMlxLibraryPath(<Mlxlibrary PATH>) 
+"
   
   #--- ensuring mlx library from lixsoft is installed
   myOS <- Sys.info()['sysname']; 
@@ -26,7 +30,10 @@ or run  setMlxLibraryPath(<Mlxlibrary PATH>) and launch again"
   
   lixoft.ini  <- file.path(lixoft.path,"lixoft.ini")
   if (!file.exists(lixoft.ini)){
-    stop("The file ",lixoft.ini," does not exists.",mess.mlxlibrary)
+    wm <- paste0("\nThe file ",lixoft.ini," does not exists.",mess.mlxlibrary)
+    warning(wm, immediate.=TRUE)
+     mlx.path <- setMlxLibraryPath()
+     stop("\nYou can now try to run again your R script",call.=FALSE)
   } 
   lines <- readLines(lixoft.ini)
   
@@ -42,7 +49,10 @@ or run  setMlxLibraryPath(<Mlxlibrary PATH>) and launch again"
   #---  Mlxlibrary and MlxPlore paths  
   mlxlibrary.path <- get_lixoft_path("mlxlibrary")
   if (is.null(mlxlibrary.path) || !file.exists(file.path(mlxlibrary.path,'lib')) ) {
-    stop(mess.mlxlibrary,call.="FALSE")
+    wm <- paste0("\n",mess.mlxlibrary)
+    warning(wm, immediate.=TRUE)
+    mlx.path <- setMlxLibraryPath()
+    stop("\nYou can now try to run again your R script",call.=FALSE)
   }
   Sys.setenv(session.simulx=mlxlibrary.path)
   
@@ -74,13 +84,18 @@ or run  setMlxLibraryPath(<Mlxlibrary PATH>) and launch again"
 #'     
 #' @param mlxLibraryPath  the absolute path to the location of MlxLibrary 
 #' @export
-setMlxLibraryPath <- function(mlxLibraryPath){
+setMlxLibraryPath <- function(mlxLibraryPath=NULL){
   myOS <- Sys.info()['sysname']; 
   if (myOS == "Windows"){
-    lauchCommand<-paste0(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch.exe")
+    if (is.null(mlxLibraryPath))
+      mlxLibraryPath <- choose.dir(caption = 'Select the MlxLibrary folder (usually in "C:/ProgramData/Lixoft") ')
+    lauchCommand<-file.path(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch.exe")
     
   } else {
+    if (is.null(mlxLibraryPath))
+      mlxLibraryPath <- choose.dir(caption = 'Select the MlxLibrary folder (usually in user directory) ')
     lauchCommand<-paste0(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch")
   }
   system(lauchCommand)
+  return(mlxLibraryPath)
 }
