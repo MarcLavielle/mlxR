@@ -13,9 +13,13 @@ Simulation and visualization of complex models for longitudinal data
 The mlxR package includes functions for the simulation and visualization of complex models for longitudinal data:
 
 Simulation
-\item{\code{\link{simulx}}}{Compute predictions and sample data from Mlxtran and PharmML models}
-\item{pkmodel}{Compute easily basic pharmacokinetics (PK) models}
-\item{exposure.R}{Compute the area under the curve, the maximum and minimum values of a funtion of time over an interval, or at steady state} 
+
+\code{\link{simulx.R}}: Compute predictions and sample data from Mlxtran and PharmML models 
+
+\item{pkmodel }{
+Compute easily basic pharmacokinetics (PK) models
+}
+\item{exposure }{Compute the area under the curve, the maximum and minimum values of a funtion of time over an interval, or at steady state} 
 \item{monolix2simulx}{Convert a Monolix Project into an executable R script for  \code{Simulx}}
 
 Model visualization
