@@ -226,7 +226,7 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
       treatment     <- ans$treatment
       parameter     <- ans$param
       output        <- ans$output
-      group         <- ans$group
+      group         <- NULL
     }
     iop.group <- 1
     if (is.null(group))
