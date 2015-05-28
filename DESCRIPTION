@@ -1,6 +1,6 @@
 Package: mlxR
 Type: Package
-Version: 2.1.1
+Version: 2.2.0
 Title: Simulation of Longitudinal Data
 Description: Simulation and visualization of complex
     models for longitudinal data. The models are encoded using the model coding
@@ -11,7 +11,8 @@ Description: Simulation and visualization of complex
     time-to-event data.
 Authors@R: c(
     person( "Marc", "Lavielle", role = c("aut","cre"), email = "Marc.Lavielle@inria.fr" ), 
-    person( "Romain", "Francois", role = "aut", email = "romain@r-enthusiasts.com"), 
+    person( "Raphael", "Kuate", role = "ctb", email = "raphael.kuate@inria.fr"), 
+    person( "Romain", "Francois", role = "ctb", email = "romain@r-enthusiasts.com"), 
     person( "Fazia", "Bellal", role = "ctb" )
     )
 URL: http://simulx.webpopix.org
