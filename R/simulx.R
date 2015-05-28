@@ -88,20 +88,22 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   
   #   Nmax <- 10
   test.group <- FALSE
-  if ((!is.null(group))  & (is.null(settings$data.in)) & (is.null(settings$record.file))){
+  if ((!is.null(group))  & (is.null(settings$data.in)) & (is.null(settings$record.file)) ){
     if  (!is.null(names(group)))
       group <- list(group)
-    N <- 0
-    M <- length(group)
-    for (m in (1:M))
-      N <- N + prod(group[[m]]$size)
-    if ((!is.null(settings)) & (!is.null(settings$Nmax))){
-      Nmax <- settings$Nmax
-    }else{
-      Nmax <- 100
+    if (is.null(project)){ 
+      N <- 0
+      M <- length(group)
+      for (m in (1:M))
+        N <- N + prod(group[[m]]$size)
+      if ((!is.null(settings)) & (!is.null(settings$Nmax))){
+        Nmax <- settings$Nmax
+      }else{
+        Nmax <- 100
+      }
+      if (N > Nmax)
+        test.group <- TRUE
     }
-    if (N > Nmax)
-      test.group <- TRUE
   }
   
   
