@@ -5,13 +5,13 @@
 \title{Automatic code generation for Shiny applications}
 \usage{
 shinymlx(model, parameter = NULL, output = NULL, treatment = NULL,
-  data = NULL, appname = "shinymlxApp", style = "dashboard1",
+  data = NULL, appname = "shinymlxApp", style = "basic",
   settings = NULL, title = " ")
 }
 \arguments{
 \item{model}{a \code{Mlxtran} or \code{PharmML} model used for the simulation}
 
-\item{parameter}{a vector - or a list of vectors - of parameters with their names and values}
+\item{parameter}{a vector, or a list of shiny widgets}
 
 \item{output}{a list - or a list of lists - with fields:
 \itemize{
@@ -27,15 +27,8 @@ shinymlx(model, parameter = NULL, output = NULL, treatment = NULL,
   \item \code{ii} : interdose interval,
   \item \code{type} : the type of input,
 }
-Input argument of Simulx can also be used,  i.e. a list with fields
-\itemize{
-  \item \code{time} : a vector of input times,
-  \item \code{amount} : a scalar or a vector of amounts,
-  \item \code{rate} : a scalar or a vector of infusion rates (default=\code{Inf}),
-  \item \code{tinf} : a scalar or a vector of infusion times (default=0),
-  \item \code{type} : the type of input (default=1),
-  \item \code{target} : the target compartment (default=NULL).
-}}
+Input argument of Simulx can also be used,  i.e. a list with fields \code{time},
+\code{amount}, \code{rate}, \code{tinf}, \code{type}, \code{target}.}
 
 \item{data}{a datafile to display with the plot}
 
@@ -43,17 +36,17 @@ Input argument of Simulx can also be used,  i.e. a list with fields
 
 \item{style}{the style of the Shiny app
 \itemize{
-  \item \code{"dashboard1"} : Shiny dashboard,
+  \item \code{"basic"}: basic Shiny app with a single side bar (default)
   \item \code{"navbar1"}: navigation bar and tabPanels (including outputs)
   \item \code{"navbar2"}: navigation bar and tabPanels (outputs separated)
-  \item \code{"basic"}: basic Shiny app with a single side bar
+  \item \code{"dashboard1"} : Shiny dashboard,
 }}
 
 \item{settings}{a list of settings
 \itemize{
   \item \code{"tabstyle"} : look of the tabs c("tabs","pills"),
-  \item \code{"select.x"} : display the x variables available c(TRUE,FALSE),
-  \item \code{"select.y"} : display the y variables available c(TRUE,FALSE),
+  \item \code{"select.x"} : display the list of variables available for the x-axis c(TRUE,FALSE),
+  \item \code{"select.y"} : display the list of variables available for the y-axis c(TRUE,FALSE),
   \item \code{"select.log"} : log scale option c(TRUE,FALSE),
   \item \code{"select.ref"} : reference curves option c(TRUE,FALSE)
 }}
@@ -97,7 +90,8 @@ f1  <- list(name = 'C', time = seq(0, 250, by=1))
 f2  <- list(name = 'E', time = seq(0, 250, by=1))
 f   <- list(f1, f2)
 
-shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f)
+shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f,
+         style="dashboard1")
 
 #------------------------------------------------------------------------
 p1 <- list(
@@ -111,8 +105,9 @@ adm <- list(
   ii     = list(widget="select", selected=12, choices=c(3,6,12,18,24)),
   amount = list(widget="slider", value=40, min=0, max=50, step=5)
 )
+s <- list(select.x=FALSE, select.y=FALSE)
 shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f,
-         style="navbar1", settings=list(select.x=FALSE, select.y=FALSE))
+         style="navbar1", settings=s)
 }
 }
 

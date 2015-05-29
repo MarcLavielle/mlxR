@@ -4,7 +4,7 @@
 \alias{setMlxLibraryPath}
 \title{Sets the MlxLibrary path in order to tell mlxR where is the MlxLibrary to use}
 \usage{
-setMlxLibraryPath(mlxLibraryPath)
+setMlxLibraryPath(mlxLibraryPath = NULL)
 }
 \arguments{
 \item{mlxLibraryPath}{the absolute path to the location of MlxLibrary}

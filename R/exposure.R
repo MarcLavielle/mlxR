@@ -27,6 +27,39 @@
 #'   \item \code{target} : the target compartment (default=NULL). 
 #' }
 #' 
+#' @param model a \code{Mlxtran} or \code{PharmML} model used for the simulation
+#' @param group a list, or a list of lists, with fields: 
+#' \itemize{
+#'   \item \code{size} : size of the group (default=1),
+#'   \item \code{level} : level(s) of randomization,
+#'   \item \code{parameter} : if different parameters per group are defined,
+#'   \item \code{output} : if different outputs per group are defined,
+#'   \item \code{treatment} : if different treatements per group are defined,
+#'   \item \code{regressor} : if different regression variables per group are defined.
+#' }
+#' @param parameter a vector of parameters with their names and values
+#' @param data a list
+#' @param project the name of a Monolix project
+#' @param settings a list of optional settings
+#' \itemize{
+#'   \item \code{record.file} : name of the datafile where the simulated data is written (string),
+#'   \item \code{seed} : initialization of the random number generator (integer),
+#'   \item \code{load.design} : TRUE/FALSE (if load.design is not defined, a test is automatically performed to check if a new design has been defined),
+#'   \item \code{data.in} : TRUE/FALSE (default=FALSE)
+#'   \item \code{id.out}  : add columns id (when N=1) and group (when #group=1), TRUE/FALSE (default=FALSE)
+#'   \item \code{Nmax} : maximum group size used in a single call of mlxCompute (default=100)
+#' }   
+#' @param regressor a list, or a list of lists, with fields
+#' \itemize{
+#'   \item \code{name} : a vector of regressor names,
+#'   \item \code{time} : a vector of times,
+#'   \item \code{value} : a vector of values.
+#' }
+#' @param varlevel a list, or a list of lists, with fields
+#' \itemize{
+#'   \item \code{name} : a vector of names of variability levels,
+#'   \item \code{time} : a vector of times that define the occasions.
+#' }
 #' @return A list of data frames. One data frame per output is created with columns \code{id} (if number of subject >1),
 #' \code{group} (if number of groups >1), \code{t1} (beginning of time interval), \code{t2} (end of time interval),
 #' \code{step} (time step), \code{auc} (area under the curve), \code{tmax} (time of maximum value), \code{cmax} (maximum value),

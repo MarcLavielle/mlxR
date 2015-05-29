@@ -9,6 +9,8 @@ exposure(model, output, group = NULL, treatment = NULL, parameter = NULL,
   varlevel = NULL)
 }
 \arguments{
+\item{model}{a \code{Mlxtran} or \code{PharmML} model used for the simulation}
+
 \item{output}{a list  with fields:
 \itemize{
   \item \code{name}: a vector of output names
@@ -16,6 +18,16 @@ exposure(model, output, group = NULL, treatment = NULL, parameter = NULL,
   \item \code{ntp}: number of time points used for computing the exposure (default=100)
   \item \code{tol}: tolerance number, between 0 and 1, for approximating steaty-state  (default=0.01)
   \item \code{ngc}: number of doses used for estimating the convergence rate to steaty-state  (default=5)
+}}
+
+\item{group}{a list, or a list of lists, with fields:
+\itemize{
+  \item \code{size} : size of the group (default=1),
+  \item \code{level} : level(s) of randomization,
+  \item \code{parameter} : if different parameters per group are defined,
+  \item \code{output} : if different outputs per group are defined,
+  \item \code{treatment} : if different treatements per group are defined,
+  \item \code{regressor} : if different regression variables per group are defined.
 }}
 
 \item{treatment}{a list with fields
@@ -27,6 +39,35 @@ exposure(model, output, group = NULL, treatment = NULL, parameter = NULL,
   \item \code{tinf} : the time of infusion  (default=0),
   \item \code{type} : the type of input (default=1),
   \item \code{target} : the target compartment (default=NULL).
+}}
+
+\item{parameter}{a vector of parameters with their names and values}
+
+\item{data}{a list}
+
+\item{project}{the name of a Monolix project}
+
+\item{settings}{a list of optional settings
+\itemize{
+  \item \code{record.file} : name of the datafile where the simulated data is written (string),
+  \item \code{seed} : initialization of the random number generator (integer),
+  \item \code{load.design} : TRUE/FALSE (if load.design is not defined, a test is automatically performed to check if a new design has been defined),
+  \item \code{data.in} : TRUE/FALSE (default=FALSE)
+  \item \code{id.out}  : add columns id (when N=1) and group (when #group=1), TRUE/FALSE (default=FALSE)
+  \item \code{Nmax} : maximum group size used in a single call of mlxCompute (default=100)
+}}
+
+\item{regressor}{a list, or a list of lists, with fields
+\itemize{
+  \item \code{name} : a vector of regressor names,
+  \item \code{time} : a vector of times,
+  \item \code{value} : a vector of values.
+}}
+
+\item{varlevel}{a list, or a list of lists, with fields
+\itemize{
+  \item \code{name} : a vector of names of variability levels,
+  \item \code{time} : a vector of times that define the occasions.
 }}
 }
 \value{

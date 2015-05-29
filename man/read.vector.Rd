@@ -7,7 +7,13 @@
 read.vector(f, header = FALSE, sep = "", quote = "\\"'")
 }
 \arguments{
-\item{f:}{the table}
+\item{f}{: the table}
+
+\item{header}{: bool, use the header or not}
+
+\item{sep}{: the separator}
+
+\item{quote}{: the quote character}
 }
 \value{
 the vector

@@ -1,5 +1,8 @@
 #' Reads  a table into a vector 
-#' @param f: the table 
+#' @param f : the table 
+#' @param header : bool, use the header or not
+#' @param sep : the separator
+#' @param quote : the quote character
 #' @return  the vector
 #'  @export
 #' 
