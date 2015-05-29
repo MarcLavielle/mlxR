@@ -100,8 +100,11 @@ setMlxLibraryPath <- function(mlxLibraryPath=NULL){
     
   } else {
     if (is.null(mlxLibraryPath))
-      mlxLibraryPath <- choose.dir(caption = 'Select the MlxLibrary folder (usually in user directory) ')
-    lauchCommand<-paste0(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch")
+    {
+      library(tcltk)
+      mlxLibraryPath <- tk_choose.dir(caption = 'Select the MlxLibrary folder (usually in user directory) ')
+    }
+      lauchCommand<-paste0(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch")
   }
   system(lauchCommand)
   return(mlxLibraryPath)
