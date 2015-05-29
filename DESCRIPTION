@@ -22,7 +22,9 @@ Depends:
     ggplot2
 Suggests:
     reshape2,
-    gridExtra
+    gridExtra,
+    shiny,
+    tcltk
 Imports:
     XML,
     Rcpp (>= 0.11.3),
