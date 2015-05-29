@@ -10,13 +10,14 @@ stop("Please install Rcpp \n",call.="FALSE")
 }
 
 # --- Check the Rcpp version installed is the correct one
-packinfo <- installed.packages ();
-  installedRcppVersion = packinfo[c("Rcpp"), c("Version")]
-  requiredRcppVersion = "0.11.0";
+ #packinfo <- installed.packages ();
+  #installedRcppVersion = packinfo[c("Rcpp"), c("Version")]
+  #requiredRcppVersion = "0.11.0";
+
   myOS <- Sys.info()['sysname'];
-  if (myOS == "Windows") {
-  	if (installedRcppVersion < requiredRcppVersion)
-    		stop("Either install version 0.11.0 or delete file runtime/lib/mlxDataReaderR.dll, install Rtools and recompile") }
+  #if (myOS == "Windows") {
+  #	if (installedRcppVersion < requiredRcppVersion)
+   # 		stop("Either install version 0.11.0 or delete file runtime/lib/mlxDataReaderR.dll, install Rtools and recompile") }
 
 
 
@@ -103,7 +104,7 @@ if (!bFileExists)
 }
 
 # STEP 04: load Rcpp and lxLibrary/.../runtime/lib/mlxDataReaderR.so(.dll)
-library("Rcpp");
+#library("Rcpp");
 
 
 if (myOS == "Windows" )
