@@ -9,7 +9,7 @@ mlxtoolboxReadData(dataFile, colTypes)
 \arguments{
 \item{dataFile}{: the name (path) of the data file}
 
-\item{colType}{: vector of strings, the types of different column present in the data file,
+\item{colTypes}{: vector of strings, the types of different column present in the data file,
                  a column of a type not considered in mlxtoolbox or whose values is not desired can be declared as "IGNORE"}
 }
 \value{

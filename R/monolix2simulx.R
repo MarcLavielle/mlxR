@@ -1,5 +1,5 @@
 #' Convert a Monolix Project  into an executable for the simulator  Simulx 
-#' @param projectName : the name of a Monolix project 
+#' @param project : the name of a Monolix project 
 #' @param parameter : string $(NameOfTypeOfParameter), the type of specific parameters to use 
 #'                   example: "mode", "mean"...
 #' @return  creates a folder projectNameR  containing files : 
