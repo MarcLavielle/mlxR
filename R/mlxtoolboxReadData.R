@@ -1,7 +1,7 @@
 #' Reads a data file in a monolix Project format for the simulator  Simulx using mlxtoobox code.
 #'  
 #' @param dataFile : the name (path) of the data file 
-#' @param colType : vector of strings, the types of different column present in the data file,
+#' @param colTypes : vector of strings, the types of different column present in the data file,
 #'                  a column of a type not considered in mlxtoolbox or whose values is not desired can be declared as "IGNORE"
 #'   
 #' @return  datas: a list of containg:
@@ -20,7 +20,8 @@ mlxtoolboxReadData <- function(dataFile,colTypes)
   session=Sys.getenv("session.simulx")
   Sys.setenv(LIXOFT_HOME=session)
   argList <- list(TXT_FILE=dataFile, COL_TYPES=colTypes)
-  datas2 <- .Call( "mlxDataReaderR", argList, PACKAGE = "mlxDataReaderR");
+  dot_call<- .Call
+  datas2 <- dot_call( "mlxDataReaderR", argList, PACKAGE = "mlxDataReaderR");
   
   # set the storage of datas2 into the  format of datas  returned by readdatamlx.R
   obsi = 0

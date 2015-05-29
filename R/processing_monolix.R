@@ -27,7 +27,8 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   # Read file with  c++  code called by mlxDataReader
   colTypes <- strsplit(infoProject$dataheader, ",")
   argList <- list(TXT_FILE=infoProject$datafile, COL_TYPES=colTypes[[1]])
-  datas2 <- .Call( "mlxDataReaderR", argList, PACKAGE = "mlxDataReaderR");
+  dot_call<-.Call;
+  datas2 <-dot_call("mlxDataReaderR", argList, PACKAGE = "mlxDataReaderR");
   
   # set the storage of datas2 into the  format of datas 
   obsi = 0
