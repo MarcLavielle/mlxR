@@ -19,16 +19,16 @@ URL: http://simulx.webpopix.org
 BugReports: https://github.com/MarcLavielle/mlxR/issues
 Depends:
     R (>= 3.0.1),
-    ggplot2
+    ggplot2    
 Suggests:
     reshape2,
     gridExtra,
-    shiny,
-    tcltk
+    shiny
 Imports:
     XML,
     Rcpp (>= 0.11.3),
-    tools
+    tools,
+    tcltk  
 License: BSD_2_clause + file LICENSE
 Copyright: Inria
 

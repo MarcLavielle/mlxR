@@ -1,3 +1,4 @@
+#' 
 #' Automatic code generation for Shiny applications
 #' 
 #' Creates a Shiny application for longitudinal data model  
@@ -87,6 +88,7 @@
 #' shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f, 
 #'          style="navbar1", settings=s)
 #' }
+
 #' @export         
 shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
                      data=NULL,appname="shinymlxApp",style="basic",
@@ -136,14 +138,14 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
     s2r <- paste0(s2r, ttxt[[1]])
     s2f <- paste0(s2f, ttxt[[2]])
     s3 <- (
-"    r <- simulx( model     = 'model.txt',
+      "    r <- simulx( model     = 'model.txt',
                  treatment = adm,
                  parameter = p,
                  output    = f)
 ")    
   }else{
     s3 <- (
-"    r <- simulx( model     = 'model.txt',
+      "    r <- simulx( model     = 'model.txt',
                  parameter = p,
                  output    = f)
 ")    
@@ -167,7 +169,7 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
   stools.txt <- stoolsmlx(select$x)
   write(stools.txt,file.path(appname,"shinymlxTools.R"))
   
-  runApp(appname)
+  shiny::runApp(appname)
 }
 
 testout <- function(out){
@@ -600,11 +602,11 @@ serverTemplate <- function(s, select, i.output, select.y)
 {
   if (select$x==TRUE){
     spl <- paste0(
-"   pj <- paste0('pl <- pl + geom_path(data=res, aes(x=',xj,',y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
+      "   pj <- paste0('pl <- pl + geom_path(data=res, aes(x=',xj,',y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
     eval(parse(text=pj))") 
     if (select$ref==TRUE){
       srf <- paste0(
-"   if (input$boxref==TRUE){
+        "   if (input$boxref==TRUE){
       pj <- paste0('pl <- pl + geom_path(data=ref, aes(x=',xj,',y=',name.fj[k],'),colour=",'"grey",',"size=0.75)')
       eval(parse(text=pj))
     }") 
@@ -613,11 +615,11 @@ serverTemplate <- function(s, select, i.output, select.y)
     }
   }else{
     spl <- paste0(
-"       pj <- paste0('pl <- pl + geom_path(data=res[[j]], aes(x=time,y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
+      "       pj <- paste0('pl <- pl + geom_path(data=res[[j]], aes(x=time,y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
        eval(parse(text=pj))") 
     if (select$ref==TRUE){
       srf <- paste0(
-"   if (input$boxref==TRUE){
+        "   if (input$boxref==TRUE){
       pj <- paste0('pl <- pl + geom_path(data=ref[[j]], aes(x=time,y=',name.fj[k],'),colour=",'"grey",',"size=0.75)')
       eval(parse(text=pj))
     }") 
@@ -629,16 +631,16 @@ serverTemplate <- function(s, select, i.output, select.y)
   
   if (select$log==TRUE){
     slog <-         
-"    if (input$ilog==TRUE)
+      "    if (input$ilog==TRUE)
        pl=pl + scale_y_log10()"
-
+    
   }else{
     slog=""
   }
   
   if (select$ref==TRUE){
     sref1 <- paste0(
-"  ref <- reactive({
+      "  ref <- reactive({
     input$butref
 ",s[3],"
 ",s[4],"
@@ -699,7 +701,7 @@ serverTemplate <- function(s, select, i.output, select.y)
       pl <- ggplotmlx()
       nfj <- length(name.fj)
       for (k in (1:nfj)){',
-        srfpl,'
+                    srfpl,'
       }
       pl <- pl + scale_colour_manual(values=info[[j]]$values, labels=info[[j]]$labels)
       if (length(name.fj)>1)
@@ -714,7 +716,7 @@ serverTemplate <- function(s, select, i.output, select.y)
   }
   
   server.out <- paste0(
-'library("mlxR")
+    'library("mlxR")
 library("reshape")
 library("gridExtra")
 source("shinymlxTools.R")

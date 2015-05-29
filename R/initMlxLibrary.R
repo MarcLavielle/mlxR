@@ -1,4 +1,6 @@
 #' @importFrom Rcpp sourceCpp
+#' @importFrom tcltk tk_choose.dir
+
 NULL
 
 NAMESPACE <- environment()
@@ -31,12 +33,12 @@ You can also run the following R command from the console:
   
   opt.inner <- options( show.error.messages=FALSE) 
   on.exit( options( opt.inner)) 
-
+  
   lixoft.ini  <- file.path(lixoft.path,"lixoft.ini")
   if (!file.exists(lixoft.ini)){
     wm <- paste0("\nThe file ",lixoft.ini," does not exists.",mess.mlxlibrary)
     warning(wm, immediate.=TRUE, call.=FALSE)
-      mlx.path <- setMlxLibraryPath()
+    mlx.path <- setMlxLibraryPath()
     cat("\nYou can now try to run again your R script\n")
     stop("",call.=FALSE)
     
@@ -57,7 +59,7 @@ You can also run the following R command from the console:
   if (is.null(mlxlibrary.path) || !file.exists(file.path(mlxlibrary.path,'lib')) ) {
     wm <- paste0("\n",mess.mlxlibrary)
     warning(wm, immediate.=TRUE)
-     mlx.path <- setMlxLibraryPath()
+    mlx.path <- setMlxLibraryPath()
     cat("\nYou can now try to run again your R script\n")
     stop("",call.=FALSE)
   }
@@ -95,16 +97,13 @@ setMlxLibraryPath <- function(mlxLibraryPath=NULL){
   myOS <- Sys.info()['sysname']; 
   if (myOS == "Windows"){
     if (is.null(mlxLibraryPath))
-      mlxLibraryPath <- choose.dir(caption = 'Select the MlxLibrary folder (usually in "C:/ProgramData/Lixoft") ')
+      mlxLibraryPath <- tk_choose.dir(caption = 'Select the MlxLibrary folder (usually in "C:/ProgramData/Lixoft") ')
     lauchCommand<-file.path(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch.exe")
     
   } else {
     if (is.null(mlxLibraryPath))
-    {
-      library(tcltk)
       mlxLibraryPath <- tk_choose.dir(caption = 'Select the MlxLibrary folder (usually in user directory) ')
-    }
-      lauchCommand<-paste0(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch")
+    lauchCommand<-paste0(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch")
   }
   system(lauchCommand)
   return(mlxLibraryPath)
