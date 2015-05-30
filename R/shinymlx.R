@@ -53,6 +53,8 @@
 #' @examples
 #' \dontrun{
 #' library(mlxR)
+#' library(shiny)
+#'
 #' PKPDmodel <- inlineModel("
 #' [LONGITUDINAL] 
 #' input={ka,V,Cl,Imax,IC50,S0,kout}
@@ -69,8 +71,9 @@
 #' f2  <- list(name = 'E', time = seq(0, 250, by=1))
 #' f   <- list(f1, f2)
 #' 
-#' shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f,
-#'          style="dashboard1")
+#' app <- shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), 
+#'                 output=f, style="dashboard1")
+#' shiny:runApp(app)          
 #' 
 #' #------------------------------------------------------------------------
 #' p1 <- list(
@@ -85,8 +88,9 @@
 #'   amount = list(widget="slider", value=40, min=0, max=50, step=5)
 #' )
 #' s <- list(select.x=FALSE, select.y=FALSE)
-#' shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f, 
-#'          style="navbar1", settings=s)
+#' app <- shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), 
+#'                 output=f, style="navbar1", settings=s)
+#' shiny:runApp(app)
 #' }
 
 #' @export         
@@ -95,9 +99,6 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
                      settings=NULL,title=" ")
 {
   
-  check.shiny <- requireNamespace("shiny")
-  if (check.shiny==FALSE)
-    stop("Please, install the shiny library before running shinymlx.")
   select=list()
   select$x <- set.settings(settings$select.x,style)
   select$y <- set.settings(settings$select.y,style)
@@ -168,8 +169,7 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
   
   stools.txt <- stoolsmlx(select$x)
   write(stools.txt,file.path(appname,"shinymlxTools.R"))
-  
-  shiny::runApp(appname)
+  return(appname)
 }
 
 testout <- function(out){
