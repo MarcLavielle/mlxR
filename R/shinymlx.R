@@ -95,7 +95,7 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
                      settings=NULL,title=" ")
 {
   
-  check.shiny <- require("shiny")
+  check.shiny <- requireNamespace("shiny")
   if (check.shiny==FALSE)
     stop("Please, install the shiny library before running shinymlx.")
   select=list()
