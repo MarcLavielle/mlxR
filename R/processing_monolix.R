@@ -75,8 +75,7 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   
   datas <-list(sources=sources,observation=observation)
   
-  if(covi)
-  {
+  if(covi){
     covariate <-c()
     for(i in  1:covi)
     {
@@ -99,8 +98,8 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
     if (is.null(datas$sources)){ 
       treatment = datas$sources
     } else{
-    treatment = data.frame(datas$sources$value)
-    names(treatment) <- datas$sources$colNames 
+      treatment = data.frame(datas$sources$value)
+      names(treatment) <- datas$sources$colNames 
     }
   }
   ##************************************************************************
@@ -112,15 +111,18 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   pop_param = readPopEstimate(file.path(infoProject$resultFolder,'estimates.txt'));
   paramp[[nb_param+1]] = pop_param;
   iop_indiv=0;
-  if (is.null(param))
-  {
+  if (is.null(param)){
     param=paramp;
   }else if (is.character(param))  {
     file      = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
     param     = readIndEstimate(file,param);
+    if (!is.null(group)){
+      param$value <- param$value[datas$id,]
+      jid <- which(param$colNames=="id")
+      param$value[,jid] <- factor(1:group[[1]]$size)
+    }
     iop_indiv = 1;
-  }else 
-  {
+  }else {
     param <- formatp(param)
     param <- mergeArg(paramp,param)   
   }
@@ -161,7 +163,7 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
       name  = NULL
       value = NULL
       for (i in 1:length(var_m))  {
-        idx   = grep(var_m[[i]], pop_param$name)
+        idx   = grep(paste0("^",var_m[[i]],"$"), pop_param$name)
         name  = c(name, pop_param$name[[idx]])
         value = c(value, pop_param$value[[idx]])  
       }  
@@ -169,16 +171,13 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
     }
   }
   #**************************************************************************
-  #  TO CHECK:
-  #   test.colNames <- testC(list(treatment,param,output))
-  #   if (test.colNames==TRUE){
-  #     group=NULL
-  #   }else{
-  #     group=NULL
-  #     # TODO BUG  !!!!!!!! *************************
-  #     #group <- list(size=c(group$size, 1) , level=c("individual","longitudinal"))
-  #   }
-  ans = list(model=model, treatment=treatment, param=param, output=output, group=group)
+  test.colNames <- testC(list(treatment,param,output))
+  if (test.colNames==TRUE){
+    gr=NULL
+  }else{
+    gr <- list(size=c(group[[1]]$size, 1) , level=c("individual","longitudinal"))
+  }
+  ans = list(model=model, treatment=treatment, param=param, output=output, group=gr)
   return(ans)
 }
 
@@ -668,7 +667,10 @@ resample.data  <- function(data,N)
       idk <- datak$value[,ik]
       if (!exists('new.id')){
         n <- length(unique(idk))
-        new.id <- sample(1:n,N,replace=TRUE)
+        if (N>n)
+          new.id <- sample(1:n,N,replace=TRUE)
+        else
+          new.id <- sample(1:n,N,replace=FALSE)
       }
       dkv=NULL
       for (i in 1:N){
@@ -691,7 +693,10 @@ resample.data  <- function(data,N)
           idk <- datakj$value[,ik]
           if (!exists('new.id')){
             n <- length(unique(idk))
-            new.id <- sample(1:n,N,replace=TRUE)
+            if (N>n)
+              new.id <- sample(1:n,N,replace=TRUE)
+            else
+              new.id <- sample(1:n,N,replace=FALSE)
           }
           dkv=NULL
           for (i in 1:N){
@@ -710,6 +715,7 @@ resample.data  <- function(data,N)
       }  
     }
   }
+  data$id <- new.id
   return(data)
 }
 
@@ -720,10 +726,15 @@ testC  <- function(x)
   d <- length(x)
   for (k in seq(1,d)) {
     xk <- x[[k]]
+    if (!is.null(names(xk))){
+      if (any("id" %in% names(xk)))
+        testC <- TRUE
+    }else{
     dk <- length(xk)
     for (j in seq(1,dk)) {
       if (any( "colNames" %in% names(xk[[j]]) ))
         testC <- TRUE
+    }
     }
   }
   return(testC)
