@@ -53,8 +53,6 @@
 #' @examples
 #' \dontrun{
 #' library(mlxR)
-#' library(shiny)
-#'
 #' PKPDmodel <- inlineModel("
 #' [LONGITUDINAL] 
 #' input={ka,V,Cl,Imax,IC50,S0,kout}
@@ -71,9 +69,8 @@
 #' f2  <- list(name = 'E', time = seq(0, 250, by=1))
 #' f   <- list(f1, f2)
 #' 
-#' app <- shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), 
-#'                 output=f, style="dashboard1")
-#' shiny:runApp(app)          
+#' shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f,
+#'          style="dashboard1")
 #' 
 #' #------------------------------------------------------------------------
 #' p1 <- list(
@@ -88,9 +85,8 @@
 #'   amount = list(widget="slider", value=40, min=0, max=50, step=5)
 #' )
 #' s <- list(select.x=FALSE, select.y=FALSE)
-#' app <- shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), 
-#'                 output=f, style="navbar1", settings=s)
-#' shiny:runApp(app)
+#' shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f, 
+#'          style="navbar1", settings=s)
 #' }
 
 #' @export         
@@ -218,6 +214,8 @@ ftreatment <- function(trt){
         if (length(pj)==1){
           if (nk[j]=="type")
             trtk[[j]] <- list(value=pj, widget="numeric")
+          else if (nk[j]=="target")
+            trtk[[j]] <- list(value=pj, widget="none")
           else
             trtk[[j]] <- list(value=pj, min=pj/2, max=pj*2, step=pj*0.1, widget="slider")
         }else if (("ii" %in% nk) & (length(pj)==4)){
@@ -682,6 +680,7 @@ serverTemplate <- function(s, select, i.output, select.y)
       }  
     }
     pl <- pl + scale_colour_manual(values=info[[j]]$values, labels=info[[j]]$labels)
+    print(pl)
     if (length(ij)>1){
       if (!is.null(input$legend) && input$legend==FALSE)
         pl <- pl + theme(legend.position="none")
@@ -704,6 +703,7 @@ serverTemplate <- function(s, select, i.output, select.y)
                     srfpl,'
       }
       pl <- pl + scale_colour_manual(values=info[[j]]$values, labels=info[[j]]$labels)
+      print(pl)
       if (length(name.fj)>1)
         pl <- pl + guides(colour=guide_legend(title=NULL)) + theme(legend.position=c(.9, .8))
       else
