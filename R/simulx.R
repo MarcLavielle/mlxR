@@ -88,7 +88,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   
   #   Nmax <- 10
   test.group <- FALSE
-  if ((!is.null(group))  & (is.null(settings$data.in)) & (is.null(settings$record.file)) ){
+  if ((!identical(file_ext(model),"R")) & (!is.null(group))  & (is.null(settings$data.in)) & (is.null(settings$record.file)) ){
     if  (!is.null(names(group)))
       group <- list(group)
     if (is.null(project)){ 
@@ -117,6 +117,8 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
       if (!isfield(gm,'level')){
         model.info <- parse.model(model)
         gm$level <- model.info$level
+        if (length(gm$level) != length(sm))
+          stop("Levels of randomization have not been defined.")
       }
       gm$level <- tolower(gm$level)
       sms <- NULL
@@ -143,6 +145,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
       }
       gm$size <- sms
       gm$level <- sml
+      
       smk <- sms
       if (length(smk)>1){
         nm2 <- prod(smk[2:length(sm)])
@@ -228,7 +231,7 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
       treatment     <- ans$treatment
       parameter     <- ans$param
       output        <- ans$output
-      group         <- NULL
+      group         <- ans$group
     }
     iop.group <- 1
     if (is.null(group))
@@ -260,20 +263,26 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
   } else {
     argList <- list(DATA=dataIn, SETTINGS=s)       
   }
-  dot_call <- .Call
-  dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
-  if(data.in==F){
-    dataOut  <- convertmlx(dataOut,dataIn,iop.group,id.out,id.ori)
-    if (!(is.null(project)))  {
-      nd <- length(dataOut)
-      if(!is.null(doseRegimen)){
-        dataOut[[nd+1]] <- doseRegimen
-        names(dataOut)[nd+1] <- "treatment"
-      }
-    }
+  
+  if (identical(file_ext(model),"R")) {
+    dataOut <- simulR(argList)
     return(dataOut)
   }else{
-    return(dataIn)
+    dot_call <- .Call
+    dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
+    if(data.in==F){
+      dataOut  <- convertmlx(dataOut,dataIn,iop.group,id.out,id.ori)
+      if (!(is.null(project)))  {
+        nd <- length(dataOut)
+        if(!is.null(doseRegimen)){
+          dataOut[[nd+1]] <- doseRegimen
+          names(dataOut)[nd+1] <- "treatment"
+        }
+      }
+      return(dataOut)
+    }else{
+      return(dataIn)
+    }
   }
 }
 
