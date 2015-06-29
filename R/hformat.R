@@ -18,34 +18,48 @@ hformat  <-  function(list.input)
     }
     N=length(group)
     
-    model.info <- parse.model(list.input$model)
-    for (k in (1:N)){
-      if (!isfield(group[[k]],'size')){
-        group[[k]]$size <- rep(1, length(model.info$level))
-        group[[k]]$level <- model.info$level
-      }else{
-        if (!isfield(group[[k]],'level')){
+    model <- list.input$model
+    if (identical(file_ext(model),"R")){
+      for (k in (1:N)){
+        if (!isfield(group[[k]],'size'))
+          group[[k]]$size <- 1
+        if (length(group$size)>1)
+          stop("Define group$size as a scalar instead of a vector.")
+        if (isfield(group[[k]],'level'))
+          warning("'level' defined in 'group' is not used with a R model.")
+      }
+    }else{    
+      model.info <- parse.model(model)
+      for (k in (1:N)){
+        if (!isfield(group[[k]],'size')){
+          group[[k]]$size <- rep(1, length(model.info$level))
           group[[k]]$level <- model.info$level
-          if (length(group[[k]]$size)!=length(group[[k]]$level))
-            stop("'level' and 'size' defined in 'group' have different lengths.", call.=FALSE)      
-          if (length(model.info$level)>1){
-            msg <- cat("levels of randomization have not been defined in group",k,
-                       '\n levels associated with size = ',group[[k]]$size,' are:\n',
-                       model.info$level,'\n\n')
-            w1 <- warning(msg,call.=FALSE)
-          }
         }else{
-          if (isfield(group[[k]],'size') & (length(group[[k]]$size)!=length(group[[k]]$level)))
-            stop("'level' and 'size' defined in 'group' have different lengths.", call.=FALSE)      
-          gk <- group[[k]]$level
-          sk <- rep(1, length(model.info$level))
-          for (jk in (1:length(gk))){
-            rk <- grep(gk[jk],model.info$level)
-            if (length(rk)>0)
-              sk[rk] <- group[[k]]$size[jk]
+          if (!isfield(group[[k]],'level')){
+            group[[k]]$level <- model.info$level
+            if (length(model.info$level)>1){
+              minfo <- paste(model.info$level,collapse=", ")
+              gsize <- paste(group[[k]]$size,collapse=", ")
+              msg <- paste0("levels of randomization have not been defined in group",k,
+                            '. Levels associated with size = (',gsize,') are:\n"',
+                            minfo,'"\n\n')
+                            w1 <- warning(msg,call.=FALSE)
+              if (length(group[[k]]$size)!=length(group[[k]]$level))
+                stop("'level' and 'size' defined in 'group' have different lengths.", call.=FALSE)      
+            }
+          }else{
+            if (isfield(group[[k]],'size') & (length(group[[k]]$size)!=length(group[[k]]$level)))
+              stop("'level' and 'size' defined in 'group' have different lengths.", call.=FALSE)      
+            gk <- group[[k]]$level
+            sk <- rep(1, length(model.info$level))
+            for (jk in (1:length(gk))){
+              rk <- grep(gk[jk],model.info$level)
+              if (length(rk)>0)
+                sk[rk] <- group[[k]]$size[jk]
+            }
+            group[[k]]$size <- sk
+            group[[k]]$level <- model.info$level
           }
-          group[[k]]$size <- sk
-          group[[k]]$level <- model.info$level
         }
       }
     }
