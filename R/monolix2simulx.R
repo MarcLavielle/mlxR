@@ -198,22 +198,20 @@ monolix2simulx <-function(project,parameter=NULL)
         nameOtherReg<-c(nameOtherReg,namePi)
         outfile = file.path(Rproject,paste0("/",namePi,".txt"))      
         cat(paste0(namePi,"<- read.table(\"",namePi,".txt\", header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-        cat(paste0("regress <-list(colNames=c(\"",paste0(regressor[[i]]$colNames,collapse="\",\""),"\"),colTypes=c(\"",paste0(regressor[[i]]$colTypes,collapse="\",\""),"\"),value=as.matrix(",namePi,",nrow=",nrow(regressor[[i]]$value),",ncol=",ncol(regressor[[i]]$value),") )\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-        
-        cat(paste0("regressor<-c(regressor,regress)\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        cat(paste0("regressor<-c(regressor,",namePi,")\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         out2<-NULL
         out2 <-matrix(regressor[[i]]$value,nrow=nrow(regressor[[i]]$value),ncol=ncol(regressor[[i]]$value))
-        colnames(out2)<-regressor[[i]]$colNames
+        colnames(out2)<-tolower(regressor[[i]]$colNames)
         write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
       }
     }else{
       outfile = file.path(Rproject,paste0("/regressor.txt"))      
       out2<-NULL
       out2 <-matrix(regressor[[1]]$value,nrow=nrow(regressor[[1]]$value),ncol=ncol(regressor[[1]]$value))
-      colnames(out2)<-regressor[[1]]$colNames
+      colnames(out2)<-tolower(regressor[[1]]$colNames)
       write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
-      cat(paste0("regressor <-list(colNames=c(\"",paste0(regressor[[1]]$colNames,collapse="\",\""),"\"),colTypes=c(\"",paste0(regressor[[1]]$colTypes,collapse="\",\""),"\"),value=as.matrix(read.table(\"regressor.txt\", header = TRUE),nrow=",nrow(regressor[[1]]$value),",ncol=",ncol(regressor[[1]]$value),") )\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-    }
+      cat(paste0("regressor <-read.table(\"regressor.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+          }
   }
   # call the simulator
   cat("\n# call the simulator \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
