@@ -31,12 +31,14 @@ monolix2simulx <-function(project,parameter=NULL)
   treatment=NULL  
   #graphics=FALSE
   output=NULL
+  regressor=NULL
   ans           <- processing_monolix(project,model,treatment,parameter,output,group)
   model         <- ans$model
   treatment     <- ans$treatment
   parameter     <- ans$param
   output        <- ans$output
   group         <- ans$group
+  regressor     <- ans$regressor
   mlxtranpath <- dirname(project)
   mlxtranfile = file_path_sans_ext(basename(project))
   mypath <- getwd()
@@ -62,9 +64,9 @@ monolix2simulx <-function(project,parameter=NULL)
   # write  treatment 
   if(!(is.null(treatment))){ 
     if (!is.null(treatment$value)){
-    treat2<-matrix(treatment$value,nrow=nrow(treatment$value),ncol=ncol(treatment$value))
-    colnames(treat2)<-treatment$colNames
-    treatment <- treat2
+      treat2<-matrix(treatment$value,nrow=nrow(treatment$value),ncol=ncol(treatment$value))
+      colnames(treat2)<-treatment$colNames
+      treatment <- treat2
     }
     write.table(treatment,file=file.path(Rproject,"/treatment.txt"),row.names=FALSE,quote=FALSE)
     cat("\n# treatment\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
@@ -142,7 +144,7 @@ monolix2simulx <-function(project,parameter=NULL)
       colnames(out2)<-output[[1]]$colNames
       outfile = file.path(Rproject,"/output.txt")
       write.table(out2,file=outfile,row.names=FALSE,quote=FALSE) 
-      cat("out<-list(out)\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      #cat("out<-list(out)\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
     }else
     {    # many types of output could exist
       for(i in seq(1:length(output)))
@@ -174,6 +176,45 @@ monolix2simulx <-function(project,parameter=NULL)
     }
   }
   
+  # write  regressor   
+  if(!(is.null(regressor)))
+  {  
+    cat("\n# regressor \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    # many types of output could exist
+    nameOtherReg<-NULL
+    if(length(regressor)>1)    
+    {  
+      cat(paste0("regressor<-c() \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      
+      for(i in seq(1:length(regressor)))
+      {
+        if(!(is.null(regressor[[i]]$name)))
+        {
+          namePi<-regressor[[i]]$name
+        }else {
+          namePi<-paste0("regressor",i)
+        }
+        
+        nameOtherReg<-c(nameOtherReg,namePi)
+        outfile = file.path(Rproject,paste0("/",namePi,".txt"))      
+        cat(paste0(namePi,"<- read.table(\"",namePi,".txt\", header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0("regress <-list(colNames=c(\"",paste0(regressor[[i]]$colNames,collapse="\",\""),"\"),colTypes=c(\"",paste0(regressor[[i]]$colTypes,collapse="\",\""),"\"),value=as.matrix(",namePi,",nrow=",nrow(regressor[[i]]$value),",ncol=",ncol(regressor[[i]]$value),") )\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+        
+        cat(paste0("regressor<-c(regressor,regress)\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        out2<-NULL
+        out2 <-matrix(regressor[[i]]$value,nrow=nrow(regressor[[i]]$value),ncol=ncol(regressor[[i]]$value))
+        colnames(out2)<-regressor[[i]]$colNames
+        write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
+      }
+    }else{
+      outfile = file.path(Rproject,paste0("/regressor.txt"))      
+      out2<-NULL
+      out2 <-matrix(regressor[[1]]$value,nrow=nrow(regressor[[1]]$value),ncol=ncol(regressor[[1]]$value))
+      colnames(out2)<-regressor[[1]]$colNames
+      write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
+      cat(paste0("regressor <-list(colNames=c(\"",paste0(regressor[[1]]$colNames,collapse="\",\""),"\"),colTypes=c(\"",paste0(regressor[[1]]$colTypes,collapse="\",\""),"\"),value=as.matrix(read.table(\"regressor.txt\", header = TRUE),nrow=",nrow(regressor[[1]]$value),",ncol=",ncol(regressor[[1]]$value),") )\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+    }
+  }
   # call the simulator
   cat("\n# call the simulator \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   cat("res <- simulx(model=model", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
@@ -193,7 +234,10 @@ monolix2simulx <-function(project,parameter=NULL)
   {
     cat(",output=out",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   }
-  
+  if(!(is.null(regressor)))
+  {
+    cat(",regressor=regressor",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  }
   cat(")\n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
   #   if(graphics==TRUE)

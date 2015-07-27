@@ -34,9 +34,10 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   obsi = 0
   covi = 0
   idsources = 0
-  idcovariate = 0
   idobservation <- c()
   idcovariate <-c()
+  idregressor<-c()
+  regi = 0
   for(i in 1:(length(datas2)-1))
   {
     if(datas2[[i]]$label == "dose")
@@ -53,7 +54,11 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
       covi = covi +1
       idcovariate <-c(idcovariate,i)
     }
-    
+    if(datas2[[i]]$label == "regressions")
+    {
+      regi = regi +1
+      idregressor <-c(idregressor,i)
+    }
   }
   
   if(idsources)
@@ -84,6 +89,16 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
                                        label=datas2[[idcovariate[i]]]$label, colNames=c("id",datas2[[idcovariate[i]]]$colNames[2:length(datas2[[idcovariate[i]]]$colNames)]) )))
     }
     datas <- append(datas,list(covariate=covariate))
+  }
+  if(regi){
+    regressor <-c()
+    for(i in  1:regi)
+    {
+      regressor<-c(regressor,list(list(name=datas2[[idregressor[i]]]$name,
+                                       value=matrix(unlist(datas2[[idregressor[i]]]$values),nrow=length(datas2[[idregressor[i]]]$values),byrow = TRUE),
+                                       label=datas2[[idregressor[i]]]$label, colNames=datas2[[idregressor[i]]]$colNames,colTypes=datas2[[idregressor[i]]]$colTypes)))
+    }
+    datas <- append(datas,list(regressor=regressor))
   }
   if (!is.null(group)){
     if ((length(names(group[[1]]))>1) | (is.null(group[[1]]$size)))
@@ -177,7 +192,11 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   }else{
     gr <- list(size=c(group[[1]]$size, 1) , level=c("individual","longitudinal"))
   }
-  ans = list(model=model, treatment=treatment, param=param, output=output, group=gr)
+  if (is.null(datas$regressor)){
+    ans = list(model=model, treatment=treatment, param=param, output=output, group=gr)
+  }else{
+    ans = list(model=model, treatment=treatment, param=param, output=output, group=gr,regressor=datas$regressor)
+  }      
   return(ans)
 }
 
@@ -730,11 +749,11 @@ testC  <- function(x)
       if (any("id" %in% names(xk)))
         testC <- TRUE
     }else{
-    dk <- length(xk)
-    for (j in seq(1,dk)) {
-      if (any( "colNames" %in% names(xk[[j]]) ))
-        testC <- TRUE
-    }
+      dk <- length(xk)
+      for (j in seq(1,dk)) {
+        if (any( "colNames" %in% names(xk[[j]]) ))
+          testC <- TRUE
+      }
     }
   }
   return(testC)
