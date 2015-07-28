@@ -176,9 +176,42 @@ monolix2simulx <-function(project,parameter=NULL)
     }
   }
   
-  # write  regressor   
+  # regressor    
   if(!(is.null(regressor)))
   {  
+    # re-order regressor if duplicated or unsorted data (by time) exists on an id.
+    for(ir in seq(1:length(regressor)))
+    {
+      regvalue = regressor[[ir]]$value      
+      #remove duplicated rows for the same id
+      duprows <-c()
+      for(i in 1: (nrow(regvalue)-1))
+      {
+        for(j in (i+1):nrow(regvalue))
+        {
+          
+          if( (regvalue[i,1]==regvalue[j,1]) ) #same id
+          {
+            if(regvalue[i,2]==regvalue[j,2]) #duplicated time for the same id
+            {
+              duprows<-c(duprows,j)             
+            }
+          }else
+          {
+            #assuming that the regressor is already sorted by id
+            break
+          }
+        }
+      }
+      if(!is.null(duprows))
+      {
+        regvalue<-regvalue[-duprows,]
+      }
+      #sort according to id and to time
+      index<-order(regvalue[,1],regvalue[,2])
+      regressor[[ir]]$value <-regvalue[index,]      
+    }
+    #write regresssor
     cat("\n# regressor \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
     # many types of output could exist
     nameOtherReg<-NULL
@@ -211,7 +244,7 @@ monolix2simulx <-function(project,parameter=NULL)
       colnames(out2)<-tolower(regressor[[1]]$colNames)
       write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
       cat(paste0("regressor <-read.table(\"regressor.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-          }
+    }
   }
   # call the simulator
   cat("\n# call the simulator \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
