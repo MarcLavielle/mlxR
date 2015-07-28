@@ -180,6 +180,7 @@ monolix2simulx <-function(project,parameter=NULL)
   if(!(is.null(regressor)))
   {  
     # re-order regressor if duplicated or unsorted data (by time) exists on an id.
+    # assuming that the first column is id and the second column is time
     for(ir in seq(1:length(regressor)))
     {
       regvalue = regressor[[ir]]$value      
