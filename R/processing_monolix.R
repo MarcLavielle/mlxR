@@ -63,7 +63,7 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   
   if(idsources)
   {
-    sources<-list(label="source",name="doseRegimen", colNames=datas2[[idsources]]$colTypes,
+    sources<-list(label="source",name="doseRegimen", colNames= tolower(datas2[[idsources]]$colNames),
                   value=matrix(unlist(datas2[[idsources]]$values),nrow=length(datas2[[idsources]]$values),byrow = TRUE))  
   } else
   {
@@ -74,7 +74,7 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   for(i in  1:obsi)
   {
     obsvalue=matrix(unlist(datas2[[idobservation[i]]]$values),nrow=length(datas2[[idobservation[i]]]$values),byrow = TRUE)
-    observation<- c(observation,list(list( label="observation", name=infoProject$output[i],colNames=c("id", "time"),
+    observation<- c(observation,list(list( label="observation", name=infoProject$output[i],colNames=tolower(c(datas2[[idobservation[i]]]$colNames[1],datas2[[idobservation[i]]]$colNames[2])),
                                            value=obsvalue[,1:2])))
   }
   
@@ -86,7 +86,7 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
     {
       covariate<-c(covariate,list(list(name=datas2[[idcovariate[i]]]$colNames[2:length(datas2[[idcovariate[i]]]$colNames)],
                                        value=matrix(unlist(datas2[[idcovariate[i]]]$values),nrow=length(datas2[[idcovariate[i]]]$values),byrow = TRUE),
-                                       label=datas2[[idcovariate[i]]]$label, colNames=c("id",datas2[[idcovariate[i]]]$colNames[2:length(datas2[[idcovariate[i]]]$colNames)]) )))
+                                       label=datas2[[idcovariate[i]]]$label, colNames= tolower(datas2[[idcovariate[i]]]$colNames) )))
     }
     datas <- append(datas,list(covariate=covariate))
   }
@@ -96,7 +96,7 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
     {
       regressor<-c(regressor,list(list(name=datas2[[idregressor[i]]]$name,
                                        value=matrix(unlist(datas2[[idregressor[i]]]$values),nrow=length(datas2[[idregressor[i]]]$values),byrow = TRUE),
-                                       label=datas2[[idregressor[i]]]$label, colNames=datas2[[idregressor[i]]]$colNames,colTypes=datas2[[idregressor[i]]]$colTypes)))
+                                       label=datas2[[idregressor[i]]]$label, colNames=tolower(datas2[[idregressor[i]]]$colNames),colTypes=datas2[[idregressor[i]]]$colTypes)))
     }
     datas <- append(datas,list(regressor=regressor))
   }

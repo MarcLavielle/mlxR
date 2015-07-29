@@ -235,14 +235,14 @@ monolix2simulx <-function(project,parameter=NULL)
         cat(paste0("regressor<-c(regressor,",namePi,")\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         out2<-NULL
         out2 <-matrix(regressor[[i]]$value,nrow=nrow(regressor[[i]]$value),ncol=ncol(regressor[[i]]$value))
-        colnames(out2)<-tolower(regressor[[i]]$colNames)
+        colnames(out2)< regressor[[i]]$colNames
         write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
       }
     }else{
       outfile = file.path(Rproject,paste0("/regressor.txt"))      
       out2<-NULL
       out2 <-matrix(regressor[[1]]$value,nrow=nrow(regressor[[1]]$value),ncol=ncol(regressor[[1]]$value))
-      colnames(out2)<-tolower(regressor[[1]]$colNames)
+      colnames(out2)<-regressor[[1]]$colNames
       write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
       cat(paste0("regressor <-read.table(\"regressor.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
     }
