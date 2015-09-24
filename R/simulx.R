@@ -86,6 +86,13 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   if (is.null(settings$seed))
     settings$seed <- round(as.numeric(Sys.time())*100)%%10000
   
+  # store ouput for final recovering of user's demand
+  outputIN<-output
+  # get the same IDs in treatment and in ouput 
+  outpTr<- mergeIDs(treatment,output)
+  treatment<-outpTr$treatment
+  output<-outpTr$output
+  
   #   Nmax <- 10
   test.group <- FALSE
   if ((!identical(file_ext(model),"R")) & (!is.null(group))  & (is.null(settings$data.in)) & (is.null(settings$record.file)) ){
@@ -187,6 +194,25 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   }
   Sys.setenv(LIXOFT_HOME="")
   Sys.setenv('PATH'=myOldENVPATH);
+  
+  # find entries and return output with respect to  user's demand
+  outNames<-names(r)
+  for( i in (1:length(outputIN)))
+  {
+    for(iname in (1:length(outNames)))
+    {
+      namei <- outNames[[iname]]
+      if( namei== outputIN[[i]]$name)
+      {
+        sizze <-
+        idd1<-c(outputIN[[i]]$time$id,rep(0,nrow(r[[namei]])-nrow(outputIN[[i]]$time)))
+        dff<-which(is.element(r[[namei]]$id,idd1)==TRUE)
+        rnamei <- r[[namei]][dff,]
+        r[[namei]]<- rnamei
+      }
+    }
+  }
+  
   return(r)
 }
 
@@ -322,3 +348,38 @@ mergeres <- function(r,s,m=NULL,N=NULL){
   return(u)
 }
 
+mergeIDs<-function(treatment=NULL,output=NULL)
+{
+  # merge output and tratment IDs in order to having the same id
+  retVal<-NULL
+  outp2time<-NULL
+  if(!is.null(treatment))
+  {
+    outp2time<-as.matrix(treatment,nrow=nrow(treatment),ncol=ncol(treatment))[,1:2]
+  }
+  retVal$treatment<-treatment
+  retVal$output<-output
+  
+  if (!(is.null(output))) 
+  {
+    for ( i in (1:length(output)))
+    {
+      outp2time<- rbind(outp2time,output[[i]]$time) 
+    }
+    outp2time<-unique(outp2time)
+    for ( i in (1:length(output)))
+    {
+      output[[i]]$time<- outp2time 
+    }
+    retVal$output<-output
+    if(!is.null(treatment))
+    {
+      ttr<-matrix(0,ncol=1,nrow=nrow(outp2time))
+      colnames(ttr)=colnames(treatment)[3]
+      treatment<-rbind(treatment,cbind(outp2time,ttr))
+      treatment<-unique(treatment)
+      retVal$treatment<-treatment
+    }    
+  }
+  return (retVal)
+}
