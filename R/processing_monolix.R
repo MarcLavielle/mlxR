@@ -22,84 +22,85 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   ##************************************************************************
   #       DATA FILE
   #**************************************************************************
-  # datas <- readdatamlx(infoProject)
+   datas <- readdatamlx(infoProject)
   
-  # Read file with  c++  code called by mlxDataReader
-  colTypes <- strsplit(infoProject$dataheader, ",")
-  argList <- list(TXT_FILE=infoProject$datafile, COL_TYPES=colTypes[[1]])
-  dot_call<-.Call;
-  datas2 <-dot_call("mlxDataReaderR", argList, PACKAGE = "mlxDataReaderR");
-  
-  # set the storage of datas2 into the  format of datas 
-  obsi = 0
-  covi = 0
-  idsources = 0
-  idobservation <- c()
-  idcovariate <-c()
-  idregressor<-c()
-  regi = 0
-  for(i in 1:(length(datas2)-1))
-  {
-    if(datas2[[i]]$label == "dose")
-    {
-      idsources = i
-    }
-    if(datas2[[i]]$label == "longitudinal")
-    {
-      obsi = obsi+1
-      idobservation<- c(idobservation,i)      
-    }
-    if(datas2[[i]]$label == "covariate")
-    {
-      covi = covi +1
-      idcovariate <-c(idcovariate,i)
-    }
-    if(datas2[[i]]$label == "regressions")
-    {
-      regi = regi +1
-      idregressor <-c(idregressor,i)
-    }
-  }
-  
-  if(idsources)
-  {
-    sources<-list(label="source",name="doseRegimen", colNames= tolower(datas2[[idsources]]$colNames),
-                  value=matrix(unlist(datas2[[idsources]]$values),nrow=length(datas2[[idsources]]$values),byrow = TRUE))  
-  } else
-  {
-    sources =NULL
-  }
-  observation <-c()
-  obsi <- min(obsi, n.output)
-  for(i in  1:obsi)
-  {
-    obsvalue=matrix(unlist(datas2[[idobservation[i]]]$values),nrow=length(datas2[[idobservation[i]]]$values),byrow = TRUE)
-    observation<- c(observation,list(list( label="observation", name=infoProject$output[i],colNames=tolower(c(datas2[[idobservation[i]]]$colNames[1],datas2[[idobservation[i]]]$colNames[2])),
-                                           value=obsvalue[,1:2])))
-  }
-  
-  datas <-list(sources=sources,observation=observation)
-  
-  if(covi){
-    covariate <-c()
-    for(i in  1:covi)
-    {
-      covariate<-c(covariate,list(list(name=datas2[[idcovariate[i]]]$colNames[2:length(datas2[[idcovariate[i]]]$colNames)],
-                                       value=matrix(unlist(datas2[[idcovariate[i]]]$values),nrow=length(datas2[[idcovariate[i]]]$values),byrow = TRUE),
-                                       label=datas2[[idcovariate[i]]]$label, colNames= tolower(datas2[[idcovariate[i]]]$colNames) )))
-    }
-    datas <- append(datas,list(covariate=covariate))
-  }
-  if(regi){
-    regressor <-c()
-    for(i in  1:regi)
-    {
-      regressor<-c(regressor,list(list(name=datas2[[idregressor[i]]]$name,
-                                       value=matrix(unlist(datas2[[idregressor[i]]]$values),nrow=length(datas2[[idregressor[i]]]$values),byrow = TRUE),
-                                       label=datas2[[idregressor[i]]]$label, colNames=tolower(datas2[[idregressor[i]]]$colNames),colTypes=datas2[[idregressor[i]]]$colTypes)))
-    }
-    datas <- append(datas,list(regressor=regressor))
-  }
+#   # Read file with  c++  code called by mlxDataReader
+#   colTypes <- strsplit(infoProject$dataheader, ",")
+#   argList <- list(TXT_FILE=infoProject$datafile, COL_TYPES=colTypes[[1]])
+#   dot_call<-.Call;
+#   datas2 <-dot_call("mlxDataReaderR", argList, PACKAGE = "mlxDataReaderR");
+# #   
+#   # set the storage of datas2 into the  format of datas 
+#   obsi = 0
+#   covi = 0
+#   idsources = 0
+#   idobservation <- c()
+#   idcovariate <-c()
+#   idregressor<-c()
+#   regi = 0
+#   for(i in 1:(length(datas2)-1))
+#   {
+#     if(datas2[[i]]$label == "dose")
+#     {
+#       idsources = i
+#     }
+#     if(datas2[[i]]$label == "longitudinal")
+#     {
+#       obsi = obsi+1
+#       idobservation<- c(idobservation,i)      
+#     }
+#     if(datas2[[i]]$label == "covariate")
+#     {
+#       covi = covi +1
+#       idcovariate <-c(idcovariate,i)
+#     }
+#     if(datas2[[i]]$label == "regressions")
+#     {
+#       regi = regi +1
+#       idregressor <-c(idregressor,i)
+#     }
+#   }
+#   
+#   if(idsources)
+#   {
+#     sources<-list(label="source",name="doseRegimen", colNames= tolower(datas2[[idsources]]$colNames),
+#                   value=matrix(unlist(datas2[[idsources]]$values),nrow=length(datas2[[idsources]]$values),byrow = TRUE))  
+#   } else
+#   {
+#     sources =NULL
+#   }
+#   observation <-c()
+#   obsi <- min(obsi, n.output)
+#   for(i in  1:obsi)
+#   {
+#     obsvalue=matrix(unlist(datas2[[idobservation[i]]]$values),nrow=length(datas2[[idobservation[i]]]$values),byrow = TRUE)
+#     observation<- c(observation,list(list( label="observation", name=infoProject$output[i],colNames=tolower(c(datas2[[idobservation[i]]]$colNames[1],datas2[[idobservation[i]]]$colNames[2])),
+#                                            value=obsvalue[,1:2])))
+#   }
+#   
+#   datas <-list(sources=sources,observation=observation)
+#   
+#   if(covi){
+#     covariate <-c()
+#     for(i in  1:covi)
+#     {
+#       covariate<-c(covariate,list(list(name=datas2[[idcovariate[i]]]$colNames[2:length(datas2[[idcovariate[i]]]$colNames)],
+#                                        value=matrix(unlist(datas2[[idcovariate[i]]]$values),nrow=length(datas2[[idcovariate[i]]]$values),byrow = TRUE),
+#                                        label=datas2[[idcovariate[i]]]$label, colNames= tolower(datas2[[idcovariate[i]]]$colNames) )))
+#     }
+#     datas <- append(datas,list(covariate=covariate))
+#   }
+#   if(regi){
+#     regressor <-c()
+#     for(i in  1:regi)
+#     {
+#       regressor<-c(regressor,list(list(name=datas2[[idregressor[i]]]$name,
+#                                        value=matrix(unlist(datas2[[idregressor[i]]]$values),nrow=length(datas2[[idregressor[i]]]$values),byrow = TRUE),
+#                                        label=datas2[[idregressor[i]]]$label, colNames=tolower(datas2[[idregressor[i]]]$colNames),colTypes=datas2[[idregressor[i]]]$colTypes)))
+#     }
+#     datas <- append(datas,list(regressor=regressor))
+#   }
+
   if (!is.null(group)){
     if ((length(names(group[[1]]))>1) | (is.null(group[[1]]$size)))
       stop("When simulx is used with a monolix project, 'group' should be a list with only one field 'size'")
