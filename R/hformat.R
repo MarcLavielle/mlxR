@@ -103,7 +103,7 @@ hformat  <-  function(list.input)
   if (is.null(N)){
     N=1
   }else{
-    N=unique(N)
+    N= unique(N)
     if (length(N)>1){
       stop("different numbers of individuals and/or groups are defined \n",call.="FALSE")
     }
