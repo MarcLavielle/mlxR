@@ -43,7 +43,7 @@ hformat  <-  function(list.input)
               msg <- paste0("levels of randomization have not been defined in group",k,
                             '. Levels associated with size = (',gsize,') are:\n"',
                             minfo,'"\n\n')
-                            w1 <- warning(msg,call.=FALSE)
+              w1 <- warning(msg,call.=FALSE)
               if (length(group[[k]]$size)!=length(group[[k]]$level))
                 stop("'level' and 'size' defined in 'group' have different lengths.", call.=FALSE)      
             }
@@ -67,6 +67,7 @@ hformat  <-  function(list.input)
     N=NULL
   }
   
+  Nid<-NULL
   for (k in seq(1,length(lv))) {
     lvk <- lv[[k]]
     if (!is.null(names(lvk))){  
@@ -79,12 +80,15 @@ hformat  <-  function(list.input)
       #     if (!is.null(dkj)){
       #   N=c(N,dkj[1])
       if (isfield(lvkj,"id")){
-        N <- c(N,length(unique(lvkj$id)))
+        # N <- c(N,length(unique(lvkj$id)))
+        Nid <- c(Nid,lvkj$id)
       }else if(isfield(lvkj,"design")){
-        N <- c(N,length(unique(lvkj$design$id)))
+        #N <- c(N,length(unique(lvkj$design$id)))
+        Nid <- c(Nid,lvkj$design$id)
       }else if(isfield(lvkj,"time")){
         if (isfield(lvkj$time,"id")){
-          N <- c(N,length(unique(lvkj$time$id)))
+          #N <- c(N,length(unique(lvkj$time$id)))
+          Nid <- c(Nid,lvkj$time$id)
           names(lvkj)[names(lvkj)=="time"]<-"design"
           lv[[k]][[j]]=lvkj
         }
@@ -95,20 +99,27 @@ hformat  <-  function(list.input)
       }
       
       if (isfield(lvkj,'colNames')){
-        N=c(N,length(unique(lvkj$value[,1]))) #assuming that first column = id
+        #N=c(N,length(unique(lvkj$value[,1]))) #assuming that first column = id
+        Nid=c(Nid,lvkj$value[,1]) #assuming that first column = id
       }
     }
   }    
+  Nid = length(unique(Nid))
   
   if (is.null(N)){
-    N=1
-  }else{
-    N= unique(N)
-    if (length(N)>1){
-      stop("different numbers of individuals and/or groups are defined \n",call.="FALSE")
-    }
+    N <- Nid 
   }
   
+  if(is.null(N)||N==0)
+  {
+    N=1
+  }else{
+    
+     N = unique(N)
+    #       if (length(N)>1){
+    #         stop("different numbers of individuals and/or groups are defined \n",call.="FALSE")
+    #       }
+  }  
   if (is.null(group)){
     group <- vector("list",N)
     for (i in seq(1,N))
@@ -116,7 +127,6 @@ hformat  <-  function(list.input)
   }
   
   id.ori=list()
-  
   #---  parameters
   iv <- which(nv=="parameter")
   parameter <- vector("list", N)
@@ -219,9 +229,9 @@ hformat  <-  function(list.input)
   #--------------------
   if (length(unique(id.ori))>0){
     if (length(unique(id.ori))>1){
-      stop("\n\nid's should be the same in the different input arguments (parameters, treatment, output,...)\n")
+      #stop("\n\nid's should be the same in the different input arguments (parameters, treatment, output,...)\n")
     }else{
-      list.output$id.ori <- unique(id.ori)[[1]]
+      list.output$id.ori <- unique(id.ori)#[[1]]
     }
   }else{
     list.output$id.ori <- NULL
@@ -239,7 +249,8 @@ format.treatment <- function(treatment,uN)
   if (!is.null(names(treatment))){  
     treatment <- list(treatment) 
   }
-  id.ori <- list()
+  #id.ori <- list()
+  id.ori <- NULL
   for (k in seq(1,length(treatment))){
     trtk <- treatment[[k]]
     if (isfield(trtk,'colNames')){
@@ -254,7 +265,8 @@ format.treatment <- function(treatment,uN)
     }else{
       idk <- sort(unique(trtk$id))
       if (any(idk != uN)) {
-        id.ori[[length(id.ori)+1]]<-idk 
+        #id.ori[[length(id.ori)+1]]<-idk
+        id.ori<-c(id.ori,idk)
         trtk$id <- match(trtk$id, idk)
       }
       
@@ -269,7 +281,8 @@ format.treatment <- function(treatment,uN)
       trtk$rate <- Inf
     treatment[[k]] <- trtk   
   }
-  r <- list(treatment=treatment, id=id.ori)
+  #r <- list(treatment=treatment, id=id.ori)
+  r <- list(treatment=treatment, id=unique(id.ori))
   return(r)
 }
 #--------------------------
@@ -324,8 +337,8 @@ format.parameter <- function(parameter,param,uN)
   if (!is.null(names(param))){  
     param=list(param) 
   }
-  id.ori <- list()
-  
+  #id.ori <- list()
+  id.ori <- NULL
   for (k in seq(1,length(param))){
     paramk <- param[[k]]
     if (isfield(paramk,'colNames')){
@@ -351,7 +364,8 @@ format.parameter <- function(parameter,param,uN)
       }else{
         idk <- sort(unique(paramk$id))
         if (any(idk != uN)){
-          id.ori[[length(id.ori)+1]]<-idk    
+          #id.ori[[length(id.ori)+1]]<-idk    
+          id.ori<-c(id.ori,idk) 
           paramk$id <- match(paramk$id, idk)
         }
       }
@@ -366,7 +380,8 @@ format.parameter <- function(parameter,param,uN)
       }
     }
   }
-  r <- list(parameter=parameter, id=id.ori)
+  # r <- list(parameter=parameter, id=id.ori)
+  r <- list(parameter=parameter, id=unique(id.ori))
   return(r)
 }
 #-----------------------------
@@ -398,8 +413,8 @@ format.output <- function(output, out,uN)
   
   ioutput <- output$individual
   goutput <- output$group
-  id.ori <- list()
-  
+  #id.ori <- list()
+  id.ori <- NULL
   for (k in seq(1,length(out))){
     outk <- out[[k]]
     if (!isfield(outk,"name"))
@@ -413,7 +428,9 @@ format.output <- function(output, out,uN)
     }
     if (isfield(outk,'design')){      
       id <- sort(unique(outk$design$id))
-      if (any(id != uN)) id.ori[[length(id.ori)+1]]<-id        
+      if (length(id) !=length(uN) ||  any(id != uN)) 
+        #if(any(id != uN))   id.ori[[length(id.ori)+1]]<-id  
+        id.ori<-sort(unique(c(id.ori,id)))
       for (i in uN){
         ji <- which(outk$design$id == id[i])
         ti <- sort(outk$design$time[ji])
@@ -442,7 +459,8 @@ format.output <- function(output, out,uN)
   }
   output$individual <- ioutput 
   output$group <- goutput
-  r <- list(output=output, id=id.ori)
+  #r <- list(output=output, id=id.ori)
+  r <- list(output=output, id=unique(id.ori))
   return(r)
 }
 
@@ -454,7 +472,8 @@ format.regressor <- function(reg, uN)
     reg=list(reg) 
   
   regressor <- vector("list",length(reg))
-  id.ori <- list()
+  #id.ori <- list()
+  id.ori <- NULL
   for (k in seq(1,length(reg))){
     regk <- reg[[k]]
     if (!is.data.frame(regk)){
@@ -479,13 +498,15 @@ format.regressor <- function(reg, uN)
       names(mk) <- colNames
       idk <- sort(unique(mk$id))
       if (any(idk != uN)) {
-        id.ori[[length(id.ori)+1]]<-idk 
+        #id.ori[[length(id.ori)+1]]<-idk 
+        id.ori<-c(id.ori,idk) 
         mk$id <- match(mk$id, idk)
       }
     }
     regressor[[k]] <- regk
   }
-  r <- list(regressor=regressor, id=id.ori)
+  # r <- list(regressor=regressor, id=id.ori)
+  r <- list(regressor=regressor, id=unique(id.ori))
   return(r)
 }
 
