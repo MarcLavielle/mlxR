@@ -307,7 +307,7 @@ monolix2simulx <-function(project,parameter=NULL)
   #   }
   Sys.setenv(LIXOFT_HOME="")
   Sys.setenv('PATH'=myOldENVPATH);
-  if(Syst.getenv("RSTUDIO")=="1")
+  if(Sys.getenv("RSTUDIO")=="1")
     file.edit(projectExe) 
   setwd(mypath)
 }
