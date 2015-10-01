@@ -288,9 +288,13 @@ mergeDataFrame  <- function(p1,p2)
     paramk <- p2[[k]]  
     if (is.list(paramk)){
       if (is.null(paramk$id)) {
-        #         p.temp <- paramk$value
-        p.temp <- data.frame(paramk$value)
-        names(p.temp) <- paramk$colNames
+        if (is.vector(paramk$value)){
+          p.temp <- as.vector(paramk$value)
+          names(p.temp) <- paramk$name
+        } else {
+          p.temp <- data.frame(paramk$value)
+          names(p.temp) <- paramk$colNames
+        }
       }else{
         p.temp <- paramk$value
         names(p.temp) <- paramk$name
@@ -299,6 +303,7 @@ mergeDataFrame  <- function(p1,p2)
     }
   } 
   n1 = length(p1)
+  i1 <- which(!unlist(lapply(p1, is.null)))
   n2 = length(p2)
   #   p  = p1
   #   np = length(p)
@@ -307,7 +312,7 @@ mergeDataFrame  <- function(p1,p2)
     testi  = 0
     namei2 = names(p2i)
     if ("id" %in% namei2){
-      for (j in 1:n1) {
+      for (j in i1) {
         p1j = p1[[j]]
         i12 <- which(namei2 %in% names(p1j))
         if (length(i12)>1){
@@ -316,7 +321,7 @@ mergeDataFrame  <- function(p1,p2)
         }
       }      
     }else{
-      for (j in 1:n1) {
+      for (j in i1) {
         p1j = p1[[j]]
         i12 <- which(namei2 %in% names(p1j))
         namei2=namei2[namei2!="id"]
