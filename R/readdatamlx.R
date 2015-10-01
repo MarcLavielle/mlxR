@@ -212,52 +212,26 @@ readdatamlx  <- function(infoProject){
   #*************************************************************************
   
   if (is.null(icov))
-  {
     ncov=0
-  }else
-  {
+  else
     ncov = length(icov)
-  }
+  
   if (is.null(icat))
-  {
     ncat=0
-  }else
-  {
-    ncat = length(icov)
-  }
-  nc   = ncov+ncat
-  if (nc>0)
-  {
-    c         = list()
-    length(c) = nc
-    ans       = fsort(c(icov, icat))
-    isc       = ans$arg2
-    iscov     = isc[1:ncov]
-    iscat     = isc[(ncov+1):nc]
-    for( k in 1:ncov ) 
-    {
-      ic            = iscov[k]
-      c[[ic]]$name  = newHeader[[icov[k]]]
-      c[[ic]]$value = cbind((1:N), S[[icov[k]]][iu])
-    }
-    k = 1
-    while(k<=ncat)
-    {
-      ic            = iscat[k]
-      ans           = funique(S[[icat[k]]][iu])
-      cc            = ans$arg3
-      c[[ic]]$name  = newHeader[[icat[k]]]
-      c[[ic]]$value = cbind((1:N), cc)
-      k = k+1
-    }
-    for( k in 1:nc)
-    {
-      c[[k]]$label  = 'covariate'
-      c[[k]]$colNames = c('id', c[[k]]$name)
-      #c[[k]]        = orderfields(c[[k]],c('name','label','header','value'))
-    }
+  else
+    ncat = length(icat)
+  
+  nc = ncov+ncat
+  if (nc>0) {
+    ic <- c(icov,icat)
+    c1 <- S[[ic[1]]][iu]
+    cdf <- data.frame(id=seq(1:N))
+    for (k in (1:nc))
+      cdf[[k+1]] <- S[[ic[k]]][iu]
+    names(cdf)[2:(nc+1)]=names(S)[ic]
     
-    datas   = c(datas, list(covariate = c))
+    datas   = c(datas, list(covariate = cdf))
   }
+  datas   = c(datas, list(N = N, idOri = iduf))
   return(datas)
 }

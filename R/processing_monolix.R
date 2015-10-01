@@ -22,91 +22,24 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   ##************************************************************************
   #       DATA FILE
   #**************************************************************************
-   datas <- readdatamlx(infoProject)
+  datas <- readdatamlx(infoProject)
   
-#   # Read file with  c++  code called by mlxDataReader
-#   colTypes <- strsplit(infoProject$dataheader, ",")
-#   argList <- list(TXT_FILE=infoProject$datafile, COL_TYPES=colTypes[[1]])
-#   dot_call<-.Call;
-#   datas2 <-dot_call("mlxDataReaderR", argList, PACKAGE = "mlxDataReaderR");
-# #   
-#   # set the storage of datas2 into the  format of datas 
-#   obsi = 0
-#   covi = 0
-#   idsources = 0
-#   idobservation <- c()
-#   idcovariate <-c()
-#   idregressor<-c()
-#   regi = 0
-#   for(i in 1:(length(datas2)-1))
-#   {
-#     if(datas2[[i]]$label == "dose")
-#     {
-#       idsources = i
-#     }
-#     if(datas2[[i]]$label == "longitudinal")
-#     {
-#       obsi = obsi+1
-#       idobservation<- c(idobservation,i)      
-#     }
-#     if(datas2[[i]]$label == "covariate")
-#     {
-#       covi = covi +1
-#       idcovariate <-c(idcovariate,i)
-#     }
-#     if(datas2[[i]]$label == "regressions")
-#     {
-#       regi = regi +1
-#       idregressor <-c(idregressor,i)
-#     }
-#   }
-#   
-#   if(idsources)
-#   {
-#     sources<-list(label="source",name="doseRegimen", colNames= tolower(datas2[[idsources]]$colNames),
-#                   value=matrix(unlist(datas2[[idsources]]$values),nrow=length(datas2[[idsources]]$values),byrow = TRUE))  
-#   } else
-#   {
-#     sources =NULL
-#   }
-#   observation <-c()
-#   obsi <- min(obsi, n.output)
-#   for(i in  1:obsi)
-#   {
-#     obsvalue=matrix(unlist(datas2[[idobservation[i]]]$values),nrow=length(datas2[[idobservation[i]]]$values),byrow = TRUE)
-#     observation<- c(observation,list(list( label="observation", name=infoProject$output[i],colNames=tolower(c(datas2[[idobservation[i]]]$colNames[1],datas2[[idobservation[i]]]$colNames[2])),
-#                                            value=obsvalue[,1:2])))
-#   }
-#   
-#   datas <-list(sources=sources,observation=observation)
-#   
-#   if(covi){
-#     covariate <-c()
-#     for(i in  1:covi)
-#     {
-#       covariate<-c(covariate,list(list(name=datas2[[idcovariate[i]]]$colNames[2:length(datas2[[idcovariate[i]]]$colNames)],
-#                                        value=matrix(unlist(datas2[[idcovariate[i]]]$values),nrow=length(datas2[[idcovariate[i]]]$values),byrow = TRUE),
-#                                        label=datas2[[idcovariate[i]]]$label, colNames= tolower(datas2[[idcovariate[i]]]$colNames) )))
-#     }
-#     datas <- append(datas,list(covariate=covariate))
-#   }
-#   if(regi){
-#     regressor <-c()
-#     for(i in  1:regi)
-#     {
-#       regressor<-c(regressor,list(list(name=datas2[[idregressor[i]]]$name,
-#                                        value=matrix(unlist(datas2[[idregressor[i]]]$values),nrow=length(datas2[[idregressor[i]]]$values),byrow = TRUE),
-#                                        label=datas2[[idregressor[i]]]$label, colNames=tolower(datas2[[idregressor[i]]]$colNames),colTypes=datas2[[idregressor[i]]]$colTypes)))
-#     }
-#     datas <- append(datas,list(regressor=regressor))
-#   }
-
+  
+  if (is.character(param))  {
+    file = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
+    datas$parameter = readIndEstimate(file,param)
+    iop_indiv=1
+  }else{
+    iop_indiv=0
+  }
+  #   data$id <- data.frame(NewId=seq(1:N),OriId=new.id)
+  
+  datas$id <- data.frame(newId=seq(1:datas$N),oriId=datas$idOri)
   if (!is.null(group)){
     if ((length(names(group[[1]]))>1) | (is.null(group[[1]]$size)))
       stop("When simulx is used with a monolix project, 'group' should be a list with only one field 'size'")
     datas <- resample.data(datas,group[[1]]$size)
   }
-  
   ##************************************************************************
   #       treatment (TREATMENT)
   #**************************************************************************
@@ -121,35 +54,19 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   ##************************************************************************
   #       PARAMETERS
   #**************************************************************************
-  ind_param = datas$covariate;
-  nb_param  = length(ind_param);
-  paramp    = ind_param;
   pop_param = readPopEstimate(file.path(infoProject$resultFolder,'estimates.txt'));
-  paramp[[nb_param+1]] = pop_param;
-  iop_indiv=0;
-  if (is.null(param)){
-    param=paramp;
-  }else if (is.character(param))  {
-    file      = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
-    param     = readIndEstimate(file,param);
-    if (!is.null(group)){
-      param$value <- param$value[datas$id,]
-      jid <- which(param$colNames=="id")
-      param$value[,jid] <- factor(1:group[[1]]$size)
-    }
-    iop_indiv = 1;
-  }else {
-    param <- formatp(param)
-    param <- mergeArg(paramp,param)   
+  paramp <- list(pop_param,datas$covariate,datas$parameter)
+  if  (!is.null(param)) {
+    paramp <- mergeDataFrame(paramp, param)
   }
   
   ##************************************************************************
   #       OUTPUT 
   #**************************************************************************
   
-  outputp = datas$observation;
+  outputp = datas$observation
   if (is.null(output)){
-    output = outputp;
+    output = outputp
   }else{
     output <- formato(output)
     output <- mergeArg(outputp,output)
@@ -174,29 +91,19 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
       # create a submodel file of model_file corresponding to the specified sections specified 
       sections       = c("LONGITUDINAL")    
       myparseModel(model, sections, model )
-      inputList      = getInputSection(model, sections)
-      var_m          = setdiff(inputList, param$name)  
-      name  = NULL
-      value = NULL
-      for (i in 1:length(var_m))  {
-        idx   = grep(paste0("^",var_m[[i]],"$"), pop_param$name)
-        name  = c(name, pop_param$name[[idx]])
-        value = c(value, pop_param$value[[idx]])  
-      }  
-      param  = list(param, list(name=name, value=value))    
     }
   }
   #**************************************************************************
   test.colNames <- testC(list(treatment,param,output))
-  if (test.colNames==TRUE){
+  if ((test.colNames==TRUE) | (is.null(group[[1]]$size))) {
     gr=NULL
   }else{
     gr <- list(size=c(group[[1]]$size, 1) , level=c("individual","longitudinal"))
   }
   if (is.null(datas$regressor)){
-    ans = list(model=model, treatment=treatment, param=param, output=output, group=gr)
+    ans = list(model=model, treatment=treatment, param=paramp, output=output, group=gr, id=datas$id)
   }else{
-    ans = list(model=model, treatment=treatment, param=param, output=output, group=gr,regressor=datas$regressor)
+    ans = list(model=model, treatment=treatment, param=paramp, output=output, group=gr,regressor=datas$regressor, id=datas$id)
   }      
   return(ans)
 }
@@ -338,8 +245,9 @@ readPopEstimate  <-  function(filename)
       #      nc <-sort(c(n1,n2))
       name[j] <- paste0('r_',n1,'_',n2)
     }
-    param       = list(name  = name,
-                       value = value)
+    #    param = list(name = name, value = value)
+    param <- value
+    names(param) <- name
     return(param)
   }else
   {
@@ -354,8 +262,7 @@ readIndEstimate  <-  function(filename, estim=NULL)
   #  readIndEstimate(filename,estim)
   #       get the individual parameter situated in filename file    
   # 
-  if (file.exists(filename))
-  {
+  if (file.exists(filename)) {
     data         = read.table(filename,  header = TRUE)
     data[[1]]    = c(1: length(data[[1]]))
     header       = names(data)
@@ -363,23 +270,63 @@ readIndEstimate  <-  function(filename, estim=NULL)
     name         = header[idx]
     name         = gsub(paste0("_", estim),"", name)
     header       = c( 'id', name)
-    value        = data[, c(1, idx)];
-    names(value) = header;
     value        = as.matrix(data[, c(1, idx)])
-    #value       = data.matrix(data[, c(1, idx)])
-    if(!(is.null(estim)))
-    { 
-      param        = list( value= value, name=name, colNames=header,label=estim)
-    }else{
-      param        = list( value= value, name=name, colNames=header)
-    }
+    param <- data.frame(value)
+    names(param) <- header
     return(param)
-  }else
-  {
+  }else{
     stop(paste("file : ",filename, " does not exist" ))
   }
 }
 
+
+mergeDataFrame  <- function(p1,p2)
+{
+  if  (!is.null(names(p2))) 
+    p2 <- list(p2)
+  for (k in (1:length(p2))){
+    paramk <- p2[[k]]  
+    if (is.list(paramk)){
+      if (is.null(paramk$id)) {
+        #         p.temp <- paramk$value
+        p.temp <- data.frame(paramk$value)
+        names(p.temp) <- paramk$colNames
+      }else{
+        p.temp <- paramk$value
+        names(p.temp) <- paramk$name
+      }
+      p2[[k]] <- p.temp
+    }
+  } 
+  n1 = length(p1)
+  n2 = length(p2)
+  #   p  = p1
+  #   np = length(p)
+  for (i in 1:n2) {
+    p2i=p2[[i]]
+    testi  = 0
+    namei2 = names(p2i)
+    if ("id" %in% namei2){
+      for (j in 1:n1) {
+        p1j = p1[[j]]
+        i12 <- which(namei2 %in% names(p1j))
+        if (length(i12)>1){
+          p1j=p2i
+          p1[[j]] = p1j
+        }
+      }      
+    }else{
+      for (j in 1:n1) {
+        p1j = p1[[j]]
+        i12 <- which(namei2 %in% names(p1j))
+        namei2=namei2[namei2!="id"]
+        p1j[namei2[i12]]=p2i[namei2[i12]]
+        p1[[j]] = p1j
+      }
+    }
+  }
+  return(p1)
+}
 
 mergeArg  <- function(p1,p2)
 {
@@ -656,6 +603,9 @@ formatp <- function(param)
         }
       }
     }
+    p.names <- names(paramk)
+    paramk <- data.frame(value)
+    names(paramk) <- p.names
     parameter[[k]] <- paramk
   }
   return(parameter)
@@ -680,62 +630,84 @@ formato <- function(out)
 #----------------------------------
 resample.data  <- function(data,N)
 {
+  #   for  (k in (1:length(data))){
+  #     datak <- data[[k]]
+  #     if (is.data.frame(datak)){
+  #       idk <- datak$id
+  #       n <- length(unique(idk))
+  #     } else{
+  #       ik  <- which(datak$colNames=="id")
+  #       idk <- datak$value[,ik]
+  #       n <- length(unique(idk))
+  #     }
+  #   }
+  n <- data$N
+  idOri <- data$idOri
+  
+  if (N>n)
+    new.id <- c((1:n),sample(1:n,N-n,replace=TRUE))
+  else
+    new.id <- sample(1:n,N,replace=FALSE)
+  
+  #   data <- data1
+  data$N <- NULL
+  data$idOri <- NULL  
   for  (k in (1:length(data))){
     datak <- data[[k]]
-    if (!is.null(datak$colNames)){
-      ik  <- which(datak$colNames=="id")
-      idk <- datak$value[,ik]
-      if (!exists('new.id')){
-        n <- length(unique(idk))
-        if (N>n)
-          new.id <- sample(1:n,N,replace=TRUE)
-        else
-          new.id <- sample(1:n,N,replace=FALSE)
-      }
+    if (is.data.frame(datak)){
+      ik  <- which(names(datak)=="id")
+      idk <- datak$id
       dkv=NULL
       for (i in 1:N){
         ji <- which(idk==new.id[i])
-        dkji <- datak$value[ji,]
-        if (is.null(dim(dkji))){
-          dkji[ik] <- i
-        }else{
-          dkji[,ik] <- i
-        }
-        dkv <- rbind(dkv,dkji,deparse.level=0) 
-      }
-      datak$value <- dkv
-      data[[k]] <- datak
+        dkji <- datak[ji,]
+        dkji[,ik] <- i
+        dkv <- rbind(dkv,dkji,deparse.level=0)
+      } 
+      data[[k]] <- dkv
     }else{
-      for  (j in (1:length(datak))){
-        datakj <- datak[[j]]
-        if (!is.null(datakj$colNames)){
-          ik  <- which(datakj$colNames=="id")
-          idk <- datakj$value[,ik]
-          if (!exists('new.id')){
-            n <- length(unique(idk))
-            if (N>n)
-              new.id <- sample(1:n,N,replace=TRUE)
-            else
-              new.id <- sample(1:n,N,replace=FALSE)
+      
+      if (!is.null(datak$colNames)){
+        ik  <- which(datak$colNames=="id")
+        idk <- datak$value[,ik]
+        dkv=NULL
+        for (i in 1:N){
+          ji <- which(idk==new.id[i])
+          dkji <- datak$value[ji,]
+          if (is.null(dim(dkji))){
+            dkji[ik] <- i
+          }else{
+            dkji[,ik] <- i
           }
-          dkv=NULL
-          for (i in 1:N){
-            ji <- which(idk==new.id[i])
-            dkji <- datakj$value[ji,]
-            if (is.null(dim(dkji))){
-              dkji[ik] <- i
-            }else{
-              dkji[,ik] <- i
+          dkv <- rbind(dkv,dkji,deparse.level=0) 
+        }
+        datak$value <- dkv
+        data[[k]] <- datak
+      }else{
+        for  (j in (1:length(datak))){
+          datakj <- datak[[j]]
+          if (!is.null(datakj$colNames)){
+            ik  <- which(datakj$colNames=="id")
+            idk <- datakj$value[,ik]
+            dkv=NULL
+            for (i in 1:N){
+              ji <- which(idk==new.id[i])
+              dkji <- datakj$value[ji,]
+              if (is.null(dim(dkji))){
+                dkji[ik] <- i
+              }else{
+                dkji[,ik] <- i
+              }
+              dkv <- rbind(dkv,dkji,deparse.level=0) 
             }
-            dkv <- rbind(dkv,dkji,deparse.level=0) 
-          }
-          datakj$value <- dkv
-          data[[k]][[j]] <- datakj
-        } 
-      }  
+            datakj$value <- dkv
+            data[[k]][[j]] <- datakj
+          } 
+        }  
+      }
     }
   }
-  data$id <- new.id
+  data$id <- data.frame(newId=seq(1:N),oriId=idOri[new.id])
   return(data)
 }
 

@@ -2,14 +2,17 @@
 #' @param project : the name of a Monolix project 
 #' @param parameter : string $(NameOfTypeOfParameter), the type of specific parameters to use 
 #'                   example: "mode", "mean"...
+#' @param group : a list with the number of subjects 
+#' @param open : load the R script created if \code{open=TRUE}
 #' @return  creates a folder projectNameR  containing files : 
 #' \itemize{
 #'   \item \code{projectName.R} :  executable R code for the simulator,
 #'   \item \code{treatment.txt} :  contains the treatment informations,
-#'   \item \code{parameters.txt} : contains the  population parameters ouput from Monolix,
-#'   \item \code{group.txt} : contains the group informations,
+#'   \item \code{populationParameter.txt} : contains the  population parameters estimated from Monolix,
+#'   \item \code{individualParameter.txt} : contains the  individual parameters (mode/mean) estimated from Monolix (if used for the simulation),
+#'   \item \code{individualCovariate.txt} : contains the individual covariates,
+#'   \item \code{originalId.txt} : contains the original id's when group is used with a different size than the original one,
 #'   \item \code{outputi.txt} : contains the output number i informations (time, id),
-#'   \item \code{covariates.txt} : contains the covariates parameters,
 #'   \item \code{$(NameOfTypeOfParameter)s.txt} : contains the specific parameter used.
 #' }       
 #'  
@@ -19,7 +22,7 @@
 #' @export
 
 #monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
-monolix2simulx <-function(project,parameter=NULL)
+monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE)
 { 
   #------- project to be converted into Simulx project
   myOldENVPATH = Sys.getenv('PATH');
@@ -27,7 +30,9 @@ monolix2simulx <-function(project,parameter=NULL)
   session=Sys.getenv("session.simulx")
   Sys.setenv(LIXOFT_HOME=session)
   model=NULL
-  group=NULL
+  #  group=NULL
+  if  (!is.null(names(group)))
+    group <- list(group)
   treatment=NULL  
   #graphics=FALSE
   output=NULL
@@ -48,7 +53,7 @@ monolix2simulx <-function(project,parameter=NULL)
     unlink(Rproject, recursive = TRUE, force = TRUE)
   }
   modelname = basename(model)
-  dir.create(Rproject, showWarnings = TRUE, recursive = FALSE, mode = "0777")
+  dir.create(Rproject, showWarnings = FALSE, recursive = FALSE, mode = "0777")
   file.copy(model, Rproject, overwrite = FALSE)
   file.remove(model)
   model<-file.path(Rproject,modelname)
@@ -74,60 +79,59 @@ monolix2simulx <-function(project,parameter=NULL)
   }
   
   # write  parameters   
-  if(!(is.null(parameter)))
-  {  
+  if(!(is.null(parameter))){  
+    param.list <- NULL
     cat("\n# parameters \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    # many types of output could exist
-    nameOtherParam<-NULL
-    for(i in seq(1:length(parameter)))
-    {  
-      if(!(is.null(parameter[[i]]$colNames)))
-      {
-        if(!(is.null(parameter[[i]]$label)))
-        {
-          namePi<-parameter[[i]]$name
-        }else {
-          namePi<-paste0("parameters",i)
-        }
-        
-        nameOtherParam<-c(nameOtherParam,namePi)
-        outfile = file.path(Rproject,paste0("/",namePi,".txt"))      
-        cat(paste0(namePi,"<- read.table(\"",namePi,".txt\", header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-        out2<-NULL
-        out2 <-matrix(parameter[[i]]$value,nrow=nrow(parameter[[i]]$value),ncol=ncol(parameter[[i]]$value))
-        colnames(out2)<-parameter[[i]]$colNames
-        write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
-      } else{
-        outfile = file.path(Rproject,paste0("/parameter.txt"))
-        write.table(parameter[[i]],file=outfile,row.names=FALSE,col.names=FALSE,quote=FALSE)
-        if(length(parameter)==1)
-        {
-          cat("param <- read.vector(\"parameter.txt\") \n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-        } else {
-          cat("pop <- read.vector(\"parameter.txt\") \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-        }   
-      }
+
+    if (!is.null(ans$id)){
+      outfile = file.path(Rproject,paste0("/originalId.txt"))      
+      write.table(ans$id,file=outfile,row.names=FALSE,quote=FALSE)
+      cat(paste0("originalId<- read.table('originalId.txt', header=TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
     }
-    if(length(parameter)>1)
-      #     {
-      #       cat("param <- pop \n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-      #     } else  
-    { 
-      cat("param <- list(pop",file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-      for (i in seq(1:length(nameOtherParam)))
-      {
-        cat(paste0(",",nameOtherParam[[i]]),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-      }
-      cat(")\n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    
+    populationParameter <- parameter[[1]]
+    if (!is.null(populationParameter)){
+      outfile = file.path(Rproject,paste0("/populationParameter.txt"))      
+      cat(paste0("populationParameter<- read.vector('populationParameter.txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      write.table(populationParameter,file=outfile,col.names=FALSE,quote=FALSE)
+      if (!is.null(param.list))
+        param.list <- paste(param.list,"populationParameter",sep=",")  
+      else
+        param.list <- "populationParameter"
     } 
+
+    individualCovariate <- parameter[[2]]
+    if (!is.null(individualCovariate)){
+      outfile = file.path(Rproject,paste0("/individualCovariate.txt"))      
+      cat(paste0("individualCovariate<- read.table('individualCovariate.txt', header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      write.table(individualCovariate,file=outfile,row.names=FALSE,quote=FALSE)
+      if (!is.null(param.list))
+        param.list <- paste(param.list,"individualCovariate",sep=",")  
+      else
+        param.list <- "individualCovariate"
+    } 
+    individualParameter <- parameter[[3]]
+    if (!is.null(individualParameter)){
+      outfile = file.path(Rproject,paste0("/individualParameter.txt"))      
+      cat(paste0("individualParameter<- read.table('individualParameter.txt', header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      write.table(individualParameter,file=outfile,row.names=FALSE,quote=FALSE)
+      if (!is.null(param.list))
+        param.list <- paste(param.list,"individualParameter",sep=",")  
+      else
+        param.list <- "individualParameter"
+    } 
+
+    param.list <- paste(param.list,sep=",")
+    param.str <- paste0("list.param <- list(",param.list,")")
+    cat(param.str, file =projectExe, fill = FALSE, labels = NULL, append = TRUE)   
   }
-  # write groups
-  if(!(is.null(group)))
-  { 
-    cat("\n# groups \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    write.table(group,file=file.path(Rproject,"/group.txt"),row.names=FALSE,col.names=FALSE,quote=FALSE) 
-    cat("grp <- read.table(\"group.txt\",header= TRUE) \n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  }
+ 
+#   # write groups
+#   if(!(is.null(group))) { 
+#     cat("\n# groups \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+#     write.table(group,file=file.path(Rproject,"/group.txt"),row.names=FALSE,col.names=FALSE,quote=FALSE) 
+#     cat("grp <- read.table(\"group.txt\",header= TRUE) \n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+#   }
   
   # write  requested output 
   if(!(is.null(output)))
@@ -251,25 +255,20 @@ monolix2simulx <-function(project,parameter=NULL)
   cat("\n# call the simulator \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   cat("res <- simulx(model=model", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   if(!(is.null(treatment)))
-  {
     cat(",treatment=trt",file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-  }
+  
   if(!(is.null(parameter)))
-  { 
-    cat(",parameter=param",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  }
-  if(!(is.null(group)))
-  { 
+    cat(",parameter=list.param",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  
+  if(!(is.null(group))) 
     cat(",group=grp",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  }
+  
   if(!(is.null(output)))
-  {
     cat(",output=out",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  }
+  
   if(!(is.null(regressor)))
-  {
     cat(",regressor=regressor",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  }
+  
   cat(")\n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
   #   if(graphics==TRUE)
@@ -307,7 +306,8 @@ monolix2simulx <-function(project,parameter=NULL)
   #   }
   Sys.setenv(LIXOFT_HOME="")
   Sys.setenv('PATH'=myOldENVPATH);
-  if(Sys.getenv("RSTUDIO")=="1")
+  if( (Sys.getenv("RSTUDIO")=="1") & (open==TRUE) ) {
     file.edit(projectExe) 
   setwd(mypath)
+  }
 }

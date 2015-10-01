@@ -272,10 +272,10 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
     if(data.in==F){
       dataOut  <- convertmlx(dataOut,dataIn,iop.group,id.out,id.ori)
       if (!(is.null(project)))  {
-        nd <- length(dataOut)
-        if(!is.null(doseRegimen)){
-          dataOut[[nd+1]] <- doseRegimen
-          names(dataOut)[nd+1] <- "treatment"
+        if(!is.null(doseRegimen))
+          dataOut$treatment <- doseRegimen
+        if(!is.null(ans$id)){
+          dataOut$originalId <- ans$id
         }
       }
       return(dataOut)

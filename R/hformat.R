@@ -337,6 +337,7 @@ format.parameter <- function(parameter,param,uN)
   if (!is.null(names(param))){  
     param=list(param) 
   }
+  param <- param[!unlist(lapply(param, is.null))]
   #id.ori <- list()
   id.ori <- NULL
   for (k in seq(1,length(param))){
