@@ -285,7 +285,7 @@ myparseXML  <- function (filename, mlxtranpath, node)
   #
   
   tree    = xmlParse(filename)
-  set            = getNodeSet(tree,paste0("//", node))
+  set     = getNodeSet(tree,paste0("//", node))
   tmp=list(name=NULL)
   ans=list()
   for (i in 1 : length(set))

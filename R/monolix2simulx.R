@@ -85,7 +85,7 @@ monolix2simulx <-function(project,parameter=NULL)
       {
         if(!(is.null(parameter[[i]]$label)))
         {
-          namePi<-parameter[[i]]$label
+          namePi<-parameter[[i]]$name
         }else {
           namePi<-paste0("parameters",i)
         }
