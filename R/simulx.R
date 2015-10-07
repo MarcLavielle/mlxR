@@ -169,7 +169,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
         rmk <- simulxunit(data=dataIn,settings=settings)
         Ntest <- NULL
         if (Nmk > Nm )
-          Ntest <- Nm
+          Ntest <- Nm-Nmk+nmk
         if (M>1){
           r <- mergeres(r,rmk,m=m,N=Ntest)
         }else{
@@ -295,7 +295,12 @@ mergeres <- function(r,s,m=NULL,N=NULL){
           i1 <- which(names(s[[k]])=="id")
           i2 <- which(names(s[[k]])=="group")
           s[[k]] <- s[[k]][,c((1:i1),i2,((i1+1):(i2-1)))]
-        }  
+          #           if ("id" %in% names(s[[k]])){
+          #             skid <- as.numeric(s[[k]]$id) 
+          if (!is.null(N))
+            s[[k]] <- s[[k]][(1:N),]
+        }
+      #         }  
     }
     u <- s
   }else{
@@ -310,7 +315,7 @@ mergeres <- function(r,s,m=NULL,N=NULL){
           skid <- as.numeric(s[[k]]$id) + ir
           s[[k]]$id <- factor(skid) 
           if (!is.null(N))
-            s[[k]] <- s[[k]][skid<=N,]
+            s[[k]] <- s[[k]][(1:N),]
         }
         #         u[[k]] <- merge(r[[k]],s[[k]],all=TRUE)
         u[[k]] <- rbind(r[[k]],s[[k]])
