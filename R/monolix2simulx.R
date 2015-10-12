@@ -4,6 +4,7 @@
 #'                   example: "mode", "mean"...
 #' @param group : a list with the number of subjects 
 #' @param open : load the R script created if \code{open=TRUE}
+#' @param r.data : read the data if \code{r.data=TRUE}
 #' @return  creates a folder projectNameR  containing files : 
 #' \itemize{
 #'   \item \code{projectName.R} :  executable R code for the simulator,
@@ -22,7 +23,7 @@
 #' @export
 
 #monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
-monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE)
+monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TRUE)
 { 
   #------- project to be converted into Simulx project
   myOldENVPATH = Sys.getenv('PATH');
@@ -37,7 +38,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE)
   #graphics=FALSE
   output=NULL
   regressor=NULL
-  ans           <- processing_monolix(project,model,treatment,parameter,output,group)
+  ans           <- processing_monolix(project,model,treatment,parameter,output,group,r.data)
   model         <- ans$model
   treatment     <- ans$treatment
   parameter     <- ans$param

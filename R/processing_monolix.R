@@ -3,7 +3,7 @@
 #' @importFrom XML xmlAttrs
 NULL
 
-processing_monolix  <- function(project,model,treatment,param,output,group)
+processing_monolix  <- function(project,model,treatment,param,output,group,r.data=TRUE)
 {
   ### processing_monolix
   #
@@ -22,34 +22,39 @@ processing_monolix  <- function(project,model,treatment,param,output,group)
   ##************************************************************************
   #       DATA FILE
   #**************************************************************************
-  datas <- readdatamlx(infoProject)
-  
-  
-  if (is.character(param))  {
-    file = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
-    datas$parameter = readIndEstimate(file,param)
-    iop_indiv=1
-  }else{
-    iop_indiv=0
-  }
-  #   data$id <- data.frame(NewId=seq(1:N),OriId=new.id)
-  
-  datas$id <- data.frame(newId=seq(1:datas$N),oriId=datas$idOri)
-  if (!is.null(group)){
-    if ((length(names(group[[1]]))>1) | (is.null(group[[1]]$size)))
-      stop("When simulx is used with a monolix project, 'group' should be a list with only one field 'size'")
-    datas <- resample.data(datas,group[[1]]$size)
-  }
-  ##************************************************************************
-  #       treatment (TREATMENT)
-  #**************************************************************************
-  if (is.null(treatment)){
-    if (is.null(datas$sources)){ 
-      treatment = datas$sources
-    } else{
-      treatment = data.frame(datas$sources$value)
-      names(treatment) <- datas$sources$colNames 
+  if (r.data==TRUE){
+    datas <- readdatamlx(infoProject)
+    
+    
+    if (is.character(param))  {
+      file = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
+      datas$parameter = readIndEstimate(file,param)
+      iop_indiv=1
+    }else{
+      iop_indiv=0
     }
+    #   data$id <- data.frame(NewId=seq(1:N),OriId=new.id)
+    
+    datas$id <- data.frame(newId=seq(1:datas$N),oriId=datas$idOri)
+    if (!is.null(group)){
+      if ((length(names(group[[1]]))>1) | (is.null(group[[1]]$size)))
+        stop("When simulx is used with a monolix project, 'group' should be a list with only one field 'size'")
+      datas <- resample.data(datas,group[[1]]$size)
+    }
+    ##************************************************************************
+    #       treatment (TREATMENT)
+    #**************************************************************************
+    if (is.null(treatment)){
+      if (is.null(datas$sources)){ 
+        treatment = datas$sources
+      } else{
+        treatment = data.frame(datas$sources$value)
+        names(treatment) <- datas$sources$colNames 
+      }
+    }
+  }else{
+    datas <- NULL
+    iop_indiv <- 0
   }
   ##************************************************************************
   #       PARAMETERS
