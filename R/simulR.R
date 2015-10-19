@@ -1,7 +1,8 @@
 simulR <- function(argList)
 {
   model <- argList$DATA$model
-  source(model)
+  if (!exists(model, mode="function"))
+    source(model)
   model <- basename(file_path_sans_ext(model))
   if (!is.null(argList$SETTINGS) && !is.null(argList$SETTINGS$seed))
     set.seed(argList$SETTINGS$seed)

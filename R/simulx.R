@@ -85,12 +85,27 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   
   if (is.null(settings$seed))
     settings$seed <- round(as.numeric(Sys.time())*100)%%10000
-  #   Nmax <- 10
+  
+  if (identical(file_ext(model),"R")) {Rfile <- TRUE} else {Rfile <- FALSE}
+  if ( !is.null(model) && exists(model, mode="function") ){Rsource <- TRUE} else {Rsource <- FALSE}
+                                                           
   test.group <- FALSE
-  if ((!identical(file_ext(model),"R")) & (!is.null(group))  & (is.null(settings$data.in)) & (is.null(settings$record.file)) ){
+  if (!Rfile && !Rsource
+      && !is.null(group) 
+      && is.null(settings$data.in) 
+      && is.null(settings$record.file)
+  ){
     if  (!is.null(names(group)))
       group <- list(group)
-    if (is.null(project)){ 
+    if  (!is.null(names(parameter)))
+      parameter <- list(parameter)
+    test.p <- FALSE
+    M <- length(parameter)
+    for (m in (1:M)){
+      if (is.data.frame(parameter[[m]]) && !is.null(parameter[[m]]$id))
+        test.p <- TRUE
+    }
+    if (is.null(project) & test.p==FALSE){ 
       N <- 0
       M <- length(group)
       for (m in (1:M))
@@ -201,8 +216,9 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
   id.out  <- cc[[3]]
   id.ori  <- NULL
   
-  if (data.in==TRUE)
-    s$loadDesign <- TRUE
+  
+  #   if ( (data.in==TRUE) && (is.null(s$loadDesign)) )
+  #     s$loadDesign <- TRUE
   
   if(is.null(data)){
     
@@ -249,7 +265,7 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
     lv  <- hformat(lv)
     id.ori <- lv$id.ori
     
-    dataIn    <-  hgdata(lv)
+    dataIn  <-  hgdata(lv)
     dataIn$model <- model
     dataIn$iop.group <- iop.group
   }else{
@@ -263,7 +279,10 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
     argList <- list(DATA=dataIn, SETTINGS=s)       
   }
   
-  if (identical(file_ext(model),"R")) {
+  if (identical(file_ext(model),"R")) {Rfile <- TRUE} else {Rfile <- FALSE}
+  if ( !is.null(model) && exists(model, mode="function") ){Rsource <- TRUE} else {Rsource <- FALSE}
+  
+  if (Rfile || Rsource){
     dataOut <- simulR(argList)
     return(dataOut)
   }else{

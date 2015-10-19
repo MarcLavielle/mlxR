@@ -19,23 +19,27 @@ hformat  <-  function(list.input)
     N=length(group)
     
     model <- list.input$model
-    if (identical(file_ext(model),"R")){
+    
+    if (identical(file_ext(model),"R")) {Rfile <- TRUE} else {Rfile <- FALSE}
+    if ( !is.null(model) && exists(model, mode="function") ){Rsource <- TRUE} else {Rsource <- FALSE}
+                                                             
+    if (Rsource || Rfile){
       for (k in (1:N)){
-        if (!isfield(group[[k]],'size'))
+        if (is.null(group[[k]]$size))
           group[[k]]$size <- 1
         if (length(group$size)>1)
           stop("Define group$size as a scalar instead of a vector.")
-        if (isfield(group[[k]],'level'))
+        if (is.null(group[[k]]$level))
           warning("'level' defined in 'group' is not used with a R model.")
       }
     }else{    
       model.info <- parse.model(model)
       for (k in (1:N)){
-        if (!isfield(group[[k]],'size')){
+        if (is.null(group[[k]]$size)){
           group[[k]]$size <- rep(1, length(model.info$level))
           group[[k]]$level <- model.info$level
         }else{
-          if (!isfield(group[[k]],'level')){
+          if (is.null(group[[k]]$level)){
             group[[k]]$level <- model.info$level
             if (length(model.info$level)>1){
               minfo <- paste(model.info$level,collapse=", ")
@@ -48,7 +52,7 @@ hformat  <-  function(list.input)
                 stop("'level' and 'size' defined in 'group' have different lengths.", call.=FALSE)      
             }
           }else{
-            if (isfield(group[[k]],'size') & (length(group[[k]]$size)!=length(group[[k]]$level)))
+            if (!is.null(group[[k]]$size) & (length(group[[k]]$size)!=length(group[[k]]$level)))
               stop("'level' and 'size' defined in 'group' have different lengths.", call.=FALSE)      
             gk <- group[[k]]$level
             sk <- rep(1, length(model.info$level))
