@@ -3,25 +3,26 @@
 #' @importFrom XML xmlAttrs
 NULL
 
-processing_monolix  <- function(project,model,treatment,param,output,group,r.data=TRUE)
+processing_monolix  <- function(project,model,treatment=NULL,parameter,
+                                output=NULL,group=NULL,r.data=TRUE,fim=NULL)
 {
   ### processing_monolix
-  #
-  #  processing_monolix(project,model, admin, param, output )
   #     takes a monolix project and extract information from
   #     mlxtran file such as model, admin, param, output, if
-  #     they missed in the input parameters. Theses informations are read in
-  #     files.
+  #     they missed in the input parameters. 
+  #     Theses informations are read in files.
   
   ##************************************************************************
   #       XML FILENUL
   #*************************************************************************
   infoProject <- getInfoXml(project)
   n.output <- length(infoProject$output)
+  param <- parameter
   
   ##************************************************************************
   #       DATA FILE
   #**************************************************************************
+  
   if (r.data==TRUE){
     datas <- readdatamlx(infoProject)
     
@@ -59,11 +60,25 @@ processing_monolix  <- function(project,model,treatment,param,output,group,r.dat
   ##************************************************************************
   #       PARAMETERS
   #**************************************************************************
-  pop_param = readPopEstimate(file.path(infoProject$resultFolder,'estimates.txt'));
+  r = readPopEstimate(file.path(infoProject$resultFolder,'estimates.txt'),fim);
+  pop_param <- r[[1]]
   paramp <- list(pop_param,datas$covariate,datas$parameter)
   if  (!is.null(param)) {
     paramp <- mergeDataFrame(paramp, param)
   }
+  
+  
+  ##************************************************************************
+  #       FIM
+  #**************************************************************************
+  if (!is.null(fim)){
+    pop_se <- r[[2]]
+    if (fim=="sa")
+      f.mat = readFIM(file.path(infoProject$resultFolder,'fim_sa.txt'))
+    else
+      f.mat = readFIM(file.path(infoProject$resultFolder,'fim_lin.txt'))
+    fim <- list(mat=f.mat,se=pop_se)
+  } 
   
   ##************************************************************************
   #       OUTPUT 
@@ -105,11 +120,19 @@ processing_monolix  <- function(project,model,treatment,param,output,group,r.dat
   }else{
     gr <- list(size=c(group[[1]]$size, 1) , level=c("individual","longitudinal"))
   }
-  if (is.null(datas$regressor)){
-    ans = list(model=model, treatment=treatment, param=paramp, output=output, group=gr, id=datas$id)
-  }else{
-    ans = list(model=model, treatment=treatment, param=paramp, output=output, group=gr,regressor=datas$regressor, id=datas$id)
-  }      
+#  if (is.null(datas$regressor))
+#    ans = list(model=model, treatment=treatment, param=paramp, output=output, group=gr, id=datas$id)
+#   else
+    ans = list(model=model, 
+               treatment=treatment, 
+               param=paramp, 
+               output=output, 
+               group=gr,
+               regressor=datas$regressor, 
+               id=datas$id,
+               fim=fim,
+               infoParam=infoProject$parameter)
+        
   return(ans)
 }
 
@@ -183,6 +206,14 @@ getInfoXml  <- function (project)
   for (k in 1:length(infoOutput)){
     infoProject$output[[k]] = infoOutput[[k]]$name;
   }
+  
+  infoParam = myparseXML(xmlfile, mlxtranpath, "parameter")
+  info.length <- unlist(lapply(infoParam,length))
+  infoParam <- infoParam[info.length==2]
+  p.names <- do.call("rbind", lapply(infoParam, "[[", 1))[,1]
+  p.trans <- do.call("rbind", lapply(infoParam, "[[", 2))[,1]
+  infoProject$parameter <- list(name=p.names, trans=p.trans)
+  
   if(file_ext(project) == "mlxtran")
   {unlink(xmlfile, recursive=T)}
   return(infoProject)
@@ -225,48 +256,47 @@ myparseXML  <- function (filename, mlxtranpath, node)
   return(ans)
 }
 
-readPopEstimate  <-  function(filename)
-{
-  #readPopEstimate 
-  #
-  #   readPopEstimate(filename)
-  #       get the population parameter situated in filename file    
-  #
+##
+readPopEstimate  <-  function(filename, fim=NULL) {
   if (file.exists(filename))
   {
     data        = read.table(filename, header = TRUE, sep=";")
     name        = as.character(data[[1]])
     name        = sub(" +", "", name)
     name        = sub(" +$", "", name)
-    value       = as.numeric(as.character(data[[2]]))
     
-    ic <- grep("corr",name)
-    for (j in ic){
-      nj <- name[j]
-      i1 <- regexpr(",",nj)
-      i2 <- regexpr(")",nj)
-      n1 <- substr(nj,6,i1[1]-1)
-      n2 <- substr(nj,i1[1]+1,i2[1]-1)
-      #      nc <-sort(c(n1,n2))
-      name[j] <- paste0('r_',n1,'_',n2)
-    }
-    #    param = list(name = name, value = value)
-    param <- value
+    ic <- grep("corr_",name)
+    name[ic] <- sub("corr_","r_",name[ic])
+#     for (j in ic){
+#       nj <- name[j]
+#       i1 <- regexpr(",",nj)
+#       i2 <- regexpr(")",nj)
+#       n1 <- substr(nj,6,i1[1]-1)
+#       n2 <- substr(nj,i1[1]+1,i2[1]-1)
+#       name[j] <- paste0('r_',n1,'_',n2)
+#     }
+    param <- as.numeric(as.character(data[['parameter']]))
     names(param) <- name
-    return(param)
-  }else
-  {
+
+    if (!is.null(fim)){
+      if (fim=='lin'){
+        se <- as.numeric(as.character(data[['s.e._lin']]))
+        names(se) <- name
+      } else if (fim=='sa'){
+        se <- as.numeric(as.character(data[['s.e._sa']]))
+        names(se) <- name
+      }
+    } else
+      se <- NULL
+    
+  
+    return(list(param,se))
+  } else
     stop(paste("file : ",filename, " does not exist" ))
-  }  
 }
 
-readIndEstimate  <-  function(filename, estim=NULL)
-{
-  #readIndEstimate 
-  #
-  #  readIndEstimate(filename,estim)
-  #       get the individual parameter situated in filename file    
-  # 
+##
+readIndEstimate  <-  function(filename, estim=NULL) {
   if (file.exists(filename)) {
     data         = read.table(filename,  header = TRUE)
     data[[1]]    = c(1: length(data[[1]]))
@@ -279,14 +309,28 @@ readIndEstimate  <-  function(filename, estim=NULL)
     param <- data.frame(value)
     names(param) <- header
     return(param)
-  }else{
+  } else
     stop(paste("file : ",filename, " does not exist" ))
-  }
 }
 
+##
+readFIM  <-  function(filename){
+  if (file.exists(filename)) {
+    data        = read.table(filename, header = FALSE, sep=";")
+    name        = as.character(data[[1]])
+    name        = sub(" +", "", name)
+    name        = sub(" +$", "", name)
+    ic <- grep("corr_",name)
+    name[ic] <- sub("corr_","r_",name[ic])
+    data[[1]] <- NULL
+    row.names(data) <- name   
+    names(data) <- name   
+    return(data)
+  } else
+    stop(paste("file : ",filename, " does not exist" ))
+}
 
-mergeDataFrame  <- function(p1,p2)
-{
+mergeDataFrame  <- function(p1,p2) {
   if  (!is.null(names(p2))) 
     p2 <- list(p2)
   for (k in (1:length(p2))){

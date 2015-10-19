@@ -5,6 +5,7 @@
 #' @param group : a list with the number of subjects 
 #' @param open : load the R script created if \code{open=TRUE}
 #' @param r.data : read the data if \code{r.data=TRUE}
+#' @param add : add tables in the output folder
 #' @return  creates a folder projectNameR  containing files : 
 #' \itemize{
 #'   \item \code{projectName.R} :  executable R code for the simulator,
@@ -22,37 +23,36 @@
 #' 
 #' @export
 
-#monolix2simulx <-function(project, graphics=FALSE,output=NULL,parameter=NULL)
-monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TRUE)
+monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TRUE,fim=NULL)
 { 
   #------- project to be converted into Simulx project
   myOldENVPATH = Sys.getenv('PATH');
   initMlxLibrary()
   session=Sys.getenv("session.simulx")
   Sys.setenv(LIXOFT_HOME=session)
-  model=NULL
-  #  group=NULL
   if  (!is.null(names(group)))
     group <- list(group)
-  treatment=NULL  
-  #graphics=FALSE
-  output=NULL
-  regressor=NULL
-  ans           <- processing_monolix(project,model,treatment,parameter,output,group,r.data)
+  ans <- processing_monolix(project=project,
+                            model=NULL,
+                            treatment=NULL,
+                            parameter=parameter,
+                            output=NULL,
+                            group=group,
+                            r.data=r.data,
+                            fim=fim)
   model         <- ans$model
   treatment     <- ans$treatment
   parameter     <- ans$param
   output        <- ans$output
   group         <- ans$group
   regressor     <- ans$regressor
+  fim           <- ans$fim
   mlxtranpath <- dirname(project)
   mlxtranfile = file_path_sans_ext(basename(project))
   mypath <- getwd()
   Rproject <- file.path(mypath,paste0(mlxtranfile,"_simulx"))
   if(file.exists(Rproject) )
-  {
     unlink(Rproject, recursive = TRUE, force = TRUE)
-  }
   modelname = basename(model)
   dir.create(Rproject, showWarnings = FALSE, recursive = FALSE, mode = "0777")
   file.copy(model, Rproject, overwrite = FALSE)
@@ -83,7 +83,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   if(!(is.null(parameter))){  
     param.list <- NULL
     cat("\n# parameters \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-
+    
     if (!is.null(ans$id)){
       outfile = file.path(Rproject,paste0("/originalId.txt"))      
       write.table(ans$id,file=outfile,row.names=FALSE,quote=FALSE)
@@ -100,7 +100,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
       else
         param.list <- "populationParameter"
     } 
-
+    
     individualCovariate <- parameter[[2]]
     if (!is.null(individualCovariate)){
       outfile = file.path(Rproject,paste0("/individualCovariate.txt"))      
@@ -121,18 +121,15 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
       else
         param.list <- "individualParameter"
     } 
-
+    
     param.list <- paste(param.list,sep=",")
     param.str <- paste0("list.param <- list(",param.list,")")
     cat(param.str, file =projectExe, fill = FALSE, labels = NULL, append = TRUE)   
   }
- 
-#   # write groups
-#   if(!(is.null(group))) { 
-#     cat("\n# groups \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-#     write.table(group,file=file.path(Rproject,"/group.txt"),row.names=FALSE,col.names=FALSE,quote=FALSE) 
-#     cat("grp <- read.table(\"group.txt\",header= TRUE) \n ",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-#   }
+  
+  # write f.i.m
+  if(!(is.null(fim))) 
+    write.table(fim,file=file.path(Rproject,"/fim.txt"),row.names=FALSE,quote=FALSE) 
   
   # write  requested output 
   if(!(is.null(output)))
@@ -272,43 +269,10 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   
   cat(")\n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
-  #   if(graphics==TRUE)
-  #   {   
-  #     # write graphics
-  #     cat("\n# display the results \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  #     
-  #     if(length(output)==1)
-  #     {
-  #       cat(paste0("plot <- ggplot() + geom_line(data=res$",output[[1]]$name,"
-  #                  , aes(x=time, y=",output[[1]]$name,", colour=id)) +
-  #                  geom_point(data=res$",output[[1]]$name,", aes(x=time, y=",output[[1]]$name,",colour=id)) +
-  #                  scale_x_continuous(\"Time\") + scale_y_continuous(\"",output[[1]]$name,"\")\n"),
-  #           file =projectExe, fill = FALSE, labels = NULL, append = TRUE)      
-  #       cat("print(plot)\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  #     }else{    
-  #       
-  #       for(i in seq(1:length(output)))
-  #       {
-  #         cat(paste0("plot",i," <- ggplot() + geom_line(data=res$",output[[i]]$name,"
-  #                  , aes(x=time, y=",output[[i]]$name,", colour=id)) +
-  #                  geom_point(data=res$",output[[i]]$name,", aes(x=time, y=",output[[i]]$name,",colour=id)) +
-  #                  scale_x_continuous(\"Time\") + scale_y_continuous(\"",output[[i]]$name,"\")\n"),
-  #             file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  #       }
-  #       #theme(legend.position=\"none\") + ylab(\"",output[[i]]$label,"\")\n"),
-  #       #scale_x_continuous("Time") + scale_y_continuous(as.character(yname))))
-  #       cat("grid.arrange(plot1", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  #       for(i in seq(2,length(output)))
-  #       {
-  #         cat(paste0(",plot",i), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  #       }
-  #       cat(paste0(",ncol=",floor(sqrt(length(output))),")\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  #     }
-  #   }
-  Sys.setenv(LIXOFT_HOME="")
   Sys.setenv('PATH'=myOldENVPATH);
   if( (Sys.getenv("RSTUDIO")=="1") & (open==TRUE) ) {
     file.edit(projectExe) 
-  setwd(mypath)
+    setwd(mypath)
   }
+  return(projectExe)
 }
