@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?><PharmML xmlns="http://www.pharmml.org/2013/03/PharmML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.pharmml.org/2013/03/PharmML http://www.pharmml.org/2013/03/PharmML" writtenVersion="0.3.1" id="i1">
+  <ct:Name xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">DelBene_2009_oncology_in_vitro</ct:Name>
+  <ct:Description xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">A model-based approach to the in vitro evaluation of anticancer activity.
+Del Bene F, Germani M, De Nicolao G, Magni P, Re CE, Ballinari D, Rocchetti M
+Cancer chemotherapy and pharmacology, 4/2009, Volume 63, Issue 5, pages: 827-836
+(only model A of the paper is implemented)</ct:Description>
+  <IndependentVariable symbId="t"/>
+  <ct:FunctionDefinition xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbolType="real" symbId="proportionalErrorModel">
+    <ct:FunctionArgument symbolType="real" symbId="b"/>
+    <ct:FunctionArgument symbolType="real" symbId="f"/>
+    <ct:Definition>
+      <Equation xmlns="http://www.pharmml.org/2013/03/Maths">
+        <Binop op="times">
+          <ct:SymbRef symbIdRef="b"/>
+          <ct:SymbRef symbIdRef="f"/>
+        </Binop>
+      </Equation>
+    </ct:Definition>
+  </ct:FunctionDefinition>
+  <ModelDefinition xmlns="http://www.pharmml.org/2013/03/ModelDefinition">
+    <VariabilityModel blkId="resErrorModel" type="residualError">
+      <Level symbId="residual"/>
+    </VariabilityModel>
+    <CovariateModel blkId="cm1">
+      <Covariate symbId="CONC">
+        <Continuous>
+          <Transformation>
+            <Equation xmlns="http://www.pharmml.org/2013/03/Maths">
+              <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="CONC"/>
+            </Equation>
+          </Transformation>
+        </Continuous>
+      </Covariate>
+    </CovariateModel>
+    <ParameterModel blkId="pm1">
+      <SimpleParameter symbId="lambda0"/>
+      <SimpleParameter symbId="k2"/>
+      <SimpleParameter symbId="k1"/>
+      <SimpleParameter symbId="N0"/>
+    </ParameterModel>
+    <StructuralModel blkId="sm1">
+      <ct:DerivativeVariable xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbId="Np" symbolType="real">
+        <ct:Assign>
+          <Equation xmlns="http://www.pharmml.org/2013/03/Maths">
+            <Binop op="minus">
+              <Binop op="times">
+                <ct:SymbRef symbIdRef="lambda0" blkIdRef="pm1"/>
+                <ct:SymbRef symbIdRef="Np"/>
+              </Binop>
+              <Binop op="times">
+                <ct:SymbRef symbIdRef="k2" blkIdRef="pm1"/>
+                <Binop op="times">
+                  <ct:SymbRef symbIdRef="CONC" blkIdRef="cm1"/>
+                  <ct:SymbRef symbIdRef="Np"/>
+                </Binop>
+              </Binop>
+            </Binop>
+          </Equation>
+        </ct:Assign>
+        <ct:IndependentVariable>
+          <ct:SymbRef symbIdRef="t"/>
+        </ct:IndependentVariable>
+        <ct:InitialCondition>
+          <ct:InitialValue>
+            <ct:Assign>
+              <ct:SymbRef symbIdRef="N0" blkIdRef="pm1"/>
+            </ct:Assign>
+          </ct:InitialValue>
+        </ct:InitialCondition>
+      </ct:DerivativeVariable>
+      <ct:DerivativeVariable xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbId="N1" symbolType="real">
+        <ct:Assign>
+          <Equation xmlns="http://www.pharmml.org/2013/03/Maths">
+            <Binop op="minus">
+              <Binop op="times">
+                <ct:SymbRef symbIdRef="k2" blkIdRef="pm1"/>
+                <Binop op="times">
+                  <ct:SymbRef symbIdRef="CONC" blkIdRef="cm1"/>
+                  <ct:SymbRef symbIdRef="Np"/>
+                </Binop>
+              </Binop>
+              <Binop op="times">
+                <ct:SymbRef symbIdRef="k1" blkIdRef="pm1"/>
+                <ct:SymbRef symbIdRef="N1"/>
+              </Binop>
+            </Binop>
+          </Equation>
+        </ct:Assign>
+        <ct:IndependentVariable>
+          <ct:SymbRef symbIdRef="t"/>
+        </ct:IndependentVariable>
+        <ct:InitialCondition>
+          <ct:InitialValue>
+            <ct:Assign>
+              <ct:Real>0</ct:Real>
+            </ct:Assign>
+          </ct:InitialValue>
+        </ct:InitialCondition>
+      </ct:DerivativeVariable>
+      <ct:DerivativeVariable xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbId="N2" symbolType="real">
+        <ct:Assign>
+          <Equation xmlns="http://www.pharmml.org/2013/03/Maths">
+            <Binop op="minus">
+              <Binop op="times">
+                <ct:SymbRef symbIdRef="k1" blkIdRef="pm1"/>
+                <ct:SymbRef symbIdRef="N1"/>
+              </Binop>
+              <Binop op="times">
+                <ct:SymbRef symbIdRef="k1" blkIdRef="pm1"/>
+                <ct:SymbRef symbIdRef="N2"/>
+              </Binop>
+            </Binop>
+          </Equation>
+        </ct:Assign>
+        <ct:IndependentVariable>
+          <ct:SymbRef symbIdRef="t"/>
+        </ct:IndependentVariable>
+        <ct:InitialCondition>
+          <ct:InitialValue>
+            <ct:Assign>
+              <ct:Real>0</ct:Real>
+            </ct:Assign>
+          </ct:InitialValue>
+        </ct:InitialCondition>
+      </ct:DerivativeVariable>
+      <ct:DerivativeVariable xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbId="N3" symbolType="real">
+        <ct:Assign>
+          <Equation xmlns="http://www.pharmml.org/2013/03/Maths">
+            <Binop op="minus">
+              <Binop op="times">
+                <ct:SymbRef symbIdRef="k1" blkIdRef="pm1"/>
+                <ct:SymbRef symbIdRef="N2"/>
+              </Binop>
+              <Binop op="times">
+                <ct:SymbRef symbIdRef="k1" blkIdRef="pm1"/>
+                <ct:SymbRef symbIdRef="N3"/>
+              </Binop>
+            </Binop>
+          </Equation>
+        </ct:Assign>
+        <ct:IndependentVariable>
+          <ct:SymbRef symbIdRef="t"/>
+        </ct:IndependentVariable>
+        <ct:InitialCondition>
+          <ct:InitialValue>
+            <ct:Assign>
+              <ct:Real>0</ct:Real>
+            </ct:Assign>
+          </ct:InitialValue>
+        </ct:InitialCondition>
+      </ct:DerivativeVariable>
+      <ct:Variable xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbId="Nt" symbolType="real">
+        <ct:Assign>
+          <Equation xmlns="http://www.pharmml.org/2013/03/Maths">
+            <Binop op="plus">
+              <Binop op="plus">
+                <Binop op="plus">
+                  <ct:SymbRef symbIdRef="Np"/>
+                  <ct:SymbRef symbIdRef="N1"/>
+                </Binop>
+                <ct:SymbRef symbIdRef="N2"/>
+              </Binop>
+              <ct:SymbRef symbIdRef="N3"/>
+            </Binop>
+          </Equation>
+        </ct:Assign>
+      </ct:Variable>
+    </StructuralModel>
+    <ObservationModel blkId="om1">
+      <SimpleParameter symbId="CV"/>
+      <SimpleParameter symbId="sigma_res_W"/>
+      <RandomVariable symbId="eps_res_W">
+        <ct:VariabilityReference xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">
+          <ct:SymbRef blkIdRef="resErrorModel" symbIdRef="residual"/>
+        </ct:VariabilityReference>
+        <NormalDistribution xmlns="http://www.uncertml.org/3.0" definition="http://www.uncertml.org/distributions/normal">
+          <mean>
+            <rVal>0</rVal>
+          </mean>
+          <variance>
+            <var varId="sigma_res_W"/>
+          </variance>
+        </NormalDistribution>
+      </RandomVariable>
+      <Standard symbId="y">
+        <Output>
+          <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="Nt" blkIdRef="sm1"/>
+        </Output>
+        <ErrorModel>
+          <ct:Assign xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">
+            <Equation xmlns="http://www.pharmml.org/2013/03/Maths">
+              <FunctionCall>
+                <ct:SymbRef symbIdRef="proportionalErrorModel"/>
+                <FunctionArgument symbId="b">
+                  <ct:SymbRef symbIdRef="CV"/>
+                </FunctionArgument>
+                <FunctionArgument symbId="f">
+                  <ct:SymbRef symbIdRef="Nt" blkIdRef="sm1"/>
+                </FunctionArgument>
+              </FunctionCall>
+            </Equation>
+          </ct:Assign>
+        </ErrorModel>
+        <ResidualError>
+          <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="eps_res_W"/>
+        </ResidualError>
+      </Standard>
+    </ObservationModel>
+  </ModelDefinition>
+  <ModellingSteps xmlns="http://www.pharmml.org/2013/03/ModellingSteps">
+    <NONMEMdataSet oid="NMoid">
+      <ColumnMapping>
+        <ColumnRef xmlns="http://www.pharmml.org/2013/08/Dataset" columnIdRef="TIME"/>
+        <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="t"/>
+      </ColumnMapping>
+      <ColumnMapping>
+        <ColumnRef xmlns="http://www.pharmml.org/2013/08/Dataset" columnIdRef="DV"/>
+        <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="y" blkIdRef="om1"/>
+      </ColumnMapping>
+      <ColumnMapping>
+        <ColumnRef xmlns="http://www.pharmml.org/2013/08/Dataset" columnIdRef="CONC"/>
+        <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="CONC" blkIdRef="cm1"/>
+      </ColumnMapping>
+      <DataSet xmlns="http://www.pharmml.org/2013/08/Dataset">
+        <Definition>
+          <Column columnId="ID" columnType="id" valueType="id" columnNum="1"/>
+          <Column columnId="TIME" columnType="idv" valueType="real" columnNum="2"/>
+          <Column columnId="DV" columnType="dv" valueType="real" columnNum="3"/>
+          <Column columnId="CONC" columnType="covariate" valueType="real" columnNum="4"/>
+          <Column columnId="EVID" columnType="id" valueType="int" columnNum="5"/>
+        </Definition>
+        <ImportData oid="id1">
+          <path>delbene2009_data.csv</path>
+          <format>CSV</format>
+          <delimiter>COMMA</delimiter>
+        </ImportData>
+      </DataSet>
+    </NONMEMdataSet>
+    <SimulationStep oid="sim1">
+      <NONMEMdataSetReference>
+        <ct:OidRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" oidRef="NMoid"/>
+      </NONMEMdataSetReference>
+      <ct:VariableAssignment xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">
+        <ct:SymbRef symbIdRef="lambda0" blkIdRef="pm1"/>
+        <ct:Assign>
+          <ct:Real>0.0292</ct:Real>
+        </ct:Assign>
+      </ct:VariableAssignment>
+      <ct:VariableAssignment xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">
+        <ct:SymbRef symbIdRef="k1" blkIdRef="pm1"/>
+        <ct:Assign>
+          <ct:Real>0.0743</ct:Real>
+        </ct:Assign>
+      </ct:VariableAssignment>
+      <ct:VariableAssignment xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">
+        <ct:SymbRef symbIdRef="k2" blkIdRef="pm1"/>
+        <ct:Assign>
+          <ct:Real>0.0745</ct:Real>
+        </ct:Assign>
+      </ct:VariableAssignment>
+      <ct:VariableAssignment xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">
+        <ct:SymbRef symbIdRef="N0" blkIdRef="pm1"/>
+        <ct:Assign>
+          <ct:Real>2147.3</ct:Real>
+        </ct:Assign>
+      </ct:VariableAssignment>
+      <ct:VariableAssignment xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">
+        <ct:SymbRef symbIdRef="CV" blkIdRef="om1"/>
+        <ct:Assign>
+          <ct:Real>0.1</ct:Real>
+        </ct:Assign>
+      </ct:VariableAssignment>
+      <ct:VariableAssignment xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">
+        <ct:SymbRef symbIdRef="sigma_res_W" blkIdRef="om1"/>
+        <ct:Assign>
+          <ct:Real>1</ct:Real>
+        </ct:Assign>
+      </ct:VariableAssignment>
+    </SimulationStep>
+    <EstimationStep oid="est1">
+      <NONMEMdataSetReference>
+        <ct:OidRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" oidRef="NMoid"/>
+      </NONMEMdataSetReference>
+      <ParametersToEstimate>
+        <ParameterEstimation>
+          <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="lambda0" blkIdRef="pm1"/>
+          <InitialEstimate fixed="false">
+            <ct:Real xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">0.1</ct:Real>
+          </InitialEstimate>
+          <LowerBound>
+            <ct:Real xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">0</ct:Real>
+          </LowerBound>
+        </ParameterEstimation>
+        <ParameterEstimation>
+          <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="N0" blkIdRef="pm1"/>
+          <InitialEstimate fixed="false">
+            <ct:Real xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">1000</ct:Real>
+          </InitialEstimate>
+          <LowerBound>
+            <ct:Real xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">0</ct:Real>
+          </LowerBound>
+        </ParameterEstimation>
+        <ParameterEstimation>
+          <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="k1" blkIdRef="pm1"/>
+          <InitialEstimate fixed="false">
+            <ct:Real xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">0.1</ct:Real>
+          </InitialEstimate>
+          <LowerBound>
+            <ct:Real xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">0</ct:Real>
+          </LowerBound>
+        </ParameterEstimation>
+        <ParameterEstimation>
+          <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="k2" blkIdRef="pm1"/>
+          <InitialEstimate fixed="false">
+            <ct:Real xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">0.1</ct:Real>
+          </InitialEstimate>
+          <LowerBound>
+            <ct:Real xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">0</ct:Real>
+          </LowerBound>
+        </ParameterEstimation>
+        <ParameterEstimation>
+          <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="CV" blkIdRef="om1"/>
+          <InitialEstimate fixed="false">
+            <ct:Real xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">0.1</ct:Real>
+          </InitialEstimate>
+          <LowerBound>
+            <ct:Real xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">0</ct:Real>
+          </LowerBound>
+        </ParameterEstimation>
+        <ParameterEstimation>
+          <ct:SymbRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" symbIdRef="sigma_res_W" blkIdRef="om1"/>
+          <InitialEstimate fixed="true">
+            <ct:Real xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes">1</ct:Real>
+          </InitialEstimate>
+        </ParameterEstimation>
+      </ParametersToEstimate>
+      <Operation order="1" opType="estIndiv"/>
+    </EstimationStep>
+    <StepDependencies>
+      <Step>
+        <ct:OidRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" oidRef="est1"/>
+      </Step>
+      <Step>
+        <ct:OidRef xmlns:ct="http://www.pharmml.org/2013/03/CommonTypes" oidRef="sim1"/>
+      </Step>
+    </StepDependencies>
+  </ModellingSteps>
+</PharmML>
