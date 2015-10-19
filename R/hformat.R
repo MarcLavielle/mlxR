@@ -29,7 +29,7 @@ hformat  <-  function(list.input)
           group[[k]]$size <- 1
         if (length(group$size)>1)
           stop("Define group$size as a scalar instead of a vector.")
-        if (is.null(group[[k]]$level))
+        if (!is.null(group[[k]]$level))
           warning("'level' defined in 'group' is not used with a R model.")
       }
     }else{    
