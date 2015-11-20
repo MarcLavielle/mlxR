@@ -31,7 +31,24 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   session=Sys.getenv("session.simulx")
   Sys.setenv(LIXOFT_HOME=session)
   if  (!is.null(names(group)))
-    group <- list(group)
+    group <- list
+  
+  mlxtranpath <- dirname(project)
+  mlxtranfile = file_path_sans_ext(basename(project))
+  mypath <- getwd()
+  Rproject <- file.path(mypath,paste0(mlxtranfile,"_simulx"))
+  if(file.exists(Rproject) )
+    unlink(Rproject, recursive = TRUE, force = TRUE)
+  #modelname = basename(model)
+  modelname = paste0(mlxtranfile,"_model.txt")
+  dir.create(Rproject, showWarnings = FALSE, recursive = FALSE, mode = "0777")
+  ## do not copy the model, but give the path where the model will be saved in order to 
+  ## get corrects paths inside the model  
+  #file.copy(model, Rproject, overwrite = FALSE)
+  #file.remove(model)
+  
+  model<-file.path(Rproject,modelname)
+  
   ans <- processing_monolix(project=project,
                             model=NULL,
                             treatment=NULL,
@@ -39,7 +56,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
                             output=NULL,
                             group=group,
                             r.data=r.data,
-                            fim=fim)
+                            fim=fim,modelOutFile=model)
   model         <- ans$model
   treatment     <- ans$treatment
   parameter     <- ans$param
@@ -47,17 +64,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   group         <- ans$group
   regressor     <- ans$regressor
   fim           <- ans$fim
-  mlxtranpath <- dirname(project)
-  mlxtranfile = file_path_sans_ext(basename(project))
-  mypath <- getwd()
-  Rproject <- file.path(mypath,paste0(mlxtranfile,"_simulx"))
-  if(file.exists(Rproject) )
-    unlink(Rproject, recursive = TRUE, force = TRUE)
-  modelname = basename(model)
-  dir.create(Rproject, showWarnings = FALSE, recursive = FALSE, mode = "0777")
-  file.copy(model, Rproject, overwrite = FALSE)
-  file.remove(model)
-  model<-file.path(Rproject,modelname)
+  
   
   #configure and write output 
   RprojectPath <- dirname(model)
