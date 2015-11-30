@@ -1,0 +1,9 @@
+[LONGITUDINAL]
+input={a, b, a1, a2, ry}
+EQUATION:
+f1 = a + b*t
+f2 = a - b*t
+DEFINITION:
+y1 = {distribution=normal, prediction=f1, sd=a1}
+y2 = {distribution=normal, prediction=f2, sd=a2}
+;correlation = {r(y1, y2)=ry}

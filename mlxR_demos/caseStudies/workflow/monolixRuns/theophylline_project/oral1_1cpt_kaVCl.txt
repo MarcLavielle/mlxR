@@ -1,0 +1,13 @@
+DESCRIPTION: 
+PK model, first order absorption with one compartment
+Version 1 using the built-in function PKMODEL
+
+INPUT:
+parameter = {ka, V, Cl}
+
+EQUATION:
+Cc=pkmodel(ka, V, Cl)
+
+OUTPUT:
+output = Cc
+

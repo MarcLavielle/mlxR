@@ -1,0 +1,13 @@
+[LONGITUDINAL]
+input = {k1, k2, f0, g0}
+
+PK:
+depot(type=1, target=f)
+depot(type=2, target=g)
+
+EQUATION:
+t0  = 0
+f_0 = f0
+g_0 = g0
+ddt_f = -k1*f + k2*g 
+ddt_g =  k1*f - k2*g 

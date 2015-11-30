@@ -1,0 +1,7 @@
+[LONGITUDINAL]
+input = {V, Cl}
+
+EQUATION:
+k = Cl/V
+ddt_Ac = -k*Ac
+Cc=Ac/V
