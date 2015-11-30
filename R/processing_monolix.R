@@ -4,7 +4,7 @@
 NULL
 
 processing_monolix  <- function(project,model,treatment=NULL,parameter,
-                                output=NULL,group=NULL,r.data=TRUE,fim=NULL,modelOutFile=NULL)
+                                output=NULL,group=NULL,r.data=TRUE,fim=NULL)
 {
   ### processing_monolix
   #     takes a monolix project and extract information from
@@ -100,12 +100,7 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
     # generate model from mlxtran file  
     mlxtranfile = file_path_sans_ext(basename(project))
     mlxtranpath <- dirname(project)
-   if(!is.null (modelOutFile))
-   {
-     model = modelOutFile
-   }else{
     model = file.path(mlxtranpath,paste0(mlxtranfile,"_model.txt"))
-   }
     session<-Sys.getenv("session.simulx")
     zz=file.path(session,'lib','lixoftLanguageTranslator')
     str=paste0('"',zz,'" --from=mlxproject --to=mlxtran')  
