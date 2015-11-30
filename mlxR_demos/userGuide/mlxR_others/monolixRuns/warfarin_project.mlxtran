@@ -1,0 +1,71 @@
+; this script is generated automatically
+
+DESCRIPTION: 
+warfarin_project.mlxtran
+
+DATA: 
+    path = "%MLXPROJECT%/",
+    file  ="warfarin_data.txt",
+    headers = {ID,TIME,AMT,Y,YTYPE,COV,IGNORE,IGNORE},
+    columnDelimiter = "\t"
+
+VARIABLES: 
+    lw70 = log(wt/70) [use=cov],
+    wt
+
+INDIVIDUAL: 
+    Cl = {distribution=logNormal, covariate=lw70, iiv=yes},
+    IC50 = {distribution=logNormal, iiv=yes},
+    Imax = {distribution=logitNormal, iiv=yes},
+    Tlag = {distribution=logNormal, iiv=yes},
+    V = {distribution=logNormal, covariate=lw70, iiv=yes},
+    ka = {distribution=logNormal, iiv=yes},
+    kin = {distribution=logNormal, iiv=yes},
+    kout = {distribution=logNormal, iiv=yes}
+
+STRUCTURAL_MODEL: 
+    file = "mlxt:warfarin_mlxt",
+    path = "%MLXPROJECT%",
+    output = {Cc,E}
+
+
+OBSERVATIONS: 
+    y1 = {type=continuous, prediction=Cc, error=combined1},
+    y2 = {type=continuous, prediction=E, error=constant}
+
+TASKS: 
+    ; settings
+    globalSettings={
+        withVariance=no,
+        settingsGraphics="%MLXPROJECT%/warfarin_project_graphics.xmlx",
+        settingsAlgorithms="%MLXPROJECT%/warfarin_project_algorithms.xmlx",
+        resultFolder="%MLXPROJECT%/warfarin_project"},
+    ; workflow
+    estimatePopulationParameters(
+        initialValues={
+            pop_Cl = 1,
+            beta_{Cl,lw70} = 0 ,
+            pop_IC50 = 0.5,
+            pop_Imax = 0.5,
+            pop_Tlag = 1,
+            pop_V = 10,
+            beta_{V,lw70} = 0 ,
+            pop_ka = 1,
+            pop_kin = 1,
+            pop_kout = 0.1,
+            a_y1 = 1,
+            b_y1 = 0.3,
+            a_y2 = 4,
+            omega_Cl = 1,
+            omega_IC50 = 1,
+            omega_Imax = 1,
+            omega_Tlag = 1,
+            omega_V = 1,
+            omega_ka = 1,
+            omega_kin = 1,
+            omega_kout = 1
+            } ),
+    estimateFisherInformationMatrix( method={linearization} ),
+    estimateIndividualParameters( method={conditionalMode} ),
+    displayGraphics(),
+

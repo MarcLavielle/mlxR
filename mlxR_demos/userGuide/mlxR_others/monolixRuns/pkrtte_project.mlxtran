@@ -1,0 +1,45 @@
+; this script is generated automatically
+
+DESCRIPTION: 
+pkrtte_project.mlxtran
+
+DATA: 
+    path = "%MLXPROJECT%/",
+    file  ="pkrtte_data.txt",
+    headers = {ID,TIME,AMT,Y,YTYPE,IGNORE},
+
+INDIVIDUAL: 
+    Cl = {distribution=logNormal, iiv=yes},
+    V = {distribution=logNormal, iiv=yes},
+    gamma = {distribution=logNormal, iiv=no},
+    ka = {distribution=logNormal, iiv=yes}
+
+STRUCTURAL_MODEL: 
+    file = "mlxt:pkrtte_mlxt",
+    path = "%MLXPROJECT%",
+    output = {Cc,Hemorrhaging}
+
+
+OBSERVATIONS: 
+    Concentration = {type=continuous, prediction=Cc, error=proportional},
+    Hemorrhaging = {type=event}
+
+TASKS: 
+    ; settings
+    globalSettings={
+        withVariance=no,
+        settingsAlgorithms="%MLXPROJECT%/pkrtte_project_algorithms.xmlx",
+        resultFolder="%MLXPROJECT%/pkrtte_project"},
+    ; workflow
+    estimatePopulationParameters(
+        initialValues={
+            pop_Cl = 0.1,
+            pop_V = 10,
+            pop_gamma = 0.05,
+            pop_ka = 1,
+            b_Concentration = 0.3,
+            omega_Cl = 1,
+            omega_V = 1,
+            omega_ka = 1
+            } ),
+
