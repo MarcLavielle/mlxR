@@ -102,10 +102,6 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
       outfile = file.path(Rproject,paste0("/populationParameter.txt"))      
       cat(paste0("populationParameter<- read.vector('populationParameter.txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       write.table(populationParameter,file=outfile,col.names=FALSE,quote=FALSE)
-      ## edit populationParameter.txt in order to set correct name of error moel, since it changes in the V2 model
-      ## comming from the tranlator
-      paramfile<-outfile
-      setCorrectErrorModelName(paramfile,model)
       if (!is.null(param.list))
         param.list <- paste(param.list,"populationParameter",sep=",")  
       else
@@ -286,77 +282,4 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
     setwd(mypath)
   }
   return(projectExe)
-}
-
-## set correct the name of error model in paramfile, since it changes in the V2 model
-## comming from the tranlator
-
-setCorrectErrorModelName<- function(paramfile,model)
-{
-  modelread <- readLines(model)
-  errorline<-grep("errorModel",modelread)
-  errortype<-c('combined1','exponential','constant','proportional')
-  errorused<-NULL
-  for(i in seq(1:length(errorline)))
-  {
-    line<-trimws(modelread[errorline[i]])
-    comment<-";"
-    if(!identical(substring(line,1,1),comment))
-    { 
-      for(p in seq(1:length(errortype)))
-      {
-        testerr<-strsplit(line,errortype[p])
-        if(length(testerr[[1]])==2)
-        {          
-          errorsub<-strsplit(testerr[[1]][2],'[/(/)]',perl=TRUE)
-          errorargs<-strsplit(errorsub[[1]][2],',')
-          for(ee in seq(1:length(errorargs[[1]])))
-          {
-            errorused<-c(errorused,trimws(errorargs[[1]][ee]))
-          }
-          
-        }
-        
-      }
-    }
-  }
-  replaced=FALSE
-  if(length(errorused))
-  {
-    paramread <- readLines(paramfile)
-    for(i in seq(1:length(errorused)))
-    {
-      erri<-errorused[i]
-      errifirstchars<-strsplit(erri,'(.$)',perl=TRUE)[[1]]
-      erriline<-paste0("^",erri,"$")
-      errparamf<-grep(erriline,paramread,perl=TRUE)
-      if(!length(errparamf))
-      {
-        for(i in seq(1:length(paramread)))
-        {
-          line<-trimws(paramread[i])
-          linesplitted<-strsplit(line,'\\s',perl=TRUE)
-          paramname<-paste0(strsplit(linesplitted[[1]][1],'_')[[1]],collapse='')
-          if(identical(paramname,erri))
-          {
-            paramread[i]<-sub(linesplitted[[1]][1],erri,paramread[i]) 
-            replaced=TRUE
-          }else if(identical(paramname,errifirstchars))
-          {            
-            paramread[i]<-sub(linesplitted[[1]][1],erri,paramread[i]) 
-            replaced=TRUE 
-          }          
-        }
-      }
-    }
-    
-  }
-  if(replaced==TRUE)
-  {  
-    cat("",file =paramfile, fill = FALSE, labels = NULL, append = FALSE) 
-    
-    for(i in seq(1:length(paramread)))
-      cat(paste0(paramread[i],"\n"),file =paramfile, fill = FALSE, labels = NULL, append = TRUE)      
-  }
-  return 
 }
