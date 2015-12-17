@@ -13,9 +13,11 @@ funique <- function(A){
   #   C = A(IA) and A = C(IC).  
   #
   # [C,IA,IC]= unique( A , 'first' );
-  C    = unique( A )
-  IA   = match( C, A )
-  IC   = match( A , C )
+  C  <- unique( A )
+  IA <- match(data.frame(t(C)), data.frame(t(A)))
+  IC <- match(data.frame(t(A)), data.frame(t(C)))
+#   IA   = match( C, A )
+#   IC   = match( A , C )
   ans  =
     list(arg1=C, arg2=IA, arg3=IC)
 }
