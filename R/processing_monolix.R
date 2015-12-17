@@ -24,8 +24,19 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
   #**************************************************************************
   
   if (r.data==TRUE){
-    datas <- readdatamlx(infoProject)
+    datas <- readdatamlx(infoProject=infoProject)
     
+    dobs <- datas$observation
+    if (!is.null(names(dobs)))
+      dobs <- list(dobs)
+    datas$observation=list()
+    y <- list()
+    for (iy in (1:length(dobs))){
+      niy <- names(dobs[[iy]])
+#       yk <- list(ylabel="observation", colNames=niy, name=niy[length(niy)], value=as.matrix(dobs[[iy]]) )
+       yk <- list(ylabel="observation", colNames=niy, name=niy[length(niy)], value=dobs[[iy]] )
+      datas$observation[[iy]] <- yk
+    }    
     
     if (is.character(param))  {
       file = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
@@ -38,13 +49,15 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
     
     datas$id <- data.frame(newId=seq(1:datas$N),oriId=datas$idOri)
     if (!is.null(group)){
-      if ((length(names(group[[1]]))>1) | (is.null(group[[1]]$size)))
-        stop("When simulx is used with a monolix project, 'group' should be a list with only one field 'size'")
+      if (is.null(group[[1]]$size))
+        stop("'size' is missing in group")
+      if (!is.null(group[[1]]$level))
+        warning("'level' in group is ignored with a Monolix project")
       datas <- resample.data(datas,group[[1]]$size)
     }
-    ##************************************************************************
+    ##*********************************************************************
     #       treatment (TREATMENT)
-    #**************************************************************************
+    #**********************************************************************
     if (is.null(treatment)){
       if (is.null(datas$sources)){ 
         treatment = datas$sources
@@ -120,19 +133,20 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
   }else{
     gr <- list(size=c(group[[1]]$size, 1) , level=c("individual","longitudinal"))
   }
-#  if (is.null(datas$regressor))
-#    ans = list(model=model, treatment=treatment, param=paramp, output=output, group=gr, id=datas$id)
-#   else
-    ans = list(model=model, 
-               treatment=treatment, 
-               param=paramp, 
-               output=output, 
-               group=gr,
-               regressor=datas$regressor, 
-               id=datas$id,
-               fim=fim,
-               infoParam=infoProject$parameter)
-        
+  #  if (is.null(datas$regressor))
+  #    ans = list(model=model, treatment=treatment, param=paramp, output=output, group=gr, id=datas$id)
+  #   else
+  ans = list(model=model, 
+             treatment=treatment, 
+             param=paramp, 
+             output=output, 
+             group=gr,
+             regressor=datas$regressor, 
+             id=datas$id,
+             occ=datas$occ,
+             fim=fim,
+             infoParam=infoProject$parameter)
+  
   return(ans)
 }
 
@@ -231,22 +245,17 @@ myparseXML  <- function (filename, mlxtranpath, node)
   set     = getNodeSet(tree,paste0("//", node))
   tmp=list(name=NULL)
   ans=list()
-  for (i in 1 : length(set))
-  {
+  for (i in 1 : length(set)) {
     attributs      = xmlAttrs(set[[i]])
     namesAttributs = names(attributs)
     tmp['name']= node
-    for (j in 1 : length(namesAttributs))
-    {      
+    for (j in 1 : length(namesAttributs)) {      
       tmp[namesAttributs[[j]]]=attributs[[j]]
       # replace '%MLXPROJECT%' by the symbol of current folder "."
       if (namesAttributs[[j]] == "uri")
-      {
         tmp[namesAttributs[[j]]]=sub("%MLXPROJECT%", mlxtranpath, tmp[namesAttributs[[j]]]) 
-      }
       # repalce '\\t' by "tab"
-      if (namesAttributs[[j]] == "columnDelimiter")
-      {
+      if (namesAttributs[[j]] == "columnDelimiter") {
         if (tmp[namesAttributs[[j]]] == '\\t' )
           tmp[namesAttributs[[j]]]= "tab"
       }
@@ -258,8 +267,7 @@ myparseXML  <- function (filename, mlxtranpath, node)
 
 ##
 readPopEstimate  <-  function(filename, fim=NULL) {
-  if (file.exists(filename))
-  {
+  if (file.exists(filename)) {
     data        = read.table(filename, header = TRUE, sep=";")
     name        = as.character(data[[1]])
     name        = sub(" +", "", name)
@@ -267,17 +275,17 @@ readPopEstimate  <-  function(filename, fim=NULL) {
     
     ic <- grep("corr_",name)
     name[ic] <- sub("corr_","r_",name[ic])
-#     for (j in ic){
-#       nj <- name[j]
-#       i1 <- regexpr(",",nj)
-#       i2 <- regexpr(")",nj)
-#       n1 <- substr(nj,6,i1[1]-1)
-#       n2 <- substr(nj,i1[1]+1,i2[1]-1)
-#       name[j] <- paste0('r_',n1,'_',n2)
-#     }
+    #     for (j in ic){
+    #       nj <- name[j]
+    #       i1 <- regexpr(",",nj)
+    #       i2 <- regexpr(")",nj)
+    #       n1 <- substr(nj,6,i1[1]-1)
+    #       n2 <- substr(nj,i1[1]+1,i2[1]-1)
+    #       name[j] <- paste0('r_',n1,'_',n2)
+    #     }
     param <- as.numeric(as.character(data[['parameter']]))
     names(param) <- name
-
+    
     if (!is.null(fim)){
       if (fim=='lin'){
         se <- as.numeric(as.character(data[['s.e._lin']]))
@@ -289,7 +297,7 @@ readPopEstimate  <-  function(filename, fim=NULL) {
     } else
       se <- NULL
     
-  
+    
     return(list(param,se))
   } else
     stop(paste("file : ",filename, " does not exist" ))
@@ -393,35 +401,28 @@ mergeArg  <- function(p1,p2)
   if (!(is.list(p2[[1]])))
     p2 = list(p2)
   
-  n1 = length(p1);
-  n2 = length(p2);
-  p  = p1;
-  np = length(p);
-  for (i in 1:n2)
-  {
-    p2i=p2[[i]];
-    if (isfield(p2i,'colNames'))
-    {
-      testi  = 0;
-      namei2 = p2i$name;
-      for (j in 1:n1) 
-      {
+  n1 = length(p1)
+  n2 = length(p2)
+  p  = p1
+  np = length(p)
+  for (i in 1:n2) {
+    p2i=p2[[i]]
+    #     if (is.null(p2i$time) || length(p2i$time)>0 ) {
+    #     if (isfield(p2i,'colNames')) {
+    if (!is.null(p2i$colNames)) {
+      testi  = 0
+      namei2 = p2i$name
+      for (j in 1:n1) {
         p1j = p1[[j]];
-        if (isfield(p1j,'colNames'))
-        {
-          if (namei2==p1j$name)
-          {
+        #         if (isfield(p1j,'colNames')) {
+        if (!is.null(p1j$colNames)) {
+          if (namei2==p1j$name) {
             p[[j]] = p2i
             testi  = 1
           }
-        }else
-        {
-          #ifs = find(strcmp(p1j$name,namei2));
-          #ifs = grep(namei2,p1j$name)
+        }else{
           ifs = match(namei2,p1j$name)
-          #   if (length(ifs)>0)
-          if(!is.na(ifs))
-          {
+          if(!is.na(ifs)) {
             p[[j]]$name  = p[[j]]$name[-ifs]
             p[[j]]$value = p[[j]]$value[-ifs]
             np                = np+1
@@ -430,65 +431,59 @@ mergeArg  <- function(p1,p2)
           }
         }
       }
-      if (testi==0)
-      {
+      if (testi==0){
         np      = np+1
         p[[np]] = p2i
       }
-    }else
-    { 
-      if (length(p2i$name)>0){
-        for (k in 1:length(p2i$name))
-        {
-          namek2 = p2i$name[k];
-          testk  = 0;
-          for (j in 1:n1)
-          {
-            p1i = p1[[j]];
-            if (isfield(p1i,'colNames'))
-            {
-              if (namek2==p1i$name)
-              {
-                p[[j]] =list(name= list(namek2));
-                if (isfield(p2i,'value'))
-                {
-                  p[[j]]$value=p2i$value[k];
-                }
-                if( isfield(p2i,'time'))
-                {
-                  p[[j]]$time=p2i$time;
-                  #                p[[j]]$time=p2i$time[k];
-                }
+    }else{ 
+      if (length(p2i$name)>0) {
+        for (k in 1:length(p2i$name)) {
+          namek2 = p2i$name[k]
+          testk  = 0
+          for (j in 1:n1) {
+            p1i = p1[[j]]
+            #             if (isfield(p1i,'colNames')) {
+            if (!is.null(p1i$colNames)) {
+              if (namek2==p1i$name) {
+                p[[j]] =list(name= list(namek2))
+                #                 if (isfield(p2i,'value'))
+                if (!is.null(p2i$value))
+                  p[[j]]$value=p2i$value[k]
+                if (!is.null(p2i$time))
+                  #   if( isfield(p2i,'time'))
+                  p[[j]]$time=p2i$time
                 testk = 1
               }
-            }else
-            {
-              #ifs=grep(namek2,p1i$name);
-              ifs=match(namek2,p1i$name);
-              if (length(ifs)>0)
-              {
-                p[[j]]$value[ifs] = p2i$value[k];
-                testk             = 1;
+            }else{
+              ifs=match(namek2,p1i$name)
+              if (length(ifs)>0) {
+                p[[j]]$value[ifs] = p2i$value[k]
+                testk             = 1
               }
             }
           }
-          if (testk==0)
-          {
+          if (testk==0) {
             np = np+1;
             p[[np]] =list(name= list(namek2))
-            if (isfield(p2i,'value'))
-            {
-              p[[np]]$value=p2i$value[k];
-            }
-            if (isfield(p2i,'time'))
-            {
-              p[[np]]$time=p2i$time;
-            }
+            #             if (isfield(p2i,'value'))
+            if (!is.null(p2i$value))
+              p[[np]]$value=p2i$value[k]
+            #             if (isfield(p2i,'time'))
+            if (!is.null(p2i$time))
+              p[[np]]$time=p2i$time
           }
         }
       }
-    }
+    }     
+    #     }
   }
+  ik <- NULL
+  for (k in (1:length(p))){
+    pk <- p[[k]]
+    if (!is.null(pk$time) && length(pk$time)==0)
+      ik <- c(ik,k)
+  }
+  p[ik] <- NULL
   return(p)
 }
 
@@ -676,9 +671,10 @@ formato <- function(out)
     outk <- out[[k]]
     if (!isfield(outk,"name"))
       outk <- list(name=outk)
-    
+    #     if (is.null(outk$time) || length(outk$time)>0 )
     output[[k]] <- outk
   }
+  # return(output[which(!sapply(output,is.null))])
   return(output)
 }
 #----------------------------------
