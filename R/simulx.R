@@ -84,7 +84,8 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   Sys.setenv(LIXOFT_HOME=session)
   
   if (is.null(settings$seed))
-    settings$seed <- round(as.numeric(Sys.time())*100)%%10000
+    settings$seed <- round(runif(1)*100000)
+#   settings$seed <- round(as.numeric(Sys.time())*100)%%10000
   
   if (identical(file_ext(model),"R")) {Rfile <- TRUE} else {Rfile <- FALSE}
   if ( !is.null(model) && exists(model, mode="function") ){Rsource <- TRUE} else {Rsource <- FALSE}
