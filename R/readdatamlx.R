@@ -1,22 +1,25 @@
-readdatamlx  <- function(infoProject){
+readdatamlx  <- function(infoProject=NULL, project=NULL){
   # READDATAMLX
   #
   # READDATAMLX reads a datafile and create a list.
   
+  if (!is.null(project))
+    infoProject <- getInfoXml(project)
+  
   header          = infoProject$dataheader
   observationName = infoProject$output
   datafile        = infoProject$datafile
-  headerList      = c('ID','TIME','AMT','ADM','RATE','TINF','Y','YTYPE','X','COV','CAT')
-  newList         = c('id','time','amount','type','rate','tinf','y','ytype','x','cov','cat')
+  headerList      = c('ID','TIME','AMT','ADM','RATE','TINF','Y','YTYPE','X','COV','CAT','OCC')
+  newList         = c('id','time','amount','type','rate','tinf','y','ytype','x','cov','cat','occ')
   # newList         = cellfun(@lower,headerList,'UniformOutput',false)
-  newHeader       = list()
+  newHeader       = vector(length=length(header))
   ixdose = NULL
   datas=NULL
   
   header=unlist(strsplit(header, ","))  
   nlabel = length(header)
   
-  icov <- icat <- iid <- iamt <- iy <- iytype <- NULL
+  icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- NULL
   
   for (i in 1:length(headerList))
   {
@@ -29,7 +32,7 @@ readdatamlx  <- function(infoProject){
     if (!is.null(ih))
       newHeader[ih]=newList[i]      
   }
-  #  newHeader = unlist(newHeader)
+  
   ##************************************************************************
   #       Gestion du format du fichier de donnees
   #*************************************************************************  
@@ -52,11 +55,11 @@ readdatamlx  <- function(infoProject){
   if (tolower(fileFormat)=="csv"){
     h1 = read.table(datafile, sep=",", nrows=1)
     h2 = read.table(datafile, sep=";", nrows=1)
-    if (length(h1)>length(h2)) {
+    if (length(h1)>length(h2)) 
       delimiter=','
-    } else {
+    else 
       delimiter=';'
-    }
+    
   }else if (tolower(fileFormat)=="space"){
     delimiter=""
   }else if (tolower(fileFormat)==" "){
@@ -74,8 +77,8 @@ readdatamlx  <- function(infoProject){
   data    = read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
   S       = data
   S0      = names(data)
-  newHeader[icov] = S0[icov]
-  newHeader[icat] = S0[icat]
+  i.new <- c(icov,icat,ix,iocc)
+  newHeader[i.new] = S0[i.new]
   
   ans    = funique(S[[iid]])
   iduf   = ans$arg1
@@ -94,32 +97,30 @@ readdatamlx  <- function(infoProject){
   idnum = ic[idnumf]
   N     = length(iduf)
   
-  iop_id = 0
-  i      = 1
-  while(iop_id==0 && i<=N)
-  {
-    iop_id = (i==ids[[i]])
-    i      = i+1
-  }
+  #   iop_id = 0
+  #   i      = 1
+  #   while(iop_id==0 && i<=N) {
+  #     iop_id = (i==ids[[i]])
+  #     i      = i+1
+  #   }
   
-  if (is.null(itime)){
+  if (is.null(itime)) {
     itime=ix[1]
     ix=ix[2:length(ix)]
   }
   t=S[[itime]]
-  if (is.null(ix))
-  {
-    nx=0
-  }else
-  {
-    nx=length(ix)
-  }
+  nx=length(ix)
   
+  nocc <- length(iocc)
+  
+  if (!is.null(icat)) {
+    for (j in (1:length(icat)))
+      S[[icat[j]]] <- as.factor(S[[icat[j]]])    
+  }
   ##************************************************************************
   #       SOURCE FIELD
   #**************************************************************************
-  if (!is.null(iamt))
-  {
+  if (!is.null(iamt)) {
     if (is.null(irate))
       irate = NULL
     if (is.null(iadm))
@@ -127,25 +128,20 @@ readdatamlx  <- function(infoProject){
     
     ixdose=rbind(c(iamt, irate, iadm))
   }
-  if (!is.null(ixdose))
-  {
+  if (!is.null(ixdose)) {
     i1       = findstrcmp(S[[ixdose[1]]],'.', not=TRUE)
     ndose    = length(i1) #match(FALSE,(!(is.na(ixdose))))
     nxdose   = length(ixdose)
     
     uv       = cbind(idnum[i1], t[i1], matrix(data=0,nrow=ndose,ncol=length(ixdose)))
-    for (i in 1:ndose)
-    {
+    for (i in 1:ndose) {
       for(j in 1:nxdose)
-      {
         uv[i,2+j]=as.numeric(as.character(S[[ixdose[j]]][i1[i]]))
-      }
     }
     
     uh = c('id',newHeader[[itime]])
-    for(j in 1:nxdose){
+    for(j in 1:nxdose)
       uh=c(uh,newHeader[[ixdose[j]]])
-    }
     u        = list(label  = 'source',
                     name   = 'doseRegimen',
                     colNames = uh,
@@ -159,79 +155,60 @@ readdatamlx  <- function(infoProject){
   #       OBSERVATION FIELD
   #**************************************************************************
   
-  
   iobs1   = findstrcmp(S[[iy]],'.', not=TRUE)
-  nobs    = length(iobs1)
-  yvalues = cbind(idnum[iobs1], t[iobs1], matrix(data=0,nrow=nobs,ncol=nx))
-  ytype   = rep(1,nobs)
-  j <- 1
-  while (j <= nx)
-  {
-    for (i in 1:nobs)
-    {
-      yvalues[i,2+j]=S[[ix[j]]][iobs1[i]]
-    }
-    j=j+1
-  }
+  yvalues = data.frame(id=idnum[iobs1], time=t[iobs1], y=S[iobs1,iy])
   if (!is.null(iytype)){ 
-    Schar <- as.character(S[[iytype]])
-    ytype <- as.numeric(Schar[iobs1])
-  }
-  ans   = funique(ytype)
-  yu    = ans$arg1
-  #ytype = ans$arg3
-  nyu   = length(yu)
-  
-  observation = list(name= observationName)
-  nyu <- min(length(observation$name),nyu)
-  #y=cell(1,nyu)
-  y = list(list(label=NULL,name=NULL,colNames=NULL, value=NULL))
-  length(y)= nyu
-  # if (is.na(ix))
-  #     ix=NULL
-  for (k in 1:nyu)
-  {
-    y[[k]]$label  ='observation'
-    ik            = grep(k,ytype)
-    yvk           = yvalues[ik,]
-    y[[k]]$name   = observation$name[[k]]
-    if (is.null(ix))
-    {
-      y[[k]]$colNames = c('id',newHeader[[itime]])
-    }else
-    {
-      y[[k]]$colNames = c('id',newHeader[[itime]],newHeader[[ix]])
+    ytype <- factor(S[iobs1,iytype])
+    l.ytype <- levels(ytype)
+    n.y <- length(l.ytype)
+    y<- list()
+    for (iy in (1:n.y)){
+      y[[iy]] <- yvalues[ytype==l.ytype[iy],]
+      names(y[[iy]])[3] <- observationName[iy]
     }
-    y[[k]]$value  = yvk
+    #     yvalues$ytype <- observationName[S[[iytype]][iobs1]]
+  } else {
+    y <- yvalues
+    names(y)[3] <- observationName
   }
-  #datas$observation=y
-  datas   = c(datas, list(observation = y))
+  datas$observation = y
+  
+  ##************************************************************************
+  #       REGRESSOR FIELD
+  #**************************************************************************
+  
+  if (nx>0){
+    datas$regressor = data.frame(id=idnum[iobs1], time=t[iobs1], S[ix][iobs1,])
+  }
+  
+  ##************************************************************************
+  #       OCCASION FIELD
+  #**************************************************************************
+  
+  if (nocc>0){
+    ov <-data.frame(id=idnum, time=t, S[iocc])
+    oo=ov[-2]
+    u <- unique(oo)
+    io=match(data.frame(t(u)), data.frame(t(oo)))
+    datas$occasion <- ov[io,]
+  }
+  
   
   ##************************************************************************
   #       COVARIATE FIELD
   #*************************************************************************
   
-  if (is.null(icov))
-    ncov=0
-  else
-    ncov = length(icov)
-  
-  if (is.null(icat))
-    ncat=0
-  else
-    ncat = length(icat)
-  
-  nc = ncov+ncat
+  nc = length(icov) + length(icat)
   if (nc>0) {
     ic <- c(icov,icat)
-    c1 <- S[[ic[1]]][iu]
     cdf <- data.frame(id=seq(1:N))
     for (k in (1:nc))
       cdf[[k+1]] <- S[[ic[k]]][iu]
-    names(cdf)[2:(nc+1)]=names(S)[ic]
-    
-    datas   = c(datas, list(covariate = cdf))
+    names(cdf)[2:(nc+1)]=names(S)[ic]    
+    datas$covariate = cdf
   }
-  datas   = c(datas, list(N = N, idOri = iduf))
+  
+  datas$N <- N
+  datas$idOri <- iduf
   return(datas)
 }
