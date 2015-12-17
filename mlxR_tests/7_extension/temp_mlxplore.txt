@@ -1,0 +1,17 @@
+<MODEL>
+
+  [LONGITUDINAL]
+  input = {u, v}
+  EQUATION:
+  t0=0.2
+  f_0=10
+  ddt_f = -u*f/(v+f) 
+
+
+<PARAMETER>
+u = 40
+v = 10
+
+<OUTPUT>
+list = {f}
+grid = 0:0.01:2

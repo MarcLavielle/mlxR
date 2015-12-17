@@ -1,0 +1,21 @@
+[LONGITUDINAL]
+input = {ka, V, k, Emax, EC50, a1, a2}
+EQUATION:
+Cc = pkmodel(ka, V, k)
+E  = Emax*Cc/(EC50+Cc)
+
+DEFINITION:
+y1 = {distribution=lognormal, prediction=Cc, sd=a1}
+y2 = {distribution=normal, prediction=E,  sd=a2}
+
+[INDIVIDUAL]
+input={
+ka_pop, omega_ka, V_pop, omega_V, k_pop, omega_k,
+Emax_pop, omega_Emax, EC50_pop, omega_EC50
+}
+DEFINITION:
+ka   = {distribution=lognormal, prediction=ka_pop,   sd=omega_ka}
+V    = {distribution=lognormal, prediction=V_pop,    sd=omega_V}
+k    = {distribution=lognormal, prediction=k_pop,    sd=omega_k}
+Emax = {distribution=lognormal, prediction=Emax_pop, sd=omega_Emax}
+EC50 = {distribution=lognormal, prediction=EC50_pop, sd=omega_EC50}

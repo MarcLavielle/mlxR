@@ -1,0 +1,10 @@
+           ; parameter
+     ka_pop;   0.98140
+      V_pop;   8.28619
+     Cl_pop;   0.12620
+  gamma_pop;   0.18581
+   omega_ka;   0.55177
+    omega_V;   0.20851
+   omega_Cl;   0.22008
+omega_gamma;   0.00000
+        b_1;   0.20243

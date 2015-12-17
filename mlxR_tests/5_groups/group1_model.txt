@@ -1,0 +1,10 @@
+[LONGITUDINAL]
+input = {V, k, a}
+EQUATION:
+Cc = pkmodel(V,k)
+DEFINITION:
+y = {distribution=normal, prediction=Cc, sd=a}
+
+
+
+

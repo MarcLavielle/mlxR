@@ -1,0 +1,47 @@
+[LONGITUDINAL] 
+input={Tk0,V,k,ke0,Imax,S0,IC50,kout,a1,a2,a3,a4}
+
+EQUATION:
+{Cc, Ce}  = pkmodel(Tk0, V, k, ke0)
+Ec = Imax*Cc/(Cc+IC50)
+PCA1 = S0*(1 - Ec)
+Ee = Imax*Ce/(Ce+IC50)
+PCA2 = S0*(1 - Ee)
+PCA3_0 = S0 
+ddt_PCA3 = kout*((1-Ec)*S0- PCA3)  
+
+DEFINITION:
+y1 ={distribution=lognormal, prediction=Cc,   sd=a1}
+y2 ={distribution=normal,    prediction=PCA1, sd=a2}
+y3 ={distribution=normal,    prediction=PCA2, sd=a3}
+y4 ={distribution=normal,    prediction=PCA3, sd=a4}
+
+;----------------------------------------------------
+[INDIVIDUAL]
+input={Tk0_pop,omega_Tk0,V_pop,omega_V,beta_V,k_pop,omega_k,beta_k,
+       ke0_pop,omega_ke0,Imax_pop,omega_Imax,S0_pop,omega_S0,
+       IC50_pop,omega_IC50,kout_pop,omega_kout,w,w_pop}
+
+EQUATION:
+V_pred = V_pop*(w/w_pop)^beta_V
+k_pred = k_pop*(w/w_pop)^beta_k
+
+DEFINITION:
+Tk0 ={distribution=lognormal, prediction=Tk0_pop,  sd=omega_Tk0}
+V   ={distribution=lognormal, prediction=V_pred,   sd=omega_V}
+k   ={distribution=lognormal, prediction=k_pred,   sd=omega_k}
+ke0 ={distribution=lognormal, prediction=ke0_pop,  sd=omega_ke0}
+S0  ={distribution=lognormal, prediction=S0_pop,   sd=omega_S0}
+IC50={distribution=lognormal, prediction=IC50_pop, sd=omega_IC50}
+kout={distribution=lognormal, prediction=kout_pop, sd=omega_kout}
+Imax={distribution=logitnormal, prediction=Imax_pop, sd=omega_Imax}
+
+;----------------------------------------------------
+[COVARIATE]
+input={w_pop, omega_w}
+
+DEFINITION:
+w={distribution=normal, mean=w_pop, sd=omega_w}
+
+
+

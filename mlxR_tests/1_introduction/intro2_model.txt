@@ -1,0 +1,17 @@
+[LONGITUDINAL]
+input = {u, v, a}
+
+EQUATION:
+t0=0.2
+f_0=10
+ddt_f = u*f/(v+f)
+
+DEFINITION:
+y = {distribution=normal, prediction=f, sd=a}
+
+;-------------------------------------------
+[INDIVIDUAL]
+input = {v_pop, omega_v}
+
+DEFINITION:
+v = {distribution=logNormal, mean=log(v_pop), sd=omega_v}

@@ -1,0 +1,14 @@
+[LONGITUDINAL]
+input = {A,lambda,gamma,epsilon,d,tau,omega} 
+
+EQUATION:
+t0 = 0 
+S_0=15
+E_0 =0
+I_0 =2
+R_0 =3  
+N=S+E+I+R
+ddt_S = A - d*S -lambda*S*I/N+gamma*delay(I,tau)*exp(-d*tau)
+ddt_E =lambda*S*I/N -d*E -lambda*delay(S,omega)*delay(I,omega)*exp(-d*omega)/(delay(I,omega)+delay(S,omega)+delay(E,omega)+delay(R,omega))
+ddt_I = -(gamma+epsilon+d)*I+lambda*delay(S,omega)*delay(I,omega)*exp(-d*omega)/(delay(I,omega)+delay(S,omega)+delay(E,omega)+delay(R,omega))
+ddt_R = gamma*I -d*R  -gamma*delay(I,tau)*exp(-d*tau)

@@ -1,0 +1,27 @@
+[LONGITUDINAL]	
+input={K, KDE, KPQ, KQPP, LAMBDAP, GAMMA, DELTAQP, a}
+
+EQUATION:
+PT_0=5
+Q_0 = 40
+PSTAR = PT+Q+QP
+ddt_C = -KDE*C
+ddt_PT = LAMBDAP*PT*(1-PSTAR/K) + KQPP*QP - KPQ*PT - GAMMA*KDE*PT*C
+ddt_Q = KPQ*PT - GAMMA*KDE*Q*C
+ddt_QP = GAMMA*KDE*Q*C - KQPP*QP - DELTAQP*QP
+
+DEFINITION:
+y ={distribution=normal, prediction=PSTAR, sd=a}
+
+;----------------------------------------------------
+[INDIVIDUAL]
+input={KDE_pop,omega_KDE,KPQ_pop,omega_KPQ,KQPP_pop,omega_KQPP,LAMBDAP_pop,
+       omega_LAMBDAP,GAMMA_pop,omega_GAMMA,DELTAQP_pop,omega_DELTAQP}
+
+DEFINITION:
+KDE     = {distribution=lognormal, prediction=KDE_pop,     sd=omega_KDE}
+KPQ     = {distribution=lognormal, prediction=KPQ_pop,     sd=omega_KPQ}
+KQPP    = {distribution=lognormal, prediction=KQPP_pop,    sd=omega_KQPP}
+LAMBDAP = {distribution=lognormal, prediction=LAMBDAP_pop, sd=omega_LAMBDAP}
+GAMMA   = {distribution=lognormal, prediction=GAMMA_pop,   sd=omega_GAMMA}
+DELTAQP = {distribution=lognormal, prediction=DELTAQP_pop, sd=omega_DELTAQP}

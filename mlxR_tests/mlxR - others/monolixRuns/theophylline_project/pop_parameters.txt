@@ -1,0 +1,47 @@
+******************************************************************
+*      theophylline_project.mlxtran
+*      January 14, 2015 at 07:25:57
+*      Monolix version: 4.3.3
+******************************************************************
+
+Estimation of the population parameters
+
+               parameter     s.e. (s.a.)   r.s.e.(%)   p-value 
+ka_pop       :     1.52          0.3           20              
+V_pop        :     33.1          1.2            4              
+beta_V_lw70  :    0.749         0.27           37       0.0063 
+Cl_pop       :     2.81          0.2            7              
+beta_Cl_lw70 :    0.514         0.54          105         0.34 
+
+omega_ka     :    0.644         0.15           24              
+omega_V      :   0.0944        0.035           37              
+omega_Cl     :    0.236        0.053           22              
+
+b            :    0.159        0.012            8              
+
+______________________________________________
+correlation matrix of the estimates(Stochastic Approximation)
+
+ka_pop            1             
+V_pop          0.12       1          
+beta_V_lw70       0    0.09       1       
+Cl_pop           -0    0.02       0       1    
+beta_Cl_lw70      0    0.01    0.01    0.11       1 
+
+Eigenvalues (min, max, max/min): 0.85  1.2  1.4
+
+omega_ka      1          
+omega_V    0.04       1       
+omega_Cl     -0   -0.03       1    
+b         -0.06   -0.15   -0.03       1 
+
+Eigenvalues (min, max, max/min): 0.83  1.2  1.4
+
+Numerical covariates
+	lw70 = log(WEIGHT/70)		
+
+
+Population parameters and Fisher Information Matrix estimation...
+
+Elapsed time is 18 seconds. 
+CPU time is 20.2 seconds. 

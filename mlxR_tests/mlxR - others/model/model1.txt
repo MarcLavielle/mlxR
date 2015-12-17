@@ -1,0 +1,14 @@
+[LONGITUDINAL]
+input = {ka, Tk0, V, k}
+
+EQUATION:
+D  = 100
+
+if t>Tk0
+  f0=D/(V*Tk0*k)*(1-exp(-k*Tk0))*exp(-k*(t-Tk0))
+else
+  f0=D/(V*Tk0*k)*(1-exp(-k*t))
+end
+
+f1 = f0
+f2 = D*ka/(V*(ka-k))*(exp(-k*t) - exp(-ka*t))

@@ -1,0 +1,35 @@
+[COVARIATE]
+input={w}
+
+EQUATION:
+tw = log((w)/(70))
+
+[INDIVIDUAL]
+input={omega_Cl,pop_V,pop_Tlag,omega_Tlag,tw,omega_V,pop_ka,pop_Cl,beta_V,beta_Cl,omega_ka}
+
+DEFINITION:
+Tlag = { distribution = normal, transformation = log, reference = pop_Tlag, sd={omega_Tlag}}
+ka = { distribution = normal, transformation = log, reference = pop_ka, sd={omega_ka}}
+V = { distribution = normal, transformation = log, reference = pop_V, covariate={tw}, coefficient={beta_V},sd={omega_V}}
+Cl = { distribution = normal, transformation = log, reference = pop_Cl, covariate={tw}, coefficient={beta_Cl},sd={omega_Cl}}
+
+[LONGITUDINAL]
+input={V,Cl,ka,a,Tlag,b}
+
+EQUATION:
+k = (Cl)/(V)
+if ((t)-(tDose))<(Tlag)
+
+C=0
+
+else
+
+C=(((amtDose)*(ka))/((V)*((ka)-(k))))*((exp((-(k))*(((t)-(tDose))-(Tlag))))-(exp((-(ka))*(((t)-(tDose))-(Tlag)))))
+
+end
+
+Cc = C
+
+DEFINITION:
+C_obs = { distribution = normal, prediction = C,  errorModel=combined1(a, b)}
+

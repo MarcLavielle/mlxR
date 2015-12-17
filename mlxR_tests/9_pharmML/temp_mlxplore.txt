@@ -1,0 +1,30 @@
+<MODEL>
+file = 'model/tgi2_model_tr.txt'
+
+<DESIGN>
+[ADMINISTRATION]
+adm1 = { time = {0, 12, 24, 36}, amount = 1 }
+adm2 = { time = {0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45}, amount = 0.25 }
+[TREATMENT]
+trt1 = {  adm1 }
+trt2 = {  adm2 }
+
+<PARAMETER>
+K = 100
+pop_KDE = 0.3
+omega_KDE = 0
+pop_KPQ = 0.025
+omega_KPQ = 0
+pop_KQPP = 0.004
+omega_KQPP = 0
+pop_LAMBDAP = 0.12
+omega_LAMBDAP = 0
+pop_GAMMA = 1
+omega_GAMMA = 0
+pop_DELTAQP = 0.01
+omega_DELTAQP = 0
+a = 3
+
+<OUTPUT>
+list = {PT, Q, QP, PSTAR}
+grid = -50:0.5:100

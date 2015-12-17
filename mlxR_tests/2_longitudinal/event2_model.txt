@@ -1,0 +1,10 @@
+[LONGITUDINAL]
+input = {beta,lambda}  
+
+EQUATION:
+h = (beta/lambda)*(t/lambda)^(beta-1)
+
+DEFINITION:
+e = {type=event, eventType=intervalCensored, 
+         intervalLength=10, rightCensoringTime=100,  
+         hazard=h}

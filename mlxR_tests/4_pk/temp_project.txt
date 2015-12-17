@@ -1,0 +1,59 @@
+<MODEL>
+
+[LONGITUDINAL]
+input = {
+  weight,
+  CLf,Vp,Q,Vt,CLb,Vb,Vmax,Km,
+  K, KPQ, KQPP, LAMBDAP, GAMMA, DELTAQP,
+  alpha0, beta0, gamma
+}
+
+PK:
+  compartment(cmt=1,amount=Ap)
+iv(cmt=1,p=weight)
+
+EQUATION:
+  odeType=stiff
+
+kel=CLf/Vp
+kint=CLb/Vb
+ktp=Q/Vt
+kpt=Q/Vp
+ddt_Ap = -(kel+kpt)*Ap + ktp*At
+ddt_At = kpt*Ap - ktp*At - Vmax*At/(Km*Vt+At)
+ddt_Ab = Vmax*At/(Km*Vt+At) - kint*Ab
+
+Cp = Ap/Vp
+Cb = Ab/Vb
+
+PT_0=5
+QD_0 = 40
+PSTAR = PT+QD+QP
+ddt_PT = LAMBDAP*PT*(1-PSTAR/K) + KQPP*QP - KPQ*PT - GAMMA*PT*Cb
+ddt_QD = KPQ*PT - GAMMA*QD*Cb
+ddt_QP = GAMMA*QD*Cb - KQPP*QP - DELTAQP*QP  
+
+PSTAR0=PT_0+QD_0
+rP = PSTAR/PSTAR0
+alpha=alpha0/(rP^gamma)
+beta=beta0
+dt = t -t0
+h = (beta/alpha)*(dt/alpha)^(beta-1)/(1+(dt/alpha)^beta)
+ddt_H = h
+S = exp(-H)
+
+
+<DESIGN>
+[ADMINISTRATION]
+adm1 = { time = {0, 14, 28, 42, 56, 70, 84, 98}, amount = 4, rate = 4 }
+
+<PARAMETER>
+ = 
+ = 
+
+<OUTPUT>
+list = {Cp}
+list = {Cb}
+list = {PSTAR}
+list = {S}
+grid = -50:1:300

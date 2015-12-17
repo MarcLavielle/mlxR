@@ -1,0 +1,15 @@
+[LONGITUDINAL]
+input = {a,b}
+
+EQUATION:
+lp0 = a-b*t
+lp1 = a-b*t/2
+p0  = 1/(1+exp(-lp0))
+p1  = 1/(1+exp(-lp1)) -p0
+p2  = 1-p0-p1
+
+DEFINITION:
+y = {type       = categorical, 
+     categories = {0, 1, 2},
+     P(y=0)     = p0,
+     P(y=1)     = p1}

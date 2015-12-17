@@ -1,0 +1,43 @@
+
+
+[INDIVIDUAL]
+input={POP_CL10,OMEGA_Q17*OMEGA_Q17,CL61,WT,Q19,KK14,KK15,OMEGA_Q15*OMEGA_Q15,OMEGA_CL10*OMEGA_CL10,CL71,V1,V2,CL31,V3,V4,V5,V6,V7,V8,V9,DO,OMEGA_Q43*OMEGA_Q43,POP_Q43,QECF,CL43,POP_Q14,POP_Q15,QCSF,POP_Q17,KK43,OMEGA_Q14*OMEGA_Q14,CL13,CL14,CL15,CL16,CL17,Q12}
+
+DEFINITION:
+CL10 = { distribution = normal, transformation = log, reference = POP_CL10, sd={OMEGA_CL10*OMEGA_CL10}}
+Q14 = { distribution = normal, transformation = log, reference = POP_Q14, sd={OMEGA_Q14*OMEGA_Q14}}
+Q15 = { distribution = normal, transformation = log, reference = POP_Q15, sd={OMEGA_Q15*OMEGA_Q15}}
+Q17 = { distribution = normal, transformation = log, reference = POP_Q17, sd={OMEGA_Q17*OMEGA_Q17}}
+Q43 = { distribution = normal, transformation = log, reference = POP_Q43, sd={OMEGA_Q43*OMEGA_Q43}}
+
+[LONGITUDINAL]
+input={K12,K56,K14,K15,A5_init,K16,K17,SIGMA1,SIGMA2,SIGMA3,SIGMA4,K61,FRAC,K21,A8_init,V1,K67,A3_init,V4,V5,V7,K71,A6_init,K34,A1_init,K78,ADD,K81,A4_init,K41,K43,K45,A7_init,A2_init,K51,K10}
+
+EQUATION:
+A1_0 = A1_init
+PL = (A1)/(V1)
+A2_0 = A2_init
+A3_0 = A3_init
+A4_0 = A4_init
+ST = (A4)/(V4)
+A5_0 = A5_init
+LV = (A5)/(V5)
+A6_0 = A6_init
+A7_0 = A7_init
+CM = (A7)/(V7)
+A8_0 = A8_init
+ddt_A1 = (((((((((((((-(K12))*(A1))+((K21)*(A2)))-((K14)*(A1)))+((K41)*(A4)))-((K15)*(A1)))+((K51)*(A5)))-((K16)*(A1)))+((K61)*(A6)))-((K17)*(A1)))+((K71)*(A7)))+(((FRAC)*(ADD))/(240)))+((K81)*(A8)))-((K10)*(A1))
+ddt_A2 = ((K12)*(A1))-((K21)*(A2))
+ddt_A3 = ((-(K34))*(A3))+((K43)*(A4))
+ddt_A4 = (((((K14)*(A1))-((K41)*(A4)))+((K34)*(A3)))-((K43)*(A4)))-((K45)*(A4))
+ddt_A5 = ((((K15)*(A1))-((K51)*(A5)))+((K45)*(A4)))-((K56)*(A5))
+ddt_A6 = ((((K16)*(A1))-((K61)*(A6)))+((K56)*(A5)))-((K67)*(A6))
+ddt_A7 = ((((K17)*(A1))-((K71)*(A7)))+((K67)*(A6)))-((K78)*(A7))
+ddt_A8 = ((K78)*(A7))-((K81)*(A8))
+
+DEFINITION:
+Y1 = { distribution = normal, prediction = PL,  errorModel=proportinalErrorModel(SIGMA1)}
+Y2 = { distribution = normal, prediction = ST,  errorModel=proportinalErrorModel(SIGMA2)}
+Y3 = { distribution = normal, prediction = LV,  errorModel=proportinalErrorModel(SIGMA3)}
+Y4 = { distribution = normal, prediction = CM,  errorModel=proportinalErrorModel(SIGMA4)}
+

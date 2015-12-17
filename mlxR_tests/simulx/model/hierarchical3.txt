@@ -1,0 +1,29 @@
+[LONGITUDINAL]
+input = {V, k, a}
+EQUATION:
+f = 100/V*exp(-k*t)
+DEFINITION:
+y = {distribution = normal, prediction = f, sd = a}
+
+;----------------------------------------------
+[INDIVIDUAL]
+input = {V_pop, omega_V, beta, w, w_pop}
+EQUATION:
+V_pred = V_pop*(w/w_pop)^beta
+DEFINITION:
+V = {distribution = lognormal, prediction = V_pred, sd = omega_V}
+
+;----------------------------------------------
+[COVARIATE]
+input = {w_pop, omega_w}
+DEFINITION:
+w = {distribution = normal, mean = w_pop, sd = omega_w}
+
+;----------------------------------------------
+[POPULATION]
+input = {ws, gw, Vs, gV}
+EQUATION:
+lV = log(Vs)
+DEFINITION:
+w_pop = {distribution = normal,    mean = ws, sd = gw}
+V_pop = {distribution = lognormal, mean = lV, sd = gV}

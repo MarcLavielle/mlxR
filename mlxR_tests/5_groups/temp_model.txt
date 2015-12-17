@@ -1,0 +1,6 @@
+
+[LONGITUDINAL]
+input = {ka, V, Vm, Km, u}
+EQUATION:
+Cc = pkmodel(ka, V, Vm, Km)
+

@@ -1,0 +1,70 @@
+[LONGITUDINAL]
+input = {a_1, b_1, a_2, ka, V, Cl, Imax, IC50, kin, kout}
+
+EQUATION:
+Cc = pkmodel(ka, V, Cl)
+E0 = kin/kout
+E = E0*(1-Imax*Cc/(Cc+IC50)) 
+
+DEFINITION:
+conc = { distribution=normal, prediction=Cc, errorModel=combined2(a_1,b_1) }
+pca = { distribution=normal, prediction=E, errorModel=constant(a_2) }
+
+
+;---------------------------------------------------------------------
+[INDIVIDUAL]
+input={Cl_pop, omega_Cl, lw70, beta_Cl_lw70, IC50_pop, omega_IC50, Imax_pop, omega_Imax, Tlag_pop, omega_Tlag, V_pop, omega_V, lw70, beta_V_lw70, ka_pop, omega_ka, kin_pop, omega_kin, kout_pop, omega_kout}
+
+DEFINITION:
+Cl = { 
+	 distribution=logNormal,
+	 reference=Cl_pop,
+	 standardDeviation=omega_Cl,
+	 covariate={ lw70 },
+	 coefficient={ beta_Cl_lw70}
+	}
+IC50 = { 
+	 distribution=logNormal,
+	 reference=IC50_pop,
+	 standardDeviation=omega_IC50
+	}
+Imax = { 
+	 distribution=logitNormal,
+	 reference=Imax_pop,
+	 standardDeviation=omega_Imax
+	}
+Tlag = { 
+	 distribution=logNormal,
+	 reference=Tlag_pop,
+	 standardDeviation=omega_Tlag
+	}
+V = { 
+	 distribution=logNormal,
+	 reference=V_pop,
+	 standardDeviation=omega_V,
+	 covariate={ lw70 },
+	 coefficient={ beta_V_lw70}
+	}
+ka = { 
+	 distribution=logNormal,
+	 reference=ka_pop,
+	 standardDeviation=omega_ka
+	}
+kin = { 
+	 distribution=logNormal,
+	 reference=kin_pop,
+	 standardDeviation=omega_kin
+	}
+kout = { 
+	 distribution=logNormal,
+	 reference=kout_pop,
+	 standardDeviation=omega_kout
+	}
+
+;---------------------------------------------------------------------
+[COVARIATE]
+input={wt}
+
+EQUATION:
+lw70 = log(wt/70)
+

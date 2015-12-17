@@ -1,0 +1,33 @@
+[LONGITUDINAL]
+input={DELTAQP,LAMBDAP,GAMMA,KQPP,K,KDE,KPQ,a}
+
+PK:
+depot(target=C)
+
+EQUATION:
+C_0 = 0
+PT_0 = 5
+Q_0 = 40
+QP_0 = 0
+PSTAR = (PT)+((Q)+(QP))
+Q0 = 40
+ddt_C = (-(KDE))*(C)
+ddt_PT = ((LAMBDAP)*((PT)*((1)-((PSTAR)/(K)))))+(((KQPP)*(QP))-(((GAMMA)*((C)*((KDE)*(PT))))+((KPQ)*(PT))))
+ddt_Q = ((KPQ)*(PT))-((GAMMA)*((C)*((KDE)*(Q))))
+ddt_QP = (((GAMMA)*((C)*((KDE)*(Q))))-((KQPP)*(QP)))-((DELTAQP)*(QP))
+
+DEFINITION:
+PSTAR_obs = { distribution = normal, prediction = PSTAR,  errorModel=constant(a)}
+
+;----------------------------------------------------
+[INDIVIDUAL]
+input={KDE_pop,omega_KDE,KPQ_pop,omega_KPQ,KQPP_pop,omega_KQPP,LAMBDAP_pop,
+       omega_LAMBDAP,GAMMA_pop,omega_GAMMA,DELTAQP_pop,omega_DELTAQP}
+
+DEFINITION:
+KDE     = {distribution=normal, transformation=log, reference=KDE_pop, sd=omega_KDE}
+KPQ     = {distribution=normal, transformation=log, reference=KPQ_pop, sd=omega_KPQ}
+KQPP    = {distribution=normal, transformation=log, reference=KQPP_pop, sd=omega_KQPP}
+LAMBDAP = {distribution=normal, transformation=log, reference=LAMBDAP_pop}
+GAMMA   = {distribution=normal, transformation=log, reference=GAMMA_pop, sd=omega_GAMMA}
+DELTAQP = {distribution=normal, transformation=log, reference=DELTAQP_pop, sd=omega_DELTAQP}

@@ -1,0 +1,14 @@
+[LONGITUDINAL] 
+input={Tk0,V,Cl,Imax,E0,IC50,kout,alpha,beta}
+
+EQUATION:
+Cc = pkmodel(Tk0, V, Cl)
+
+E_0 = E0 
+kin = E0*kout
+ddt_E = kin*(1-Imax*Cc/(Cc+IC50)) - kout*E  
+
+h = (alpha/1000)*exp(beta*E)
+H_0 = 0
+ddt_H = h
+S = exp(-H)

@@ -1,0 +1,29 @@
+<MODEL>
+file = 'pk6_model.txt'
+
+<DESIGN>
+[ADMINISTRATION]
+adm1 = { time = {6, 18, 30, 42, 54, 66}, amount = 2, type = 1 }
+adm2 = { time = {12, 36, 60}, amount = 1, rate = 0.2, type = 3 }
+adm3 = { time = {9, 33, 57}, amount = 1, type = 2 }
+adm4 = { time = {12, 36, 60}, amount = 1, rate = 0.2, type = 3 }
+[TREATMENT]
+trt1 = {  adm1, adm2 }
+trt2 = {  adm3, adm4 }
+
+<PARAMETER>
+F1 = 0.5
+F2 = 0.8
+ka = 0.5
+Tk0 = 4
+kl = 0.5
+k23 = 0.3
+k32 = 0.5
+V = 10
+k = 0.2
+Vm = 0.5
+Km = 1
+
+<OUTPUT>
+list = {Cc}
+grid = 0:0.1:80
