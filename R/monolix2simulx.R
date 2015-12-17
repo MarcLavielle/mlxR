@@ -5,7 +5,6 @@
 #' @param group : a list with the number of subjects 
 #' @param open : load the R script created if \code{open=TRUE}
 #' @param r.data : read the data if \code{r.data=TRUE}
-#' @param add : add tables in the output folder
 #' @return  creates a folder projectNameR  containing files : 
 #' \itemize{
 #'   \item \code{projectName.R} :  executable R code for the simulator,
@@ -46,6 +45,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   output        <- ans$output
   group         <- ans$group
   regressor     <- ans$regressor
+  occasion      <- ans$occ
   fim           <- ans$fim
   mlxtranpath <- dirname(project)
   mlxtranfile = file_path_sans_ext(basename(project))
@@ -142,18 +142,16 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
       cat(paste0("name<-\"",output[[1]]$name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       cat(paste0("time<-read.table(\"output.txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       cat(paste0("out<-list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      out2 <-matrix(output[[1]]$value,nrow=nrow(output[[1]]$value),ncol=ncol(output[[1]]$value))
-      colnames(out2)<-output[[1]]$colNames
+      #       out2 <-matrix(output[[1]]$value,nrow=nrow(output[[1]]$value),ncol=ncol(output[[1]]$value))
+      #       colnames(out2)<-output[[1]]$colNames
       outfile = file.path(Rproject,"/output.txt")
-      write.table(out2,file=outfile,row.names=FALSE,quote=FALSE) 
+      write.table(output[[1]]$value,file=outfile,row.names=FALSE,quote=FALSE) 
+      #       write.table(out2,file=outfile,row.names=FALSE,quote=FALSE) 
       #cat("out<-list(out)\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    }else
-    {    # many types of output could exist
-      for(i in seq(1:length(output)))
-      {
+    } else {    # many types of output could exist
+      for(i in seq(1:length(output))) {
         cat(paste0("name<-\"",output[[i]]$name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-        if(!(is.null(output[[i]]$colNames)))
-        {
+        if(!(is.null(output[[i]]$colNames))) {
           
           cat(paste0("time<-read.table(\"output",i,".txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
           
@@ -163,15 +161,15 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
           colnames(out2)<-output[[i]]$colNames
           outfile = file.path(Rproject,paste0("/output",i))
           outfile = paste0(outfile,".txt")
-          write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
-        }else{
+          #           write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
+          write.table(output[[i]]$value,file=outfile,row.names=FALSE,quote=FALSE) 
+        } else {
           cat(paste0("out",i,"<-list(name=name) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         }
       }
       
       cat("out<-list(out1", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      for(i in seq(2,length(output)))
-      {
+      for(i in seq(2,length(output))) {
         cat(paste0(",out",i), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)   
       }
       cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
@@ -179,76 +177,21 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   }
   
   # regressor    
-  if(!(is.null(regressor)))
-  {  
-    # re-order regressor if duplicated or unsorted data (by time) exists on an id.
-    # assuming that the first column is id and the second column is time
-    for(ir in seq(1:length(regressor)))
-    {
-      regvalue = regressor[[ir]]$value      
-      #remove duplicated rows for the same id
-      duprows <-c()
-      for(i in 1: (nrow(regvalue)-1))
-      {
-        for(j in (i+1):nrow(regvalue))
-        {
-          
-          if( (regvalue[i,1]==regvalue[j,1]) ) #same id
-          {
-            if(regvalue[i,2]==regvalue[j,2]) #duplicated time for the same id
-            {
-              duprows<-c(duprows,j)             
-            }
-          }else
-          {
-            #assuming that the regressor is already sorted by id
-            break
-          }
-        }
-      }
-      if(!is.null(duprows))
-      {
-        regvalue<-regvalue[-duprows,]
-      }
-      #sort according to id and to time
-      index<-order(regvalue[,1],regvalue[,2])
-      regressor[[ir]]$value <-regvalue[index,]      
-    }
-    #write regresssor
+  if(!(is.null(regressor))) {  
     cat("\n# regressor \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    # many types of output could exist
-    nameOtherReg<-NULL
-    if(length(regressor)>1)    
-    {  
-      cat(paste0("regressor<-c() \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-      
-      for(i in seq(1:length(regressor)))
-      {
-        if(!(is.null(regressor[[i]]$name)))
-        {
-          namePi<-regressor[[i]]$name
-        }else {
-          namePi<-paste0("regressor",i)
-        }
-        
-        nameOtherReg<-c(nameOtherReg,namePi)
-        outfile = file.path(Rproject,paste0("/",namePi,".txt"))      
-        cat(paste0(namePi,"<- read.table(\"",namePi,".txt\", header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-        cat(paste0("regressor<-c(regressor,",namePi,")\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-        out2<-NULL
-        out2 <-matrix(regressor[[i]]$value,nrow=nrow(regressor[[i]]$value),ncol=ncol(regressor[[i]]$value))
-        colnames(out2)< regressor[[i]]$colNames
-        write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
-      }
-    }else{
-      outfile = file.path(Rproject,paste0("/regressor.txt"))      
-      out2<-NULL
-      out2 <-matrix(regressor[[1]]$value,nrow=nrow(regressor[[1]]$value),ncol=ncol(regressor[[1]]$value))
-      colnames(out2)<-regressor[[1]]$colNames
-      write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
-      cat(paste0("regressor <-read.table(\"regressor.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-    }
+    outfile = file.path(Rproject,paste0("/regressor.txt"))      
+    write.table(regressor,file=outfile,row.names=FALSE,quote=FALSE)
+    cat(paste0("regressor <-read.table(\"regressor.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
   }
+  
+  # occasion    
+  if(!(is.null(occasion))) {  
+    cat("\n# occasion \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    outfile = file.path(Rproject,paste0("/occasion.txt"))      
+    write.table(occasion,file=outfile,row.names=FALSE,quote=FALSE)
+    cat(paste0("occasion <-read.table(\"occasion.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+  }
+  
   # call the simulator
   cat("\n# call the simulator \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   cat("res <- simulx(model=model", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
@@ -266,6 +209,9 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   
   if(!(is.null(regressor)))
     cat(",regressor=regressor",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  
+  if(!(is.null(occasion)))
+    cat(",varlevel=occasion",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
   cat(")\n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
