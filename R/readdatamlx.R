@@ -1,8 +1,9 @@
+#' @export
 readdatamlx  <- function(infoProject=NULL, project=NULL){
   # READDATAMLX
   #
   # READDATAMLX reads a datafile and create a list.
-  
+     
   if (!is.null(project))
     infoProject <- getInfoXml(project)
   
