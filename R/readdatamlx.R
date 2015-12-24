@@ -161,7 +161,7 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   if (!is.null(iytype)){ 
     ytype <- factor(S[iobs1,iytype])
     l.ytype <- levels(ytype)
-    n.y <- length(l.ytype)
+    n.y <- length(observationName)
     y<- list()
     for (iy in (1:n.y)){
       y[[iy]] <- yvalues[ytype==l.ytype[iy],]
