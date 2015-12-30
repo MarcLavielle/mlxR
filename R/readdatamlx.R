@@ -1,9 +1,13 @@
-#' @export
 readdatamlx  <- function(infoProject=NULL, project=NULL){
   # READDATAMLX
   #
   # READDATAMLX reads a datafile and create a list.
-     
+  
+  myOldENVPATH = Sys.getenv('PATH');
+  initMlxLibrary()
+  session=Sys.getenv("session.simulx")
+  Sys.setenv(LIXOFT_HOME=session)
+  
   if (!is.null(project))
     infoProject <- getInfoXml(project)
   
@@ -161,7 +165,7 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   if (!is.null(iytype)){ 
     ytype <- factor(S[iobs1,iytype])
     l.ytype <- levels(ytype)
-    n.y <- length(l.ytype)
+    n.y <- length(observationName)
     y<- list()
     for (iy in (1:n.y)){
       y[[iy]] <- yvalues[ytype==l.ytype[iy],]
@@ -209,7 +213,11 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
     datas$covariate = cdf
   }
   
+  
   datas$N <- N
   datas$idOri <- iduf
+  
+  Sys.setenv(LIXOFT_HOME="")
+  Sys.setenv('PATH'=myOldENVPATH);
   return(datas)
 }
