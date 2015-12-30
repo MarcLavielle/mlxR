@@ -218,7 +218,5 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   datas$N <- N
   datas$idOri <- iduf
   
-  Sys.setenv(LIXOFT_HOME="")
-  Sys.setenv('PATH'=myOldENVPATH);
   return(datas)
 }
