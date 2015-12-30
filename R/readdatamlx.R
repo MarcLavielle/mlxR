@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 readdatamlx  <- function(infoProject=NULL, project=NULL){
   # READDATAMLX
   #
@@ -433,8 +432,10 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
     datas$covariate = cdf
   }
   
+  Sys.setenv(LIXOFT_HOME="")
+  Sys.setenv('PATH'=myOldENVPATH);
+  
   datas$N <- N
   datas$idOri <- iduf
   return(datas)
->>>>>>> e6204dbfe843bbd2f3d803535b70a9f67352da7b
 }
