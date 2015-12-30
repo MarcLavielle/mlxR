@@ -37,6 +37,10 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
        yk <- list(ylabel="observation", colNames=niy, name=niy[length(niy)], value=dobs[[iy]] )
       datas$observation[[iy]] <- yk
     }    
+ntr <- names(datas$treatment)
+datas$sources <- list(ylabel="sources", colNames=ntr, name="doseRegimen", value=datas$treatment )
+datas$treatment <- NULL
+
     
     if (is.character(param))  {
       file = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
@@ -70,16 +74,24 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
     datas <- NULL
     iop_indiv <- 0
   }
+
+if (identical(fim,"needed")){
+  if  (file.exists(file.path(infoProject$resultFolder,'fim_sa.txt')))
+    fim <- 'sa'
+  else if (file.exists(file.path(infoProject$resultFolder,'fim_lin.txt')))
+    fim <- "lin"
+  else
+    fim <- NULL
+}
+
   ##************************************************************************
   #       PARAMETERS
   #**************************************************************************
   r = readPopEstimate(file.path(infoProject$resultFolder,'estimates.txt'),fim);
   pop_param <- r[[1]]
   paramp <- list(pop_param,datas$covariate,datas$parameter)
-  if  (!is.null(param)) {
+  if  (!is.null(param)) 
     paramp <- mergeDataFrame(paramp, param)
-  }
-  
   
   ##************************************************************************
   #       FIM
@@ -275,14 +287,6 @@ readPopEstimate  <-  function(filename, fim=NULL) {
     
     ic <- grep("corr_",name)
     name[ic] <- sub("corr_","r_",name[ic])
-    #     for (j in ic){
-    #       nj <- name[j]
-    #       i1 <- regexpr(",",nj)
-    #       i2 <- regexpr(")",nj)
-    #       n1 <- substr(nj,6,i1[1]-1)
-    #       n2 <- substr(nj,i1[1]+1,i2[1]-1)
-    #       name[j] <- paste0('r_',n1,'_',n2)
-    #     }
     param <- as.numeric(as.character(data[['parameter']]))
     names(param) <- name
     

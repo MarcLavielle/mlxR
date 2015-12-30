@@ -277,11 +277,21 @@ format.treatment <- function(treatment,uN)
     }
     names(trtk)[names(trtk)=="amt"] <- "amount"
     names(trtk)[names(trtk)=="adm"] <- "type"
-    if (isfield(trtk,"tinf")){
-      names(trtk)[names(trtk)=="tinf"] <- "rate"
-      trtk$rate <- trtk$amount/trtk$rate
+    
+    if (!is.null(trtk$rate)){
+      trtkrate=rep(Inf,length(trtk$rate))
+      irate <- (trtk$rate!=".")
+      trtkrate[irate]=as.numeric(as.character(trtk$rate[irate]))
+      trtk$rate <- trtkrate
     }
-    if (!isfield(trtk,"rate"))
+    if (!is.null(trtk$tinf)){
+      names(trtk)[names(trtk)=="tinf"] <- "rate"
+      trtkrate=rep(Inf,length(trtk$rate))
+      irate <- trtk$rate!="."
+      trtkrate[irate]=trtk$amount[irate]/as.numeric(as.character(trtk$rate[irate]))
+      trtk$rate <- trtkrate
+    }
+    if (is.null(trtk$rate))
       trtk$rate <- Inf
     treatment[[k]] <- trtk   
   }

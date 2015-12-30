@@ -100,7 +100,7 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   ids = iduf[ib]
   
   iu    = ia
-  idnum = ic[idnumf]
+  idnum = as.factor(ic[idnumf])
   N     = length(iduf)
   
   #   iop_id = 0
@@ -124,37 +124,22 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
       S[[icat[j]]] <- as.factor(S[[icat[j]]])    
   }
   ##************************************************************************
-  #       SOURCE FIELD
+  #       TREATMENT FIELD
   #**************************************************************************
   if (!is.null(iamt)) {
+    i1 = findstrcmp(S[[iamt]],'.', not=TRUE)
+    #     u <- as.numeric(as.character(S[i1,iamt]))
     if (is.null(irate))
       irate = NULL
-    if (is.null(iadm))
+    if (is.null(iadm)) 
       iadm = NULL
-    
-    ixdose=rbind(c(iamt, irate, iadm))
-  }
-  if (!is.null(ixdose)) {
-    i1       = findstrcmp(S[[ixdose[1]]],'.', not=TRUE)
-    ndose    = length(i1) #match(FALSE,(!(is.na(ixdose))))
-    nxdose   = length(ixdose)
-    
-    uv       = cbind(idnum[i1], t[i1], matrix(data=0,nrow=ndose,ncol=length(ixdose)))
-    for (i in 1:ndose) {
-      for(j in 1:nxdose)
-        uv[i,2+j]=as.numeric(as.character(S[[ixdose[j]]][i1[i]]))
-    }
-    
-    uh = c('id',newHeader[[itime]])
-    for(j in 1:nxdose)
-      uh=c(uh,newHeader[[ixdose[j]]])
-    u        = list(label  = 'source',
-                    name   = 'doseRegimen',
-                    colNames = uh,
-                    value=NULL)
-    u$value =   uv
-    #u      = {u}
-    datas   = list(sources = u)
+    ixdose <- c(iamt, irate, iadm)
+    if (length(ixdose)==1)
+      u=data.frame(idnum[i1], t[i1],S[i1,ixdose])
+    else
+      u=cbind(list(idnum[i1], t[i1]),S[i1,ixdose])
+    names(u) = c('id',newHeader[[itime]],newHeader[ixdose])
+    datas   = list(treatment = u)
   }
   
   ##************************************************************************
@@ -162,7 +147,7 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   #**************************************************************************
   
   iobs1   = findstrcmp(S[[iy]],'.', not=TRUE)
-  yvalues = data.frame(id=idnum[iobs1], time=t[iobs1], y=S[iobs1,iy])
+  yvalues = data.frame(id=idnum[iobs1], time=t[iobs1], y=as.numeric(as.character(S[iobs1,iy])))
   if (!is.null(iytype)){ 
     ytype <- factor(S[iobs1,iytype])
     l.ytype <- levels(ytype)
@@ -184,7 +169,7 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   #**************************************************************************
   
   if (nx>0){
-    datas$regressor = data.frame(id=idnum[iobs1], time=t[iobs1], S[ix][iobs1,])
+    datas$regressor = data.frame(id=idnum[iobs1], time=t[iobs1], as.numeric(as.character(S[ix][iobs1,])))
   }
   
   ##************************************************************************
