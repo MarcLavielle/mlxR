@@ -135,7 +135,7 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
       iadm = NULL
     ixdose <- c(iamt, irate, iadm)
     if (length(ixdose)==1)
-      u=data.frame(idnum[i1], t[i1],S[i1,ixdose])
+      u=data.frame(idnum[i1], t[i1],as.numeric(as.character(S[i1,ixdose])))
     else
       u=cbind(list(idnum[i1], t[i1]),S[i1,ixdose])
     names(u) = c('id',newHeader[[itime]],newHeader[ixdose])

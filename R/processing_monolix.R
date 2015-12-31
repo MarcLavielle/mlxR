@@ -33,18 +33,20 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
     y <- list()
     for (iy in (1:length(dobs))){
       niy <- names(dobs[[iy]])
-#       yk <- list(ylabel="observation", colNames=niy, name=niy[length(niy)], value=as.matrix(dobs[[iy]]) )
-       yk <- list(ylabel="observation", colNames=niy, name=niy[length(niy)], value=dobs[[iy]] )
+      #       yk <- list(ylabel="observation", colNames=niy, name=niy[length(niy)], value=as.matrix(dobs[[iy]]) )
+      yk <- list(ylabel="observation", colNames=niy, name=niy[length(niy)], value=dobs[[iy]] )
       datas$observation[[iy]] <- yk
     }    
-ntr <- names(datas$treatment)
-datas$sources <- list(ylabel="sources", colNames=ntr, name="doseRegimen", value=datas$treatment )
-datas$treatment <- NULL
-
+    ntr <- names(datas$treatment)
+    datas$sources <- list(ylabel="sources", colNames=ntr, name="doseRegimen", value=datas$treatment )
+    datas$treatment <- NULL
     
-    if (is.character(param))  {
+    
+    #     if (is.character(param))  {
+    if (any(sapply(param,is.character))) {
       file = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
-      datas$parameter = readIndEstimate(file,param)
+      datas$parameter = readIndEstimate(file,param[which(sapply(param,is.character))])
+      #        datas$parameter = readIndEstimate(file,param)
       iop_indiv=1
     }else{
       iop_indiv=0
@@ -74,16 +76,16 @@ datas$treatment <- NULL
     datas <- NULL
     iop_indiv <- 0
   }
-
-if (identical(fim,"needed")){
-  if  (file.exists(file.path(infoProject$resultFolder,'fim_sa.txt')))
-    fim <- 'sa'
-  else if (file.exists(file.path(infoProject$resultFolder,'fim_lin.txt')))
-    fim <- "lin"
-  else
-    fim <- NULL
-}
-
+  
+  if (identical(fim,"needed")){
+    if  (file.exists(file.path(infoProject$resultFolder,'fim_sa.txt')))
+      fim <- 'sa'
+    else if (file.exists(file.path(infoProject$resultFolder,'fim_lin.txt')))
+      fim <- "lin"
+    else
+      fim <- NULL
+  }
+  
   ##************************************************************************
   #       PARAMETERS
   #**************************************************************************
@@ -386,7 +388,8 @@ mergeDataFrame  <- function(p1,p2) {
         p1j = p1[[j]]
         i12 <- which(namei2 %in% names(p1j))
         namei2=namei2[namei2!="id"]
-        p1j[namei2[i12]]=p2i[namei2[i12]]
+        if (!is.null(namei2[i12]))
+          p1j[namei2[i12]]=p2i[namei2[i12]]
         p1[[j]] = p1j
       }
     }
