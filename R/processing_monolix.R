@@ -775,14 +775,16 @@ testC  <- function(x)
   d <- length(x)
   for (k in seq(1,d)) {
     xk <- x[[k]]
-    if (!is.null(names(xk))){
-      if (any("id" %in% names(xk)))
-        testC <- TRUE
-    }else{
-      dk <- length(xk)
-      for (j in seq(1,dk)) {
-        if (any( "colNames" %in% names(xk[[j]]) ))
+    if (length(xk)>0){
+      if (!is.null(names(xk))){
+        if (any("id" %in% names(xk)))
           testC <- TRUE
+      }else{
+        dk <- length(xk)
+        for (j in seq(1,dk)) {
+          if (any( "colNames" %in% names(xk[[j]]) ))
+            testC <- TRUE
+        }
       }
     }
   }

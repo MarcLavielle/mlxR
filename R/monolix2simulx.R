@@ -68,7 +68,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   cat(paste0("model<-\"",modelname,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
   # write  treatment 
-  if(!(is.null(treatment))){ 
+  if(!(is.null(treatment)) && length(treatment)>0){ 
     if (!is.null(treatment$value)){
       treat2<-matrix(treatment$value,nrow=nrow(treatment$value),ncol=ncol(treatment$value))
       colnames(treat2)<-treatment$colNames

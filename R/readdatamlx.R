@@ -169,7 +169,20 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   #**************************************************************************
   
   if (nx>0){
-    datas$regressor = data.frame(id=idnum[iobs1], time=t[iobs1], as.numeric(as.character(S[ix][iobs1,])))
+    Sx <- S[ix]
+    Dx <- data.frame(id=idnum, time=t, Sx)
+    ix.num <- which(!sapply(Sx,is.numeric))
+    if (!is.null(ix.num)){
+      jx <- NULL
+      for (k in (ix.num)){
+        jx <- c(jx, findstrcmp(Sx[[ix.num[k]]],'.'))
+      }
+      if (!is.null(jx))
+        Dx <- Dx[-jx,]
+      for (k in (ix.num))
+        Dx[[k+2]] <- as.numeric(as.character(Dx[[k+2]]))        
+    }
+    datas$regressor <- subset(Dx, !duplicated(cbind(id,time)))
   }
   
   ##************************************************************************
