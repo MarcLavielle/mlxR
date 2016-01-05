@@ -42,9 +42,45 @@ You can also run the following R command from the console:
     cat("\nYou can now try to run again your R script\n")
     stop("",call.=FALSE)
     
-  } 
-  lines <- readLines(lixoft.ini)
+  }
   
+  
+  ## Version 4 UUIDs have the form xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+  ## where x is any hexadecimal digit and y is one of 8, 9, A, or B
+  ## e.g., f47ac10b-58cc-4372-a567-0e02b2c3d479
+  uuid <- function(uppercase=FALSE) {
+    
+    hex_digits <- c(as.character(0:9), letters[1:6])
+    hex_digits <- if (uppercase) toupper(hex_digits) else hex_digits
+    
+    y_digits <- hex_digits[9:12]
+    
+    paste(
+      paste0(sample(hex_digits, 8, replace=TRUE), collapse=''),
+      paste0(sample(hex_digits, 4, replace=TRUE), collapse=''),
+      paste0('4', paste0(sample(hex_digits, 3, replace=TRUE), collapse=''), collapse=''),
+      paste0(sample(y_digits,1), paste0(sample(hex_digits, 3, replace=TRUE), collapse=''), collapse=''),
+      paste0(sample(hex_digits, 12, replace=TRUE), collapse=''),
+      sep='-')
+  }
+  
+  uuidd<-uuid()  
+  lixoftConn<-paste0(lixoft.ini,uuidd)
+  
+  if (myOS == "Windows"){  
+    lixoftInitFile <-paste0(dirname(lixoft.ini),"/",basename(lixoft.ini))
+    lixoftConn<-paste0(lixoftInitFile,uuidd) 
+    cat(" ",file=lixoftConn)
+    copyInitFile<-paste0("xcopy  \"",lixoftInitFile,"\"  \"",lixoftConn,"\" /Y /F  /Q")
+    
+  } else {
+    copyInitFile<-paste0("cp ",lixoft.ini," ",lixoftConn)    
+  }
+ system(copyInitFile,wait=T,intern=TRUE)
+  #lines <- readLines(lixoft.ini) # is blocking lixoft.ini for other threads
+  
+  lines <- readLines(lixoftConn)
+    
   # small utility function to get a path from lixoft.ini file
   get_lixoft_path <- function(name){
     rx <- sprintf( "%s=", name)
@@ -86,7 +122,7 @@ You can also run the following R command from the console:
   NAMESPACE[["mlx_library_ready"]] <- TRUE
   unlock( "SYS_PATH_mlx_library", NAMESPACE )
   NAMESPACE[["SYS_PATH_mlx_library"]] <-Sys.getenv('PATH')
-  
+  unlink(lixoftConn)
 }
 
 #' Sets the MlxLibrary path in order to tell mlxR where is the MlxLibrary to use
