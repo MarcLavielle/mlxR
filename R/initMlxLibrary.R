@@ -68,13 +68,23 @@ You can also run the following R command from the console:
   lixoftInitFile <-paste0(dirname(lixoft.ini),"/",basename(lixoft.ini))
   lixoftConn<-paste0(lixoftInitFile,uuidd)
   lixoftCopyInitFile<-paste0(lixoftInitFile,"-copy")
-  if (myOS == "Windows"){
-   if(!file.exists(lixoftCopyInitFile))
-   {
-     cat(" ",file=lixoftCopyInitFile)
-     copyofInitFile<-paste0("xcopy  \"",lixoftInitFile,"\"  \"",lixoftCopyInitFile,"\" /Y /F  /Q")
-     system(copyofInitFile,wait=T,intern=TRUE)
-   }    
+  
+  if(file.exists(lixoftCopyInitFile))
+  { 
+    dateLixoftIniCopy<-strsplit(as.matrix(file.info(lixoftCopyInitFile))[1,4]," ")[[1]][1]
+    if(!identical(as.character(Sys.Date()),dateLixoftIniCopy))
+    {
+      unlink(lixoftCopyInitFile)
+    }
+  }
+  if (myOS == "Windows")
+  {
+    if(!file.exists(lixoftCopyInitFile))
+    {
+      cat(" ",file=lixoftCopyInitFile)
+      copyofInitFile<-paste0("xcopy  \"",lixoftInitFile,"\"  \"",lixoftCopyInitFile,"\" /Y /F  /Q")
+      system(copyofInitFile,wait=T,intern=TRUE)
+    }    
     cat(" ",file=lixoftConn)
     copyInitFile<-paste0("xcopy  \"",lixoftCopyInitFile,"\"  \"",lixoftConn,"\" /Y /F  /Q")
     
@@ -87,11 +97,11 @@ You can also run the following R command from the console:
     copyInitFile<-paste0("cp  ",lixoftCopyInitFile," ",lixoftConn)    
   }
   
- system(copyInitFile,wait=T,intern=TRUE)
-  #lines <- readLines(lixoft.ini) # is blocking lixoft.ini for other threads
+  system(copyInitFile,wait=T,intern=TRUE)
+  #lines <- readLines(lixoft.ini) # is blocking lixoft.ini for other threads, and lixoft.ini can be modified by mlxComputeR
   
   lines <- readLines(lixoftConn)
-    
+  
   # small utility function to get a path from lixoft.ini file
   get_lixoft_path <- function(name){
     rx <- sprintf( "%s=", name)
