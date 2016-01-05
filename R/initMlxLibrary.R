@@ -64,17 +64,24 @@ You can also run the following R command from the console:
       sep='-')
   }
   
-  uuidd<-uuid()  
+  uuidd<-uuid() 
+  
   lixoftConn<-paste0(lixoft.ini,uuidd)
+  while(file.exists(lixoftConn))
+  {
+    uuidd<-uuid()     
+    lixoftConn<-paste0(lixoft.ini,uuidd)
+  }
   
   if (myOS == "Windows"){  
     lixoftInitFile <-paste0(dirname(lixoft.ini),"/",basename(lixoft.ini))
-    lixoftConn<-paste0(lixoftInitFile,uuidd) 
+    lixoftConn<-paste0(lixoftInitFile,uuidd)
+  
     cat(" ",file=lixoftConn)
     copyInitFile<-paste0("xcopy  \"",lixoftInitFile,"\"  \"",lixoftConn,"\" /Y /F  /Q")
     
   } else {
-    copyInitFile<-paste0("cp ",lixoft.ini," ",lixoftConn)    
+    copyInitFile<-paste0("cp  ",lixoft.ini," ",lixoftConn)    
   }
  system(copyInitFile,wait=T,intern=TRUE)
   #lines <- readLines(lixoft.ini) # is blocking lixoft.ini for other threads
