@@ -64,25 +64,29 @@ You can also run the following R command from the console:
       sep='-')
   }
   
-  uuidd<-uuid() 
-  
-  lixoftConn<-paste0(lixoft.ini,uuidd)
-  while(file.exists(lixoftConn))
-  {
-    uuidd<-uuid()     
-    lixoftConn<-paste0(lixoft.ini,uuidd)
-  }
-  
-  if (myOS == "Windows"){  
-    lixoftInitFile <-paste0(dirname(lixoft.ini),"/",basename(lixoft.ini))
-    lixoftConn<-paste0(lixoftInitFile,uuidd)
-  
+  uuidd<-uuid()   
+  lixoftInitFile <-paste0(dirname(lixoft.ini),"/",basename(lixoft.ini))
+  lixoftConn<-paste0(lixoftInitFile,uuidd)
+  lixoftCopyInitFile<-paste0(lixoftInitFile,"-copy")
+  if (myOS == "Windows"){
+   if(!file.exists(lixoftCopyInitFile))
+   {
+     cat(" ",file=lixoftCopyInitFile)
+     copyofInitFile<-paste0("xcopy  \"",lixoftInitFile,"\"  \"",lixoftCopyInitFile,"\" /Y /F  /Q")
+     system(copyofInitFile,wait=T,intern=TRUE)
+   }    
     cat(" ",file=lixoftConn)
-    copyInitFile<-paste0("xcopy  \"",lixoftInitFile,"\"  \"",lixoftConn,"\" /Y /F  /Q")
+    copyInitFile<-paste0("xcopy  \"",lixoftCopyInitFile,"\"  \"",lixoftConn,"\" /Y /F  /Q")
     
   } else {
-    copyInitFile<-paste0("cp  ",lixoft.ini," ",lixoftConn)    
+    if(!file.exists(lixoftCopyInitFile))
+    {      
+      copyofInitFile<-paste0("cp  ",lixoftInitFile," ",lixoftCopyInitFile)
+      system(copyofInitFile,wait=T,intern=TRUE)
+    }    
+    copyInitFile<-paste0("cp  ",lixoftCopyInitFile," ",lixoftConn)    
   }
+  
  system(copyInitFile,wait=T,intern=TRUE)
   #lines <- readLines(lixoft.ini) # is blocking lixoft.ini for other threads
   
