@@ -195,7 +195,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   # call the simulator
   cat("\n# call the simulator \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   cat("res <- simulx(model=model", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-  if(!(is.null(treatment)))
+  if(!(is.null(treatment))&& length(treatment)>0)
     cat(",treatment=trt",file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
   
   if(!(is.null(parameter)))
