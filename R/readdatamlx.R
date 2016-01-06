@@ -112,7 +112,11 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   
   if (is.null(itime)) {
     itime=ix[1]
+    if(length(ix)>1){
     ix=ix[2:length(ix)]
+    }else{
+      ix=NULL
+    }
   }
   t=S[[itime]]
   nx=length(ix)
