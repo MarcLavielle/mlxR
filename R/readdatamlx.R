@@ -81,6 +81,7 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   
   
   data    = read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
+  data    = na.omit(data)
   S       = data
   S0      = names(data)
   i.new <- c(icov,icat,ix,iocc)
