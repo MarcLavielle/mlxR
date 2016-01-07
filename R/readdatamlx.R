@@ -91,7 +91,7 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
     }
   }
   if(!is.null(narowsData))
-  {
+  { 
     data <- data[-narowsData,]
   }
   S       = data
