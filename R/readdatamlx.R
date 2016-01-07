@@ -81,7 +81,19 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   
   
   data    = read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
-  data    = na.omit(data)
+  narowsData<-NULL
+  
+  for(i in (1: nrow(data)))
+  {
+    if(is.na(data[i,1]))
+    {
+      narowsData =c(narowsData,i)
+    }
+  }
+  if(!is.null(narowsData))
+  {
+    data <- data[-narowsData,]
+  }
   S       = data
   S0      = names(data)
   i.new <- c(icov,icat,ix,iocc)
@@ -114,7 +126,7 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   if (is.null(itime)) {
     itime=ix[1]
     if(length(ix)>1){
-    ix=ix[2:length(ix)]
+      ix=ix[2:length(ix)]
     }else{
       ix=NULL
     }
