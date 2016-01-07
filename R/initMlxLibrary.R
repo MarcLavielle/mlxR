@@ -44,6 +44,14 @@ You can also run the following R command from the console:
     
   }
   
+  # small utility function to get a path from lixoft.ini file
+  get_lixoft_path <- function(name){
+    rx <- sprintf( "%s=", name)
+    line <- grep( rx, lines, fixed=TRUE, value=TRUE)
+    if( length(line) ){
+      normalizePath( gsub( rx, "", line[1L] ) )
+    }
+  }
   
   ## Version 4 UUIDs have the form xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
   ## where x is any hexadecimal digit and y is one of 8, 9, A, or B
@@ -66,15 +74,31 @@ You can also run the following R command from the console:
   
   uuidd<-uuid()   
   lixoftInitFile <-paste0(dirname(lixoft.ini),"/",basename(lixoft.ini))
-  lixoftConn<-paste0(lixoftInitFile,uuidd)
+  lixoftConn<-paste0(lixoftInitFile,"-copy",uuidd)
   lixoftCopyInitFile<-paste0(lixoftInitFile,"-copy")
-  
+  lixoftInitFileReadme <-paste0(dirname(lixoft.ini),"/","README_mlxR.txt")
+  if(!file.exists(lixoftInitFileReadme))
+  {
+    cat("REMOVE  FILE  lixoft.ini-copy  IF YOU  CHANGE THE  INSTALLATION DIRECTORY OF MLXLIBRARY\n",file=lixoftInitFileReadme)
+    
+  }
   if(file.exists(lixoftCopyInitFile))
   { 
     dateLixoftIniCopy<-strsplit(as.matrix(file.info(lixoftCopyInitFile))[1,4]," ")[[1]][1]
     if(!identical(as.character(Sys.Date()),dateLixoftIniCopy))
     {
-      unlink(lixoftCopyInitFile)
+      lixoftCopyInitFile0<-paste0(lixoftInitFile,"-copy0")
+      tryCopy <-0
+      mlxlibraryPath<-NULL     
+      while(is.null(mlxlibraryPath)&& tryCopy < 5) {
+        file.copy(lixoftInitFile,lixoftCopyInitFile0)        
+        lines <- readLines(lixoftCopyInitFile0)
+        mlxlibraryPath <- get_lixoft_path("mlxlibrary")
+        tryCopy <- tryCopy+1
+      }
+      file.copy(lixoftCopyInitFile0,lixoftCopyInitFile) 
+      cat("# REMOVE THIS FILE IF THE INSTALLATION DIRECTORY OF MLXLIBRARY CHANGES\n",file=lixoftCopyInitFile,append=TRUE)
+      unlink(lixoftCopyInitFile0)
     }
   }
   if (myOS == "Windows")
@@ -84,6 +108,7 @@ You can also run the following R command from the console:
       cat(" ",file=lixoftCopyInitFile)
       copyofInitFile<-paste0("xcopy  \"",lixoftInitFile,"\"  \"",lixoftCopyInitFile,"\" /Y /F  /Q")
       system(copyofInitFile,wait=T,intern=TRUE)
+      cat("# REMOVE THIS FILE IF THE INSTALLATION DIRECTORY OF MLXLIBRARY CHANGES\n",file=lixoftCopyInitFile,append=TRUE)
     }    
     cat(" ",file=lixoftConn)
     copyInitFile<-paste0("xcopy  \"",lixoftCopyInitFile,"\"  \"",lixoftConn,"\" /Y /F  /Q")
@@ -93,6 +118,7 @@ You can also run the following R command from the console:
     {      
       copyofInitFile<-paste0("cp  ",lixoftInitFile," ",lixoftCopyInitFile)
       system(copyofInitFile,wait=T,intern=TRUE)
+      cat("# REMOVE THIS FILE IF THE INSTALLATION DIRECTORY OF MLXLIBRARY CHANGES\n",file=lixoftCopyInitFile,append=TRUE)
     }    
     copyInitFile<-paste0("cp  ",lixoftCopyInitFile," ",lixoftConn)    
   }
@@ -102,14 +128,6 @@ You can also run the following R command from the console:
   
   lines <- readLines(lixoftConn)
   
-  # small utility function to get a path from lixoft.ini file
-  get_lixoft_path <- function(name){
-    rx <- sprintf( "%s=", name)
-    line <- grep( rx, lines, fixed=TRUE, value=TRUE)
-    if( length(line) ){
-      normalizePath( gsub( rx, "", line[1L] ) )
-    }
-  }
   
   #---  Mlxlibrary and MlxPlore paths  
   mlxlibrary.path <- get_lixoft_path("mlxlibrary")
