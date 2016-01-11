@@ -75,6 +75,13 @@ You can also run the following R command from the console:
   uuidd<-uuid()   
   lixoftInitFile <-paste0(dirname(lixoft.ini),"/",basename(lixoft.ini))
   lixoftConn<-paste0(lixoftInitFile,"-copy",uuidd)
+  tryCopy <- 0
+  while(file.exists(lixoftConn)&& tryCopy < 50) {
+    uuidd<-uuid() 
+    lixoftConn<-paste0(lixoftInitFile,"-copy",uuidd)
+    tryCopy <- tryCopy+1
+  }
+  
   lixoftCopyInitFile<-paste0(lixoftInitFile,"-copy")
   lixoftInitFileReadme <-paste0(dirname(lixoft.ini),"/","README_mlxR.txt")
   if(!file.exists(lixoftInitFileReadme))
@@ -90,7 +97,7 @@ You can also run the following R command from the console:
       lixoftCopyInitFile0<-paste0(lixoftInitFile,"-copy0")
       tryCopy <-0
       mlxlibraryPath<-NULL     
-      while(is.null(mlxlibraryPath)&& tryCopy < 5) {
+      while(is.null(mlxlibraryPath)&& tryCopy < 50) {
         file.copy(lixoftInitFile,lixoftCopyInitFile0)        
         lines <- readLines(lixoftCopyInitFile0)
         mlxlibraryPath <- get_lixoft_path("mlxlibrary")
