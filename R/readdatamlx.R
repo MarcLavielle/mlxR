@@ -79,8 +79,15 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   }else
     delimiter=','
   
-  
-  data    = read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
+  headerTest = read.table(datafile, comment.char="",sep=delimiter, nrows=1,stringsAsFactors=FALSE)
+  if(headerTest[1,1]=="#"){
+    headerToUse<-headerTest[,-1]
+    dataNoHeader    = read.table(datafile,comment.char = "#", sep=delimiter,stringsAsFactors=FALSE)
+    colnames(headerToUse)<-colnames(dataNoHeader)
+    data<- rbind(headerToUse,dataNoHeader)
+  }else{
+    data    = read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
+  }
   narowsData<-NULL
   
   for(i in (1: nrow(data)))
