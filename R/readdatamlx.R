@@ -82,11 +82,25 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   headerTest = read.table(datafile, comment.char="",sep=delimiter, nrows=1,stringsAsFactors=FALSE)
   if(headerTest[1,1]=="#"){
     headerToUse<-headerTest[,-1]
-    dataNoHeader    = read.table(datafile,comment.char = "#", sep=delimiter,stringsAsFactors=FALSE)
+    dataNoHeader    =  tryCatch(
+      read.table(datafile,comment.char = "#", sep=delimiter,stringsAsFactors=FALSE)
+      , error=function(e) {
+        error<-  geterrmessage()
+        message(paste0("WARNING: reading data using delimiter '",delimiter,"' failed: ", geterrmessage()))
+        return( read.table(datafile,comment.char = "#",stringsAsFactors=FALSE))
+      }      
+    )
     colnames(headerToUse)<-colnames(dataNoHeader)
     data<- rbind(headerToUse,dataNoHeader)
   }else{
-    data    = read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
+    data = tryCatch(
+      read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
+      , error=function(e) {
+        error<-  geterrmessage()
+        message(paste0("WARNING: reading data using delimiter '",delimiter,"' failed: ", geterrmessage()))
+        return( read.table(datafile, comment.char="", header = TRUE))
+      }      
+    )
   }
   narowsData<-NULL
   
