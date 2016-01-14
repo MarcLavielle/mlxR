@@ -231,7 +231,8 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
     ov <-data.frame(id=idnum, time=t, S[iocc])
     oo=ov[-2]
     u <- unique(oo)
-    io=match(data.frame(t(u)), data.frame(t(oo)))
+    #io=match(data.frame(t(u)), data.frame(t(oo)))
+    io=match(data.frame(t(as.numeric(rownames(u)))), data.frame(t(as.numeric(rownames(oo)))))
     datas$occasion <- ov[io,]
   }
   
