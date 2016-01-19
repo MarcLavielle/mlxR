@@ -179,7 +179,39 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   # regressor    
   if(!(is.null(regressor))) {  
     cat("\n# regressor \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    outfile = file.path(Rproject,paste0("/regressor.txt"))      
+    outfile = file.path(Rproject,paste0("/regressor.txt"))
+    
+    #change regressor names and use these defined in the model in the same order 
+    namesReg<-names(regressor)
+    nbModelreg<-0
+    lines <- readLines(model)
+    regressorLine <-  grep('regressor', lines, fixed=TRUE, value=TRUE)
+    regModelNamesTable<-strsplit(regressorLine,"[\\{ \\} , ]")[[1]][c(-1,-2)]
+    regModelNames<-c()
+    for( i in seq(1:length(regModelNamesTable))){
+      if(!identical(regModelNamesTable[i],"")){
+        regModelNames<-c(regModelNames,regModelNamesTable[i])
+        nbModelreg = nbModelreg +1
+      }
+    }
+    nbregOrig<-0
+    iregModel <-1
+    for( i in seq(1:length(namesReg))){
+      if(!identical(tolower(namesReg[i]),"id") &&
+           !identical(tolower(namesReg[i]),"time")){
+             namesReg[i] <- regModelNames[iregModel]
+             
+             iregModel <-iregModel +1 
+             nbregOrig <- nbregOrig +1
+      }
+    }
+    if(nbregOrig +1 !=  iregModel)
+    {
+      stop("inconsistent number of regressor between model and dregressor Field")
+    }
+    names(regressor)<-namesReg
+    #---------------------------------------------------------------
+    
     write.table(regressor,file=outfile,row.names=FALSE,quote=FALSE)
     cat(paste0("regressor <-read.table(\"regressor.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
   }
