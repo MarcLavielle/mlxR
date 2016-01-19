@@ -102,11 +102,11 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
       }      
     )
   }
-  narowsData<-NULL
-  
+  #---remove rows containing NA----
+  narowsData<-NULL  
   for(i in (1: nrow(data)))
   {
-    if(is.na(data[i,1]))
+    if(is.na(data[i,iid]))
     {
       narowsData =c(narowsData,i)
     }
@@ -115,16 +115,17 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   { 
     data <- data[-narowsData,]
   }
+  #-------------------------------
+  
   S       = data
   S0      = names(data)
   i.new <- c(icov,icat,ix,iocc)
   newHeader[i.new] = S0[i.new]
   
   ans    = funique(S[[iid]])
-  iduf   = ans$arg1
+  iduf   = ans$arg1  
   iuf    = ans$arg2
   idnumf = ans$arg3
-  
   ans = fsort(iuf)
   ia  = ans$arg1
   ib  = ans$arg2
@@ -253,7 +254,6 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   
   
   datas$N <- N
-  datas$idOri <- iduf
-  
+  datas$idOri <- iduf  
   return(datas)
 }
