@@ -186,10 +186,12 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
     nbModelreg<-0
     lines <- readLines(model)
     regressorLine <-  grep('regressor', lines, fixed=TRUE, value=TRUE)
-    regModelNamesTable<-strsplit(regressorLine,"[\\{ \\} , ]")[[1]][c(-1,-2)]
+    regModelNamesTable<-strsplit(regressorLine,"[\\{ \\} , ]")[[1]]
     regModelNames<-c()
     for( i in seq(1:length(regModelNamesTable))){
-      if(!identical(regModelNamesTable[i],"")){
+      if(!identical(regModelNamesTable[i],"")&&!length(grep("=",regModelNamesTable[i],fixed=TRUE,value=TRUE))
+         &&!length(grep("regressor",regModelNamesTable[i],fixed=TRUE,value=TRUE))
+         ){
         regModelNames<-c(regModelNames,regModelNamesTable[i])
         nbModelreg = nbModelreg +1
       }
