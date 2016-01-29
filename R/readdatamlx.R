@@ -89,9 +89,10 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
         message(paste0("WARNING: reading data using delimiter '",delimiter,"' failed: ", geterrmessage()))
         return( read.table(datafile,comment.char = "#",stringsAsFactors=FALSE))
       }      
-    )
-    colnames(headerToUse)<-colnames(dataNoHeader)
-    data<- rbind(headerToUse,dataNoHeader)
+    )    
+    data<- dataNoHeader
+    names(data)<- headerToUse
+    
   }else{
     data = tryCatch(
       read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
