@@ -1,3 +1,4 @@
+#' @export
 writeDatamlx <- function(r,filename,sep=",", digits=3) 
 {
   y.attr <- sapply(r,attr,"type")
