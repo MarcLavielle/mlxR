@@ -282,9 +282,8 @@ setErrorModelName<- function(paramfile,model)
         errorsub<-strsplit(testerr[[1]][2],'[/(/)]',perl=TRUE)
         errorargs<-strsplit(errorsub[[1]][2],',')
         for(ee in seq(1:length(errorargs[[1]])))
-        {
-          errorused<-c(errorused,trimws(errorargs[[1]][ee]))
-        }
+#           errorused<-c(errorused,trimws(errorargs[[1]][ee]))
+        errorused<-c(errorused,(errorargs[[1]][ee]))
       }        
       
     }

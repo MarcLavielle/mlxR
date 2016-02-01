@@ -19,12 +19,13 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
   n.output <- length(infoProject$output)
   param <- parameter
   
+#   infoProject$resultFolder <- "project_simul"
   ##************************************************************************
   #       DATA FILE
   #**************************************************************************
   
   if (r.data==TRUE){
-    datas <- readdatamlx(infoProject=infoProject)
+    datas <- readDatamlx(infoProject=infoProject)
     
     dobs <- datas$observation
     if (!is.null(names(dobs)))
@@ -283,6 +284,9 @@ myparseXML  <- function (filename, mlxtranpath, node)
 readPopEstimate  <-  function(filename, fim=NULL) {
   if (file.exists(filename)) {
     data        = read.table(filename, header = TRUE, sep=";")
+    if (ncol(data)==1)
+      data        = read.table(filename, header = TRUE, sep="\t")
+    
     name        = as.character(data[[1]])
     name        = sub(" +", "", name)
     name        = sub(" +$", "", name)
