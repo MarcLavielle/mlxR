@@ -1,11 +1,14 @@
 
-convertmlx <- function(data, dataIn,iop.group,id.out=FALSE,id.ori=NULL){
+convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL){
   
   g <- dataIn$group
   iop.gout <- 0
+  N <- 0
   for(k in seq(1,length(g))){
     g[[k]]$output=NULL
-    if (prod(g[[k]]$size) > 1)
+    gk.size <- prod(g[[k]]$size)
+    N <- N + gk.size
+    if (gk.size > 1)
       iop.gout <- 1
   }
   
@@ -133,6 +136,7 @@ convertmlx <- function(data, dataIn,iop.group,id.out=FALSE,id.ori=NULL){
       df <- data.frame(df)
     
     attr(dk,"name")=ak$name
+    attr(dk,"type")=ak$label
     dd[[ak$name]] = dk
     
   }
@@ -147,24 +151,29 @@ convertmlx <- function(data, dataIn,iop.group,id.out=FALSE,id.ori=NULL){
   if (!is.null(var)){
     v <- data.frame(var$value)
     names(v) <- var$colNames
-    if (iop.group==1){
-      names(v)[names(v)=="id"] <- "group"
-      vval <- var$value
-      jid <- which(var$colNames=="id")
-      mval <- NULL
-      for (k in (1:length(g))){
-        ik <- which(vval[,jid]==k)
-        mk <- matrix( rep( t( vval[ik,] ) , prod(g[[k]]$size) ) , 
-                      ncol = ncol(vval) , byrow = TRUE )
-        mval <- rbind(mval, mk)
-      }
-      vv <- data.frame(mval)
-      names(vv) <- names(v)
-      vv$group <- NULL
+    if (N>1){
+      id0 <- 0
+      vv <- NULL
+      for (j in (1:length(g))){
+        vj <- v[which(v$id==j),]
+        dj <- nrow(vj)
+        gj.size <- prod(g[[j]]$size)
+        vj <- do.call("rbind", replicate(gj.size, vj, simplify = FALSE))
+        vj$id <- rep((1:gj.size),each=dj) +id0
+        id0 <- id0 + gj.size
+        if (length(g)>1 & iop.group==1)
+          vj$group <- j
+        vv <- rbind(vv,vj)
+      } 
     }else{
       vv <- v
-      vv$id <- NULL
+      vv$id <- NULL    
     }
+    attr(vv,"type") <- "varlevel"      
+    dd$varlevel <- vv
+    
+    vv$group <- NULL
+    vv$id <- NULL
     for(k in seq(1,length(dd))){
       if (is.null(dd[[k]]$time)){
         vdk <- cbind(vv, dd[[k]])
@@ -180,9 +189,7 @@ convertmlx <- function(data, dataIn,iop.group,id.out=FALSE,id.ori=NULL){
         }
         dd[[k]] <- vdk
       }
-    }
-    dd$varlevel <- v
-    
+    }   
   }
   
   if (!is.null(id.ori)){
@@ -196,5 +203,69 @@ convertmlx <- function(data, dataIn,iop.group,id.out=FALSE,id.ori=NULL){
   if (iop.gout==1)
     dd$group=g
   
+  if (!is.null(dataIn$regressor)){
+    reg <- data.frame(dataIn$regressor$value)
+    names(reg) <- dataIn$regressor$colNames
+    nreg <- ncol(reg)-2
+    for (k in (1:nreg)){
+      xk <- reg[k+2]
+      nk <- names(xk)
+      idk <- which(!is.na(xk))
+      regk <- reg[idk,c(1,2,k+2)]
+      if (N>1){
+        id0 <- 0
+        reg.gk <- NULL
+        for (j in (1:length(g))){
+          regkj <- regk[which(regk$id==j),]
+          dj <- nrow(regkj)
+          gj.size <- prod(g[[j]]$size)
+          regkj <- do.call("rbind", replicate(gj.size, regkj, simplify = FALSE))
+          regkj$id <- rep((1:gj.size),each=dj) +id0
+          if (length(g)>1 & iop.group==1)
+            regkj$group <- j
+          id0 <- id0 + gj.size
+          reg.gk <- rbind(reg.gk,regkj)
+        }        
+      }else{
+        regk$id <- NULL
+        reg.gk <- regk
+      }
+      attr(reg.gk,"type") <- "regressor"      
+      attr(reg.gk,"name") <- nk
+      dd[[nk]] <- reg.gk
+    }
+  }
+  
+  if (!is.null(trt)){
+    if (N>1){
+      ng <- length(trt)
+      id0 <- 0
+      treatment <- NULL
+      for (k in (1:ng)){
+        trtk <- as.data.frame(trt[[k]])
+        trtk <- trtk[,c("time","amount","rate","type")]
+        dk <- nrow(trtk)
+        nk <- prod(dataIn$group[[k]]$size)
+        trtk <- do.call("rbind", replicate(nk, trtk, simplify = FALSE))
+        if (ng>1 & iop.group==1)
+          trtk <- cbind(list(group=k),trtk)
+        trtk <- cbind(list(id=rep(((1:nk)+id0),each=dk)),trtk)
+        id0 <- id0 + nk
+        treatment <- rbind(treatment,trtk)
+      }
+    }else{
+      treatment <- as.data.frame(trt)
+      treatment <- treatment[,c("time","amount","rate","type")]
+      treatment$id <- NULL
+    }
+    if (all(unique(treatment$type)==1))
+      treatment$type <- NULL
+    if (all(unique(treatment$rate)==Inf))
+      treatment$rate <- NULL
+    attr(treatment,"type") <- "treatment"
+    dd$treatment <- treatment
+  }
+  
   return(dd)
+  
 }
