@@ -1,5 +1,5 @@
 #' @export
-readdatamlx  <- function(infoProject=NULL, project=NULL){
+readDatamlx  <- function(infoProject=NULL, project=NULL){
   # READDATAMLX
   #
   # READDATAMLX reads a datafile and create a list.
@@ -257,4 +257,69 @@ readdatamlx  <- function(infoProject=NULL, project=NULL){
   datas$N <- N
   datas$idOri <- iduf  
   return(datas)
+}
+
+getInfoXml  <- function (project)
+{
+  infoProject = list(datafile=NULL, dataformat=NULL, dataheader=NULL, output=NULL, resultFolder=NULL, mlxtranpath=NULL );
+  
+  # get path and name of monolix project
+  mlxtranpath      = dirname(project);
+  mlxtranpathfile = file_path_sans_ext(project)
+  mlxtranfile = file_path_sans_ext(basename(project))
+  infoProject$mlxtranpath = mlxtranpath
+  if(file_ext(project) == "mlxtran")
+  {
+    #  project<-mlxProject2xml(project)
+    session<-Sys.getenv("session.simulx")
+    xmlfile <- file.path(mlxtranpath,paste0(mlxtranfile,"_tr.xmlx"))
+    zz=file.path(session,'lib','lixoftLanguageTranslator')
+    str=paste0('"',zz,'" --from=mlxproject --to=xmlx')  
+    str=paste0(str,' --output-file=',xmlfile,' --input-file=',project,' --option=with-observation-model') 
+    system(str, wait=T)
+  } else {
+    xmlfile <- project
+  }
+  
+  infoResultFolder         = myparseXML(xmlfile, mlxtranpath, "resultFolder")
+  infoProject$resultFolder = infoResultFolder[[1]]$uri
+  ##************************************************************************
+  #       GET DATA INFO
+  #*************************************************************************
+  #  get data format and data header used in the current project
+  #   Exemple : 
+  #
+  #   infoProject = 
+  #           datafile         : './warfarin_data.txt'
+  #           dataformat       : '\t'
+  #           dataheader       : {'ID'  'TIME'  'AMT'  'Y'  'YTYPE'  'COV'  'IGNORE'  'IGNORE'}
+  #
+  #
+  infoData                = myparseXML(xmlfile, mlxtranpath, "data")
+  infoProject$datafile    = infoData[[1]]$uri
+  infoProject$dataformat  = infoData[[1]]$columnDelimiter
+  infoProject$dataheader  = infoData[[1]]$headers
+  ##************************************************************************
+  #       GET OUTPUT INFO
+  #*************************************************************************
+  #   Exemple : 
+  #
+  #   infoProject = 
+  #           output           : {'conc'  'pca'}
+  infoOutput         = myparseXML(xmlfile, mlxtranpath, 'observationModel')
+  
+  for (k in 1:length(infoOutput)){
+    infoProject$output[[k]] = infoOutput[[k]]$name;
+  }
+  
+  infoParam = myparseXML(xmlfile, mlxtranpath, "parameter")
+  info.length <- unlist(lapply(infoParam,length))
+  infoParam <- infoParam[info.length==2]
+  p.names <- do.call("rbind", lapply(infoParam, "[[", 1))[,1]
+  p.trans <- do.call("rbind", lapply(infoParam, "[[", 2))[,1]
+  infoProject$parameter <- list(name=p.names, trans=p.trans)
+  
+  if(file_ext(project) == "mlxtran")
+  {unlink(xmlfile, recursive=T)}
+  return(infoProject)
 }
