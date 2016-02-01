@@ -287,8 +287,8 @@ readPopEstimate  <-  function(filename, fim=NULL) {
     name        = sub(" +", "", name)
     name        = sub(" +$", "", name)
     
-    ic <- grep("corr_",name)
-    name[ic] <- sub("corr_","r_",name[ic])
+    #ic <- grep("corr_",name)
+    #name[ic] <- sub("corr_","r_",name[ic])
     param <- as.numeric(as.character(data[['parameter']]))
     names(param) <- name
     
