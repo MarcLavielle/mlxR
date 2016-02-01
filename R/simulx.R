@@ -85,11 +85,11 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   
   if (is.null(settings$seed))
     settings$seed <- round(runif(1)*100000)
-#   settings$seed <- round(as.numeric(Sys.time())*100)%%10000
+  #   settings$seed <- round(as.numeric(Sys.time())*100)%%10000
   
   if (identical(file_ext(model),"R")) {Rfile <- TRUE} else {Rfile <- FALSE}
   if ( !is.null(model) && exists(model, mode="function") ){Rsource <- TRUE} else {Rsource <- FALSE}
-                                                           
+  
   test.group <- FALSE
   if (!Rfile && !Rsource
       && !is.null(group) 
@@ -168,8 +168,9 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
         nm2 <- 1
       }
       Km <- ceiling(sms[1]/ceiling(Nmax/nm2))
-      smk[1] <- ceiling(Nmax/nm2)
       gmk <- gm
+      smk[1] <- ceiling(smk[1]/Km)
+      # smk[1] <- min(smk[1],ceiling(Nmax/nm2))
       gmk$size <- smk
       nmk <- prod(smk)
       settings$data.in=TRUE
@@ -178,6 +179,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
                            regressor=regressor,varlevel=varlevel)
       settings$data.in=FALSE
       Nmk <- 0
+      # print(c(Km,gmk$size))
       for (k in (1:Km)){
         if (!is.null(settings$seed))
           settings$seed <- settings$seed +10
@@ -269,9 +271,11 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
     dataIn  <-  hgdata(lv)
     dataIn$model <- model
     dataIn$iop.group <- iop.group
+    trt <- lv$treatment
   }else{
     dataIn <- data
     iop.group <- data$iop.group
+    trt <- NULL
   }
   
   if (length(s)==0){
@@ -290,10 +294,12 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
     dot_call <- .Call
     dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
     if(data.in==F){
-      dataOut  <- convertmlx(dataOut,dataIn,iop.group,id.out,id.ori)
+      dataOut  <- convertmlx(dataOut,dataIn,trt,iop.group,id.out,id.ori)
+#       if(!is.null(doseRegimen))
+#         dataOut$treatment <- doseRegimen
+#       if(!is.null(dataIn$regressor))
+#         dataOut <- add.regressor(dataOut,dataIn$regressor)
       if (!(is.null(project)))  {
-        if(!is.null(doseRegimen))
-          dataOut$treatment <- doseRegimen
         if(!is.null(ans$id)){
           dataOut$originalId <- ans$id
         }
@@ -331,11 +337,14 @@ mergeres <- function(r,s,m=NULL,N=NULL){
           s[[k]]$group <- factor(m)      
         
         if ("id" %in% names(s[[k]])){
+          skid <- as.numeric(as.character(s[[k]]$id))
+          if (!is.null(N))
+            ikN <-which(skid <= N)
           ir <- as.numeric(tail(r[[k]]$id,1))
-          skid <- as.numeric(s[[k]]$id) + ir
+          skid <- skid + ir
           s[[k]]$id <- factor(skid) 
           if (!is.null(N))
-            s[[k]] <- s[[k]][(1:N),]
+            s[[k]] <- s[[k]][ikN,]
         }
         #         u[[k]] <- merge(r[[k]],s[[k]],all=TRUE)
         u[[k]] <- rbind(r[[k]],s[[k]])
