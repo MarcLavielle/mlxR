@@ -22,7 +22,7 @@ hformat  <-  function(list.input)
     
     if (identical(file_ext(model),"R")) {Rfile <- TRUE} else {Rfile <- FALSE}
     if ( !is.null(model) && exists(model, mode="function") ){Rsource <- TRUE} else {Rsource <- FALSE}
-                                                             
+    
     if (Rsource || Rfile){
       for (k in (1:N)){
         if (is.null(group[[k]]$size))
@@ -78,33 +78,35 @@ hformat  <-  function(list.input)
       lvk <- list(lvk) 
       lv[[k]] <- lvk
     }
-    for (j in seq(1,length(lvk))) {
-      lvkj <- lvk[[j]]
-      dkj <- dim(lvkj)
-      #     if (!is.null(dkj)){
-      #   N=c(N,dkj[1])
-      if (isfield(lvkj,"id")){
-        # N <- c(N,length(unique(lvkj$id)))
-        Nid <- c(Nid,lvkj$id)
-      }else if(isfield(lvkj,"design")){
-        #N <- c(N,length(unique(lvkj$design$id)))
-        Nid <- c(Nid,lvkj$design$id)
-      }else if(isfield(lvkj,"time")){
-        if (isfield(lvkj$time,"id")){
-          #N <- c(N,length(unique(lvkj$time$id)))
-          Nid <- c(Nid,lvkj$time$id)
-          names(lvkj)[names(lvkj)=="time"]<-"design"
+    if (length(lvk)>0){
+      for (j in seq(1,length(lvk))) {
+        lvkj <- lvk[[j]]
+        dkj <- dim(lvkj)
+        #     if (!is.null(dkj)){
+        #   N=c(N,dkj[1])
+        if (isfield(lvkj,"id")){
+          # N <- c(N,length(unique(lvkj$id)))
+          Nid <- c(Nid,lvkj$id)
+        }else if(isfield(lvkj,"design")){
+          #N <- c(N,length(unique(lvkj$design$id)))
+          Nid <- c(Nid,lvkj$design$id)
+        }else if(isfield(lvkj,"time")){
+          if (isfield(lvkj$time,"id")){
+            #N <- c(N,length(unique(lvkj$time$id)))
+            Nid <- c(Nid,lvkj$time$id)
+            names(lvkj)[names(lvkj)=="time"]<-"design"
+            lv[[k]][[j]]=lvkj
+          }
+        }else if(isfield(lvkj,'header')){
+          warning("deprecated syntax:  use 'colNames' instead of 'header'",immediate.=TRUE)
+          names(lvkj)[names(lvkj)=="header"]<-"colNames"
           lv[[k]][[j]]=lvkj
         }
-      }else if(isfield(lvkj,'header')){
-        warning("deprecated syntax:  use 'colNames' instead of 'header'",immediate.=TRUE)
-        names(lvkj)[names(lvkj)=="header"]<-"colNames"
-        lv[[k]][[j]]=lvkj
-      }
-      
-      if (isfield(lvkj,'colNames')){
-        #N=c(N,length(unique(lvkj$value[,1]))) #assuming that first column = id
-        Nid=c(Nid,lvkj$value[,1]) #assuming that first column = id
+        
+        if (isfield(lvkj,'colNames')){
+          #N=c(N,length(unique(lvkj$value[,1]))) #assuming that first column = id
+          Nid=c(Nid,lvkj$value[,1]) #assuming that first column = id
+        }
       }
     }
   }    
@@ -119,7 +121,7 @@ hformat  <-  function(list.input)
     N=1
   }else{
     
-     N = unique(N)
+    N = unique(N)
     #       if (length(N)>1){
     #         stop("different numbers of individuals and/or groups are defined \n",call.="FALSE")
     #       }
