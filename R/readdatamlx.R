@@ -103,19 +103,15 @@ readDatamlx  <- function(infoProject=NULL, project=NULL){
       }      
     )
   }
-  #---remove rows containing NA----
+  
+  #---remove rows containing NA-------
   narowsData<-NULL  
   for(i in (1: nrow(data)))
-  {
     if(is.na(data[i,iid]))
-    {
       narowsData =c(narowsData,i)
-    }
-  }
   if(!is.null(narowsData))
-  { 
     data <- data[-narowsData,]
-  }
+  
   #-------------------------------
   
   S       = data
@@ -148,11 +144,10 @@ readDatamlx  <- function(infoProject=NULL, project=NULL){
   
   if (is.null(itime)) {
     itime=ix[1]
-    if(length(ix)>1){
-      ix=ix[2:length(ix)]
-    }else{
-      ix=NULL
-    }
+#     if(length(ix)>1)
+#       ix=ix[2:length(ix)]
+#     else
+#       ix=NULL
   }
   t=S[[itime]]
   nx=length(ix)
