@@ -79,7 +79,7 @@ simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NU
   #  simulx.R was developed by Marc Lavielle and the Inria popix team for the DDMoRe project. 
   #--------------------------------------------------
   myOldENVPATH = Sys.getenv('PATH');
-  initMlxLibrary()
+   initMlxLibrary()
   session=Sys.getenv("session.simulx")
   Sys.setenv(LIXOFT_HOME=session)
   
@@ -218,11 +218,7 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
   data.in <- cc[[2]]
   id.out  <- cc[[3]]
   id.ori  <- NULL
-  
-  
-  #   if ( (data.in==TRUE) && (is.null(s$loadDesign)) )
-  #     s$loadDesign <- TRUE
-  
+    
   if(is.null(data)){
     
     dataIn <- list()    
@@ -250,6 +246,7 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
       parameter     <- ans$param
       output        <- ans$output
       group         <- ans$group
+      regressor     <- ans$regressor
     }
     iop.group <- 1
     if (is.null(group))
@@ -295,10 +292,6 @@ simulxunit <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,outpu
     dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
     if(data.in==F){
       dataOut  <- convertmlx(dataOut,dataIn,trt,iop.group,id.out,id.ori)
-#       if(!is.null(doseRegimen))
-#         dataOut$treatment <- doseRegimen
-#       if(!is.null(dataIn$regressor))
-#         dataOut <- add.regressor(dataOut,dataIn$regressor)
       if (!(is.null(project)))  {
         if(!is.null(ans$id)){
           dataOut$originalId <- ans$id
@@ -321,12 +314,9 @@ mergeres <- function(r,s,m=NULL,N=NULL){
           i1 <- which(names(s[[k]])=="id")
           i2 <- which(names(s[[k]])=="group")
           s[[k]] <- s[[k]][,c((1:i1),i2,((i1+1):(i2-1)))]
-          #           if ("id" %in% names(s[[k]])){
-          #             skid <- as.numeric(s[[k]]$id) 
           if (!is.null(N))
             s[[k]] <- s[[k]][(1:N),]
         }
-      #         }  
     }
     u <- s
   }else{
@@ -346,7 +336,6 @@ mergeres <- function(r,s,m=NULL,N=NULL){
           if (!is.null(N))
             s[[k]] <- s[[k]][ikN,]
         }
-        #         u[[k]] <- merge(r[[k]],s[[k]],all=TRUE)
         u[[k]] <- rbind(r[[k]],s[[k]])
         attr(u[[k]],"name")=attr(s[[k]],"name")
       }
