@@ -19,7 +19,7 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
   n.output <- length(infoProject$output)
   param <- parameter
   
-#   infoProject$resultFolder <- "project_simul"
+  #   infoProject$resultFolder <- "project_simul"
   ##************************************************************************
   #       DATA FILE
   #**************************************************************************
@@ -38,9 +38,11 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
       yk <- list(ylabel="observation", colNames=niy, name=niy[length(niy)], value=dobs[[iy]] )
       datas$observation[[iy]] <- yk
     }    
-    ntr <- names(datas$treatment)
-    datas$sources <- list(ylabel="sources", colNames=ntr, name="doseRegimen", value=datas$treatment )
-    datas$treatment <- NULL
+    if (!is.null(datas$treatment)){
+      ntr <- names(datas$treatment)
+      datas$sources <- list(ylabel="sources", colNames=ntr, name="doseRegimen", value=datas$treatment )
+      datas$treatment <- NULL
+    }
     
     
     #     if (is.character(param))  {
@@ -66,7 +68,7 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
     #       treatment (TREATMENT)
     #**********************************************************************
     if (is.null(treatment)){
-      if (is.null(datas$sources)){ 
+      if (is.null(datas$sources$value)){ 
         treatment = datas$sources
       } else{
         treatment = data.frame(datas$sources$value)
