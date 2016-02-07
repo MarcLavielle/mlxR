@@ -153,6 +153,47 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
   #  if (is.null(datas$regressor))
   #    ans = list(model=model, treatment=treatment, param=paramp, output=output, group=gr, id=datas$id)
   #   else
+  
+  
+  #change regressor names and use these defined in the model in the same order 
+  if (!is.null(datas$regressor))
+  {
+    namesReg<-names(datas$regressor)
+    nbModelreg<-0
+    lines <- readLines(model)
+    regressorLine <-  grep('regressor', lines, fixed=TRUE, value=TRUE)
+    regModelNamesTable<-strsplit(regressorLine,"[\\{ \\} , ]")[[1]]
+    regModelNames<-c()
+    for( i in seq(1:length(regModelNamesTable))){
+      if(!identical(regModelNamesTable[i],"")&&!length(grep("=",regModelNamesTable[i],fixed=TRUE,value=TRUE))
+         &&!length(grep("regressor",regModelNamesTable[i],fixed=TRUE,value=TRUE))
+      ){
+        regModelNames<-c(regModelNames,regModelNamesTable[i])
+        nbModelreg = nbModelreg +1
+      }
+    }
+    nbregOrig<-0
+    iregModel <-1
+    for( i in seq(1:length(namesReg))){
+      if(!identical(tolower(namesReg[i]),"id") &&
+           !identical(tolower(namesReg[i]),"time")){
+        namesReg[i] <- regModelNames[iregModel]
+        
+        iregModel <-iregModel +1 
+        nbregOrig <- nbregOrig +1
+      }
+    }
+    if(nbregOrig +1 !=  iregModel)
+    {
+      stop("inconsistent number of regressor between model and dregressor Field")
+    }
+    names(datas$regressor)<-namesReg
+    #---------------------------------------------------------------
+  }
+  
+  ##set correct name of error model in parameter,  it can change  in the V2 model
+  setErrorModelName(param[[1]],model)
+  
   ans = list(model=model, 
              treatment=treatment, 
              param=paramp, 
@@ -795,4 +836,99 @@ testC  <- function(x)
     }
   }
   return(testC)
+}
+
+
+
+
+setErrorModelName<- function(param,model)
+{
+  ## set correct the name of error model in param, it can change  in the V2 model
+  ## if user's parameter is the same as error model name
+  
+  
+  modelread <- readLines(model)
+  errorline<-grep("errorModel",modelread)
+  errorused<-NULL
+  for(i in seq(1:length(errorline)))
+  {    
+    comment<-";"
+    line<-strsplit(modelread[errorline[i]],comment)[[1]][1]    
+    if(length(line))
+    {       
+      testerr<-strsplit(line,"errorModel")
+      if(length(testerr[[1]])==2)
+      {          
+        errorsub<-strsplit(testerr[[1]][2],'[/(/)]',perl=TRUE)
+        errorargs<-strsplit(errorsub[[1]][2],',')
+        for(ee in seq(1:length(errorargs[[1]])))
+          #           errorused<-c(errorused,trimws(errorargs[[1]][ee]))
+          errorused<-c(errorused,(errorargs[[1]][ee]))
+      }        
+      
+    }
+  }
+  
+  ##replace names without _ in param  
+  replaced=FALSE
+  endFlag<-"_"
+  if(length(errorused))
+  {
+    paramRead <- param[[1]]#readLines(paramfile) #case of reading from a file
+    for(i in seq(1:length(errorused)))
+    {
+      erri<-errorused[i]
+      erriChars <- strsplit(erri,"")[[1]]
+      lastChar <-  erriChars[length(erriChars)]
+      if(identical(lastChar,endFlag))
+      {
+        errifirstchars<-strsplit(erri,'(.$)',perl=TRUE)[[1]]
+        erriline<-paste0("^",erri,"$")
+        errparamf<-grep(erriline,paramRead,perl=TRUE)
+        if(!length(errparamf))
+        {
+          for(i in seq(1:length(paramRead)))
+          { 
+            paramname<- NULL
+            linesplitted<-strsplit(paramRead[i],'\\s',perl=TRUE)
+            is<-1
+            if(length(linesplitted[[1]]))
+            {
+              for(j in seq(1:length(linesplitted[[1]])))
+              {
+                if(!identical(linesplitted[[1]][j],""))
+                {
+                  paramname<-linesplitted[[1]][j]
+                  is<-j
+                  break
+                }
+              }
+            }            
+            if(identical(paramname,errifirstchars))
+            {            
+              paramRead[i]<-sub(linesplitted[[1]][is],erri,paramRead[i]) 
+              replaced=TRUE 
+              break
+            }          
+          }
+        }
+      }
+    }
+  }
+  
+  ## if reading from a file
+  #   if(replaced==TRUE)
+  #   {
+  #     tmpFile<-paste0(paramfile,"_tmp")
+  #     file.rename(paramfile,tmpFile)
+  #     cat("",file =paramfile, fill = FALSE, labels = NULL, append = FALSE)    
+  #     for(i in seq(1:length(paramRead)))
+  #     {
+  #       cat(paste0(paramRead[i],"\n"),file =paramfile, fill = FALSE, labels = NULL, append = TRUE)   
+  #     }
+  #     unlink(tmpFile)
+  #   }
+  
+  ## else  
+  return(paramRead)
 }
