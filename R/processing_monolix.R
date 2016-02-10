@@ -192,7 +192,10 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
   }
   
   ##set correct name of error model in parameter,  it can change  in the V2 model
-  setErrorModelName(param[[1]],model)
+  paramp[[1]]<-setErrorModelName(paramp[[1]],model)
+  
+  ##initialize latent covariates defined in the model but not used,  in parameter
+  paramp[[1]]<-initLatentCov(paramp[[1]],model)
   
   ans = list(model=model, 
              treatment=treatment, 
@@ -839,13 +842,10 @@ testC  <- function(x)
 }
 
 
-
-
 setErrorModelName<- function(param,model)
 {
   ## set correct the name of error model in param, it can change  in the V2 model
   ## if user's parameter is the same as error model name
-  
   
   modelread <- readLines(model)
   errorline<-grep("errorModel",modelread)
@@ -861,11 +861,10 @@ setErrorModelName<- function(param,model)
       {          
         errorsub<-strsplit(testerr[[1]][2],'[/(/)]',perl=TRUE)
         errorargs<-strsplit(errorsub[[1]][2],',')
-        for(ee in seq(1:length(errorargs[[1]])))
-          #           errorused<-c(errorused,trimws(errorargs[[1]][ee]))
+        for(ee in seq(1:length(errorargs[[1]]))){
           errorused<-c(errorused,(errorargs[[1]][ee]))
-      }        
-      
+        }
+      }       
     }
   }
   
@@ -874,7 +873,7 @@ setErrorModelName<- function(param,model)
   endFlag<-"_"
   if(length(errorused))
   {
-    paramRead <- param[[1]]#readLines(paramfile) #case of reading from a file
+    paramRead <- param#readLines(paramfile) #case of reading from a file
     for(i in seq(1:length(errorused)))
     {
       erri<-errorused[i]
@@ -931,4 +930,43 @@ setErrorModelName<- function(param,model)
   
   ## else  
   return(paramRead)
+}
+
+initLatentCov<- function(param,model)
+{
+  ## initialize latent covariates defined in the model but nit used, 
+  ## thus not present in estimates.txt
+  
+  modelread <- readLines(model)
+  plcatLine<-grep("plcat",modelread)
+  plcatUsed <-NULL
+  if(length(plcatLine))
+  {
+    for(i in seq(1:length(plcatLine)))
+    {    
+      comment<-";"
+      line<-strsplit(modelread[plcatLine[i]],comment)[[1]][1]    
+      if(length(line)){
+        lineSplit<-strsplit(line,'[/{/}," "]',perl=TRUE)[[1]]
+        iPlcat<-grep("^plcat",lineSplit)
+        for(ee in seq(1:length(iPlcat)))
+        {
+          plcatUsed<-c(plcatUsed,(lineSplit[iPlcat[ee]]))            
+        }
+      }
+    }
+    
+    ## add plcatused in param with 0 as value    
+    if(length(plcatUsed))
+    {   
+      namesParam<-names(param)
+      for(i in seq(1:length(plcatUsed)))
+      {
+        namesParam <-c(namesParam,plcatUsed[i])
+        param<-c(param,0)
+      }
+      names(param) <- namesParam
+    }    
+  }
+  return(param)
 }
