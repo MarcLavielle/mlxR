@@ -938,7 +938,8 @@ initLatentCov<- function(param,model)
   ## thus not present in estimates.txt
   
   modelread <- readLines(model)
-  plcatLine<-grep("plcat",modelread)
+  latentCovPrefix <-"plcat"
+  plcatLine<-grep(latentCovPrefix,modelread)
   plcatUsed <-NULL
   if(length(plcatLine))
   {
@@ -948,7 +949,7 @@ initLatentCov<- function(param,model)
       line<-strsplit(modelread[plcatLine[i]],comment)[[1]][1]    
       if(length(line)){
         lineSplit<-strsplit(line,'[/{/}," "]',perl=TRUE)[[1]]
-        iPlcat<-grep("^plcat",lineSplit)
+        iPlcat<-grep(paste0("^",latentCovPrefix),lineSplit)
         for(ee in seq(1:length(iPlcat)))
         {
           plcatUsed<-c(plcatUsed,(lineSplit[iPlcat[ee]]))            
