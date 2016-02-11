@@ -923,16 +923,18 @@ initLatentCov<- function(param,model)
   ## initialize latent covariates defined in the model but nit used, 
   ## thus not present in estimates.txt
   
-  modelread <- readLines(model)
+  modelRead <- readLines(model)
+  inputLinesNum  <- plcatLine<-grep("input",modelRead)  
+  inputRead <- modelRead[inputLinesNum]
   latentCovPrefix <-"plcat"
-  plcatLine<-grep(latentCovPrefix,modelread)
+  plcatLine<-grep(latentCovPrefix,inputRead)
   plcatUsed <-NULL
   if(length(plcatLine))
   {
     for(i in seq(1:length(plcatLine)))
     {    
       comment<-";"
-      line<-strsplit(modelread[plcatLine[i]],comment)[[1]][1]    
+      line<-strsplit(inputRead[plcatLine[i]],comment)[[1]][1]    
       if(length(line)){
         lineSplit<-strsplit(line,'[/{/}," "]',perl=TRUE)[[1]]
         iPlcat<-grep(paste0("^",latentCovPrefix),lineSplit)
@@ -947,12 +949,32 @@ initLatentCov<- function(param,model)
     if(length(plcatUsed))
     {   
       namesParam<-names(param)
-      for(i in seq(1:length(plcatUsed)))
+      plcatInParam<-NULL
+      for(iused in seq(1:length(plcatUsed)))
       {
-        namesParam <-c(namesParam,plcatUsed[i])
-        param<-c(param,0)
+        for(iparam in seq(1:length(namesParam)))
+        {
+          if(identical(plcatUsed[iused],namesParam[iparam]))
+          {
+            plcatInParam <-c(plcatInParam,-iused)
+            break
+          }          
+        }
       }
-      names(param) <- namesParam
+      if(!is.null(plcatInParam))
+      {
+        plcatUsed <-plcatUsed[plcatInParam]
+      }
+      
+      if(length(plcatUsed))
+      {
+        for(i in seq(1:length(plcatUsed)))
+        {
+          namesParam <-c(namesParam,plcatUsed[i])
+          param<-c(param,0)
+        }
+        names(param) <- namesParam
+      }
     }    
   }
   return(param)
