@@ -871,9 +871,9 @@ setErrorModelName<- function(param,model)
   ##replace names without _ in param  
   replaced=FALSE
   endFlag<-"_"
+  paramRead <- param#readLines(paramfile) #case of reading from a file
   if(length(errorused))
-  {
-    paramRead <- param#readLines(paramfile) #case of reading from a file
+  {    
     for(i in seq(1:length(errorused)))
     {
       erri<-errorused[i]
