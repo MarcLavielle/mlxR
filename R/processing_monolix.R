@@ -871,7 +871,7 @@ setErrorModelName<- function(param,model)
   ##replace names without _ in param  
   replaced=FALSE
   endFlag<-"_"
-  paramRead <- param#readLines(paramfile) #case of reading from a file
+  paramRead <- names(param)
   if(length(errorused))
   {    
     for(i in seq(1:length(errorused)))
@@ -914,22 +914,8 @@ setErrorModelName<- function(param,model)
       }
     }
   }
-  
-  ## if reading from a file
-  #   if(replaced==TRUE)
-  #   {
-  #     tmpFile<-paste0(paramfile,"_tmp")
-  #     file.rename(paramfile,tmpFile)
-  #     cat("",file =paramfile, fill = FALSE, labels = NULL, append = FALSE)    
-  #     for(i in seq(1:length(paramRead)))
-  #     {
-  #       cat(paste0(paramRead[i],"\n"),file =paramfile, fill = FALSE, labels = NULL, append = TRUE)   
-  #     }
-  #     unlink(tmpFile)
-  #   }
-  
-  ## else  
-  return(paramRead)
+  names(param)<-paramRead
+  return(param)
 }
 
 initLatentCov<- function(param,model)
