@@ -162,32 +162,35 @@ processing_monolix  <- function(project,model,treatment=NULL,parameter,
     nbModelreg<-0
     lines <- readLines(model)
     regressorLine <-  grep('regressor', lines, fixed=TRUE, value=TRUE)
-    regModelNamesTable<-strsplit(regressorLine,"[\\{ \\} , ]")[[1]]
-    regModelNames<-c()
-    for( i in seq(1:length(regModelNamesTable))){
-      if(!identical(regModelNamesTable[i],"")&&!length(grep("=",regModelNamesTable[i],fixed=TRUE,value=TRUE))
-         &&!length(grep("regressor",regModelNamesTable[i],fixed=TRUE,value=TRUE))
-      ){
-        regModelNames<-c(regModelNames,regModelNamesTable[i])
-        nbModelreg = nbModelreg +1
-      }
-    }
-    nbregOrig<-0
-    iregModel <-1
-    for( i in seq(1:length(namesReg))){
-      if(!identical(tolower(namesReg[i]),"id") &&
-           !identical(tolower(namesReg[i]),"time")){
-        namesReg[i] <- regModelNames[iregModel]
-        
-        iregModel <-iregModel +1 
-        nbregOrig <- nbregOrig +1
-      }
-    }
-    if(nbregOrig +1 !=  iregModel)
+    if(length(regressorLine))
     {
-      stop("inconsistent number of regressor between model and dregressor Field")
+      regModelNamesTable<-strsplit(regressorLine,"[\\{ \\} , ]")[[1]]
+      regModelNames<-c()
+      for( i in seq(1:length(regModelNamesTable))){
+        if(!identical(regModelNamesTable[i],"")&&!length(grep("=",regModelNamesTable[i],fixed=TRUE,value=TRUE))
+           &&!length(grep("regressor",regModelNamesTable[i],fixed=TRUE,value=TRUE))
+        ){
+          regModelNames<-c(regModelNames,regModelNamesTable[i])
+          nbModelreg = nbModelreg +1
+        }
+      }
+      nbregOrig<-0
+      iregModel <-1
+      for( i in seq(1:length(namesReg))){
+        if(!identical(tolower(namesReg[i]),"id") &&
+             !identical(tolower(namesReg[i]),"time")){
+          namesReg[i] <- regModelNames[iregModel]
+          
+          iregModel <-iregModel +1 
+          nbregOrig <- nbregOrig +1
+        }
+      }
+      if(nbregOrig +1 !=  iregModel)
+      {
+        stop("inconsistent number of regressor between model and dregressor Field")
+      }
+      names(datas$regressor)<-namesReg
     }
-    names(datas$regressor)<-namesReg
     #---------------------------------------------------------------
   }
   
