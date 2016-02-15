@@ -2,6 +2,12 @@
 convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL){
   
   g <- dataIn$group
+  
+#   if (is.null(g))
+#     iop.group <- 0
+#   else
+#     iop.group <- 1
+  
   iop.gout <- 0
   N <- 0
   for(k in seq(1,length(g))){
@@ -16,8 +22,7 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL){
   var <- dataIn$variability
   if (length(unique(var$id))==1)
     var$id <- NULL
-  
-  #   iop.group <- 0
+
   if (length(g)>1){
     gr=numeric(0)
     for(k in seq(1,length(g))){

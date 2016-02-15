@@ -111,6 +111,10 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
         param.list <- paste(param.list,"individualCovariate",sep=",")  
       else
         param.list <- "individualCovariate"
+      i.factor <- which(sapply(individualCovariate[-1], is.factor))
+      if (!is.null(i.factor)){
+        cat(paste0("individualCovariate[,",i.factor+1,"]<- as.factor(individualCovariate[,",i.factor+1,"]) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      }
     } 
     individualParameter <- parameter[[3]]
     if (!is.null(individualParameter)){
