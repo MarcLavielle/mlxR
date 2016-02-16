@@ -112,7 +112,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
       else
         param.list <- "individualCovariate"
       i.factor <- which(sapply(individualCovariate[-1], is.factor))
-      if (!is.null(i.factor)){
+      if (length(i.factor)){
         cat(paste0("individualCovariate[,",i.factor+1,"]<- as.factor(individualCovariate[,",i.factor+1,"]) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       }
     } 
