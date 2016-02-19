@@ -264,7 +264,7 @@ format.treatment <- function(treatment,uN)
       names(pp) <- trtk$colNames
       trtk=pp
     }else if (!is.data.frame(trtk)){
-      trtk <- as.data.frame(trtk)
+      trtk <- as.data.frame(trtk,stringsAsFactors =FALSE)
       n <- nrow(trtk)
       trtk <- trtk[rep(1:n,each=N),] 
       trtk$id <- rep(uN,n)
