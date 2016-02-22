@@ -1,20 +1,20 @@
 #' @export
-readDatamlx  <- function(infoProject=NULL, project=NULL){
+readDatamlx  <- function(infoProject=NULL, project=NULL, datafile=NULL, header=NULL){
   # READDATAMLX
   #
   # READDATAMLX reads a datafile and create a list.
   
-  myOldENVPATH = Sys.getenv('PATH');
-  initMlxLibrary()
-  session=Sys.getenv("session.simulx")
-  Sys.setenv(LIXOFT_HOME=session)
-  
+  observationName <- NULL
   if (!is.null(project))
     infoProject <- getInfoXml(project)
   
-  header          = infoProject$dataheader
-  observationName = infoProject$output
-  datafile        = infoProject$datafile
+  if (!is.null(infoProject))
+  {
+    header          = infoProject$dataheader
+    observationName = infoProject$output
+    datafile        = infoProject$datafile
+  } 
+  
   headerList      = c('ID','TIME','AMT','ADM','RATE','TINF','Y','YTYPE','X','COV','CAT','OCC')
   newList         = c('id','time','amount','type','rate','tinf','y','ytype','x','cov','cat','occ')
   # newList         = cellfun(@lower,headerList,'UniformOutput',false)
@@ -144,10 +144,10 @@ readDatamlx  <- function(infoProject=NULL, project=NULL){
   
   if (is.null(itime)) {
     itime=ix[1]
-#     if(length(ix)>1)
-#       ix=ix[2:length(ix)]
-#     else
-#       ix=NULL
+    #     if(length(ix)>1)
+    #       ix=ix[2:length(ix)]
+    #     else
+    #       ix=NULL
   }
   t=S[[itime]]
   nx=length(ix)
@@ -163,6 +163,9 @@ readDatamlx  <- function(infoProject=NULL, project=NULL){
   #**************************************************************************
   if (!is.null(iamt)) {
     i1 = findstrcmp(S[[iamt]],'.', not=TRUE)
+    i0 <- c(grep(' .',S[i1,iamt],fixed=TRUE),grep('. ',S[i1,iamt],fixed=TRUE))
+    if (length(i0)>0)
+      i1 <- i1[-i0]
     #     u <- as.numeric(as.character(S[i1,iamt]))
     if (is.null(irate))
       irate = NULL
@@ -182,11 +185,16 @@ readDatamlx  <- function(infoProject=NULL, project=NULL){
   #**************************************************************************
   
   iobs1   = findstrcmp(S[[iy]],'.', not=TRUE)
+  i0 <- c(grep(' .',S[iobs1,iy],fixed=TRUE),grep('. ',S[iobs1,iy],fixed=TRUE))
+  if (length(i0)>0)
+    iobs1 <- iobs1[-i0]
   yvalues = data.frame(id=idnum[iobs1], time=t[iobs1], y=as.numeric(as.character(S[iobs1,iy])))
   if (!is.null(iytype)){ 
     ytype <- factor(S[iobs1,iytype])
     l.ytype <- levels(ytype)
-    n.y <- length(observationName)
+    n.y <- length(l.ytype)
+    if (is.null(observationName))
+      observationName <- paste0("y",l.ytype)
     y<- list()
     for (iy in (1:n.y)){
       y[[iy]] <- yvalues[ytype==l.ytype[iy],]
@@ -195,6 +203,8 @@ readDatamlx  <- function(infoProject=NULL, project=NULL){
     #     yvalues$ytype <- observationName[S[[iytype]][iobs1]]
   } else {
     y <- yvalues
+    if (is.null(observationName))
+      observationName <- "y"
     names(y)[3] <- observationName
   }
   datas$observation = y
@@ -256,6 +266,10 @@ readDatamlx  <- function(infoProject=NULL, project=NULL){
 
 getInfoXml  <- function (project)
 {
+  myOldENVPATH = Sys.getenv('PATH');
+  initMlxLibrary()
+  session=Sys.getenv("session.simulx")
+  Sys.setenv(LIXOFT_HOME=session)
   infoProject = list(datafile=NULL, dataformat=NULL, dataheader=NULL, output=NULL, resultFolder=NULL, mlxtranpath=NULL );
   
   # get path and name of monolix project
