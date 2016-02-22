@@ -170,3 +170,18 @@ resample.data  <- function(data,idOri,N)
   data$id <- data.frame(newId=seq(1:N),oriId=idOri[new.id])
   return(data)
 }
+
+
+unlistRec <- function(x,s=NULL)
+{
+  if (is.list(x) && is.null(names(x))){
+    n <- length(x)
+    for (k in (1:n)){
+      r <- unlist(x[[k]],s)
+    }
+  } else {
+    s[[length(s)+1]]=x
+    z <- list(x,s)
+    return(z)
+  }
+}
