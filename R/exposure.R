@@ -139,6 +139,7 @@ exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
     }   
     r1 <- simulx(model=model,group=gr1,treatment=trt1, parameter=parameter,
                  output=out1,settings=settings,varlevel=varlevel)
+    r1$treatment <- NULL
     r.names <- names(r1)
     alpha <- Inf
     for (k in seq(1:length(r1))){
@@ -199,6 +200,7 @@ Try increasing ngc, or fix the number of doses")
   r.simul <- simulx(model=model,group=group,treatment=treatment,parameter=parameter,
                     output=output,data=data,project=project,settings=settings,
                     regressor=regressor,varlevel=varlevel)
+  r.simul$treatment <- NULL
   r.names <- names(r.simul)
   res <- list()
   kk <- 0
