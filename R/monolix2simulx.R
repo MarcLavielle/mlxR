@@ -112,7 +112,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
       else
         param.list <- "individualCovariate"
       i.factor <- which(sapply(individualCovariate[-1], is.factor))
-      if (length(i.factor)){
+      if (length(i.factor)>0){
         cat(paste0("individualCovariate[,",i.factor+1,"]<- as.factor(individualCovariate[,",i.factor+1,"]) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       }
     } 
@@ -143,31 +143,29 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
     
     if(length(output)==1)
     {
-      # many types of output could exist
-      cat(paste0("name<-\"",output[[1]]$name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      out1 <- output[[1]]
+      out1.name <- names(out1) 
+      out1.name <- out1.name[which(!(out1.name %in% c("id", "time")))]
+      cat(paste0("name<-\"",out1.name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       cat(paste0("time<-read.table(\"output.txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       cat(paste0("out<-list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       #       out2 <-matrix(output[[1]]$value,nrow=nrow(output[[1]]$value),ncol=ncol(output[[1]]$value))
       #       colnames(out2)<-output[[1]]$colNames
       outfile = file.path(Rproject,"/output.txt")
-      write.table(output[[1]]$value,file=outfile,row.names=FALSE,quote=FALSE) 
+      write.table(out1,file=outfile,row.names=FALSE,quote=FALSE) 
       #       write.table(out2,file=outfile,row.names=FALSE,quote=FALSE) 
       #cat("out<-list(out)\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
     } else {    # many types of output could exist
       for(i in seq(1:length(output))) {
-        cat(paste0("name<-\"",output[[i]]$name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-        if(!(is.null(output[[i]]$colNames))) {
-          
+        outi <- output[[i]]
+        outi.name <- names(outi)
+        outi.name <- outi.name[which(!(outi.name %in% c("id", "time")))]
+        cat(paste0("name<-\"",outi.name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        if(is.data.frame(output[[i]])) {
           cat(paste0("time<-read.table(\"output",i,".txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-          
           cat(paste0("out",i,"<-list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-          
-          out2 <-matrix(output[[i]]$value,nrow=nrow(output[[i]]$value),ncol=ncol(output[[i]]$value))
-          colnames(out2)<-output[[i]]$colNames
-          outfile = file.path(Rproject,paste0("/output",i))
-          outfile = paste0(outfile,".txt")
-          #           write.table(out2,file=outfile,row.names=FALSE,quote=FALSE)
-          write.table(output[[i]]$value,file=outfile,row.names=FALSE,quote=FALSE) 
+          outfile = paste0(file.path(Rproject,paste0("/output",i)),".txt")
+          write.table(outi,file=outfile,row.names=FALSE,quote=FALSE) 
         } else {
           cat(paste0("out",i,"<-list(name=name) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         }

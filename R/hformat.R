@@ -88,14 +88,12 @@ hformat  <-  function(list.input)
           # N <- c(N,length(unique(lvkj$id)))
           Nid <- c(Nid,lvkj$id)
         }else if(isfield(lvkj,"design")){
-          #N <- c(N,length(unique(lvkj$design$id)))
           Nid <- c(Nid,lvkj$design$id)
+          #             names(lvkj)[names(lvkj)=="design"]<-"time"
+          lv[[k]][[j]]=lvkj
         }else if(isfield(lvkj,"time")){
           if (isfield(lvkj$time,"id")){
-            #N <- c(N,length(unique(lvkj$time$id)))
             Nid <- c(Nid,lvkj$time$id)
-            names(lvkj)[names(lvkj)=="time"]<-"design"
-            lv[[k]][[j]]=lvkj
           }
         }else if(isfield(lvkj,'header')){
           warning("deprecated syntax:  use 'colNames' instead of 'header'",immediate.=TRUE)
@@ -112,20 +110,14 @@ hformat  <-  function(list.input)
   }    
   Nid = length(unique(Nid))
   
-  if (is.null(N)){
+  if (is.null(N))
     N <- Nid 
-  }
   
-  if(is.null(N)||N==0)
-  {
+  if (is.null(N)||N==0)
     N=1
-  }else{
-    
+  else
     N = unique(N)
-    #       if (length(N)>1){
-    #         stop("different numbers of individuals and/or groups are defined \n",call.="FALSE")
-    #       }
-  }  
+  
   if (is.null(group)){
     group <- vector("list",N)
     for (i in seq(1,N))
@@ -434,6 +426,11 @@ format.output <- function(output, out,uN)
   id.ori <- NULL
   for (k in seq(1,length(out))){
     outk <- out[[k]]
+    if (is.data.frame(outk)){
+      n.outk <- names(outk)
+      outk <- list(name=n.outk[!(n.outk %in% c("id","time"))], 
+                   time = outk[,c("id","time")])
+    }
     if (!isfield(outk,"name"))
       outk <- list(name=outk)
     okname <- unlist(outk$name)
@@ -443,14 +440,14 @@ format.output <- function(output, out,uN)
       names(pp)=outk$colNames
       outk$design=pp
     }
-    if (isfield(outk,'design')){      
-      id <- sort(unique(outk$design$id))
+    if (!is.null(outk$time) && ("id" %in% names(outk$time))){      
+      id <- sort(unique(outk$time$id))
       if (length(id) !=length(uN) ||  any(id != uN)) 
         #if(any(id != uN))   id.ori[[length(id.ori)+1]]<-id  
         id.ori<-sort(unique(c(id.ori,id)))
       for (i in uN){
-        ji <- which(outk$design$id == id[i])
-        ti <- sort(outk$design$time[ji])
+        ji <- which(outk$time$id == id[i])
+        ti <- sort(outk$time$time[ji])
         oitime <- vector("list" , nok)
         for (j in seq(1,nok)){
           oitime[[j]] <- ti
@@ -508,18 +505,23 @@ format.regressor <- function(reg, uN)
       regk <- data.frame(mk)
       names(regk) <- colNames
     }else{
-      colNames <- names(regk)
-      #      mk <- data.matrix(regk)
-      mk <- matrix(as.numeric(unlist(regk)),nrow=nrow(regk))
-      mk <- as.data.frame(mk)
-      names(mk) <- colNames
+      #       colNames <- names(regk)
+      #       #      mk <- data.matrix(regk)
+      #       mk <- matrix(as.numeric(unlist(regk)),nrow=nrow(regk))
+      #       mk <- as.data.frame(mk)
+      #       names(mk) <- colNames
+      mk <- regk
+      if (is.null(mk$id))
+        mk <- cbind(list(id=1),mk)
       idk <- sort(unique(mk$id))
       if (any(idk != uN)) {
         #id.ori[[length(id.ori)+1]]<-idk 
         id.ori<-c(id.ori,idk) 
         mk$id <- match(mk$id, idk)
       }
+      regk <- mk
     }
+    regk <- regk[order(regk$id,regk$time),]
     regressor[[k]] <- regk
   }
   # r <- list(regressor=regressor, id=id.ori)
