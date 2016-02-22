@@ -1,11 +1,12 @@
 generateModelFromPkModel <-  function(parameter,output)
 {
-  p_name   = parameter$name
-  p_length = length(p_name)
-  str1     = p_name[[1]]
-  for(k in seq(2,p_length)){
-    str1 = paste(str1,p_name[[k]],sep=", ")
-  }
+  if (is.data.frame(parameter)){
+    p_name <- names(parameter)
+    i0 <- which(p_name == "id")
+    p_name <- p_name[-i0]
+  } else
+    p_name   = parameter$name
+  str1 <- paste(p_name,collapse=",")
   model_txt="
           [LONGITUDINAL]
           input = {param.list}
