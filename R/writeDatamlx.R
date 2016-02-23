@@ -1,7 +1,6 @@
 #' @export
-writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,digits=3, app.file=F, app.dir=F) 
+writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,digits=5, app.file=F, app.dir=F) 
 {
-  
   if (!is.null(result.folder)){
     if (app.dir==F){
       unlink(result.folder, recursive = TRUE, force = TRUE)
@@ -22,11 +21,20 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
         ext <- ".txt"
     }
     for (k in (1:length(nr0))){
+      rk <- r[[nr0[k]]]
       fk <- file.path(result.folder,paste0(nr0[k],ext))
+      for (j in (1:ncol(rk))){
+        if (typeof(rk[,j])=="double")
+          rk[,j] <- round(rk[,j], digits=digits)
+        i.na <- which(is.na(rk[,j]))
+        if (length(i.na)>0)
+          rk[i.na,j]="."
+      }
+      
       if (app.file == F) 
-        write.table(r[[nr0[k]]],fk,row.names=FALSE,quote=FALSE,sep=sep,append=F)
+        write.table(rk,fk,row.names=FALSE,quote=FALSE,sep=sep,append=F)
       else
-        write.table(r[[nr0[k]]],fk,row.names=FALSE,col.names=FALSE,quote=FALSE,sep=sep,append=T)
+        write.table(rk,fk,row.names=FALSE,col.names=FALSE,quote=FALSE,sep=sep,append=T)
     }
   }
   

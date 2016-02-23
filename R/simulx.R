@@ -1,6 +1,6 @@
 #' Simulation of mixed effects models and longitudinal data
 #'
-#' Compute predictions and sample data from \code{Mlxtran} and \code{PharmML} models
+#' Compute predictions and sample data from \code{Mlxtran}, \code{R} and \code{PharmML} models
 #' 
 #' simulx takes advantage of the modularity of hierarchical models for simulating 
 #' different components of a model: models for population parameters, individual 
@@ -9,21 +9,20 @@
 #' Furthermore, \code{simulx} allows to draw different types of longitudinal data, 
 #' including continuous, count, categorical, and time-to-event data.
 #' 
-#' The models are encoded using either the model coding language \samp{Mlxtran} or the 
-#' markup language \samp{PharmML}. These models are automatically converted into C++ codes, 
+#' The models are encoded using either the model coding language \samp{Mlxtran}, \samp{R} or the 
+#' markup language \samp{PharmML}. \samp{Mlxtran} models are automatically converted into C++ codes, 
 #' compiled on the fly and linked to R using the \samp{Rcpp} package. 
 #' That allows one to implement very easily complex models and to take advantage 
-#' of the numerical sovers used by the C++ \samp{MlxLibrary}.
+#' of the numerical sovers used by the C++ \samp{mlxLibrary}.
 #' 
 #' See http://simulx.webpopix.org for more details.      
-#' @param model a \code{Mlxtran} or \code{PharmML} model used for the simulation
+#' @param model a \code{Mlxtran}, \code{R} or \code{PharmML} model used for the simulation
+#' @param parameter a vector of parameters with their names and values
 #' @param output a list (or list of lists) with fields: 
 #' \itemize{
 #'   \item \code{name}: a vector of output names
 #'   \item \code{time}: a vector of times (only for the longitudinal outputs)
 #' }
-#' @param data a list
-#' @param parameter a vector of parameters with their names and values
 #' @param treatment a list with fields
 #' \itemize{
 #'   \item \code{time} : a vector of input times,
@@ -32,15 +31,6 @@
 #'   \item \code{tinf} : a scalar or a vector of infusion times (default=0),
 #'   \item \code{type} : the type of input (default=1),
 #'   \item \code{target} : the target compartment (default=NULL). 
-#' }
-#' @param group a list, or a list of lists, with fields: 
-#' \itemize{
-#'   \item \code{size} : size of the group (default=1),
-#'   \item \code{level} : level(s) of randomization,
-#'   \item \code{parameter} : if different parameters per group are defined,
-#'   \item \code{output} : if different outputs per group are defined,
-#'   \item \code{treatment} : if different treatements per group are defined,
-#'   \item \code{regressor} : if different regression variables per group are defined.
 #' }
 #' @param regressor a list, or a list of lists, with fields
 #' \itemize{
@@ -53,31 +43,48 @@
 #'   \item \code{name} : a vector of names of variability levels,
 #'   \item \code{time} : a vector of times that define the occasions.
 #' }
+#' @param group a list, or a list of lists, with fields: 
+#' \itemize{
+#'   \item \code{size} : size of the group (default=1),
+#'   \item \code{level} : level(s) of randomization,
+#'   \item \code{parameter} : if different parameters per group are defined,
+#'   \item \code{output} : if different outputs per group are defined,
+#'   \item \code{treatment} : if different treatements per group are defined,
+#'   \item \code{regressor} : if different regression variables per group are defined.
+#' }
+#' @param data a list
 #' @param project the name of a Monolix project
+#' @param nrep number of replicates
+#' @param npop number of population parameters to draw randomly 
+#' @param fim a string with the Fisher Information Matrix to be used 
+#' @param result.folder the name of the folder where the outputs of simulx should be stored
+#' @param result.file the name of the single file where the outputs of simulx should be saved
+#' @param stats a string, or a list of strings, with the name of the functions to apply to the result of the simulation
+#' @param probs a vector of quantiles  between 0 and 1. Only used when "quantile" has been defined in \code{stat} 
 #' @param settings a list of optional settings
 #' \itemize{
-#'   \item \code{record.file} : name of the datafile where the simulated data is written (string),
 #'   \item \code{seed} : initialization of the random number generator (integer),
 #'   \item \code{load.design} : TRUE/FALSE (if load.design is not defined, a test is automatically performed to check if a new design has been defined),
 #'   \item \code{data.in} : TRUE/FALSE (default=FALSE)
 #'   \item \code{id.out}  : add columns id (when N=1) and group (when #group=1), TRUE/FALSE (default=FALSE)
-#'   \item \code{Nmax} : maximum group size used in a single call of mlxCompute (default=100)
+#'   \item \code{kw.max} : maximum number of trials for generating a positive definite covariance matrix (default = 100) 
+#'   \item \code{sep} : the field separator character (default = ",") 
+#'   \item \code{digits} : number of decimal digits in output files (default = 5) 
+#'   \item \code{disp.iter} : TRUE/FALSE (default = FALSE) display replicate and population numbers
+#'   \item \code{record.file} : name of the datafile where the simulated data is written (DEPRECATED),
 #' }       
 #' 
 #' @return A list of data frames. Each data frame is an output of simulx
 #' 
 #' @export
 
-# simulx <- function(model=NULL,group=NULL,treatment=NULL,parameter=NULL,output=NULL,
-#                    data=NULL, project=NULL, settings=NULL, regressor=NULL, varlevel=NULL)
-#   
-simulx <- function(project=NULL, model=NULL,
-                   group=NULL, treatment=NULL, parameter=NULL, output=NULL,
-                   data=NULL, regressor=NULL, varlevel=NULL, 
-                   nrep=1, npop=NULL, fim=NULL, kw.max=100,
-                   result.folder=NULL, result.file=NULL, sep=",",
+simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL, 
+                   regressor=NULL, varlevel=NULL, group=NULL, 
+                   data=NULL, project=NULL, 
+                   nrep=1, npop=NULL, fim=NULL, 
+                   result.folder=NULL, result.file=NULL, 
                    stat=NULL, probs=c(0.1, 0.5, 0.9), 
-                   settings=NULL, disp.iter=FALSE)
+                   settings=NULL)
 { 
   #--------------------------------------------------
   #  simulx.R is governed by the CeCILL-B license. 
@@ -95,6 +102,14 @@ simulx <- function(project=NULL, model=NULL,
   if (is.null(settings$seed))
     settings$seed <- round(runif(1)*100000)
   set.seed(settings$seed)
+  disp.iter <- ifelse((!is.null(settings$disp.iter) && settings$disp.iter==TRUE), TRUE, FALSE)
+  sep <- settings$sep
+  if (is.null(settings$sep)) sep <- ","
+  digits <- settings$digits
+  if (is.null(settings$digits)) digits <- 5
+  kw.max <- settings$kw.max
+  if (is.null(settings$kw.max)) kw.max <- 500
+  
   
   if (!is.null(data)){
     r <- simulxunit(data=data,settings=settings)
@@ -105,8 +120,8 @@ simulx <- function(project=NULL, model=NULL,
   
   if (isfield(settings,"record.file"))  
     warning("\n\n 'record.file' is a deprecated option. Use 'result.file' instead.")
-#   if (!is.null(result.file) &&  !is.null(result.folder))
-#     warning("\n\n You can define either 'result.file' or 'result.folder', not both...")
+  #   if (!is.null(result.file) &&  !is.null(result.folder))
+  #     warning("\n\n You can define either 'result.file' or 'result.folder', not both...")
   
   #--------------------------------------------------
   #    R MODEL
@@ -160,11 +175,11 @@ simulx <- function(project=NULL, model=NULL,
       if(is.null(fim))
         stop('The covariance matrix of the population parameters is requested for simulating several replicates 
            of the population parameters')
-      else 
-        parameter[[1]] <- sim.pop(npop,parameter[[1]],infoParam,fim,kw.max)
+      else {
+        parameter[[1]] <- sim.pop(npop,parameter[[1]],infoParam,fim,kw.max=kw.max)
+      }
     }
   }
-  
   #--------------------------------------
   lv <- list(treatment=treatment,
              parameter=parameter,
@@ -270,7 +285,7 @@ simulx <- function(project=NULL, model=NULL,
       test.rep <- TRUE
   }
   
-  if (!is.null(result.folder))
+  if (!is.null(result.folder) || !is.null(result.file))
     write.simul=TRUE
   else
     write.simul=FALSE
@@ -340,7 +355,7 @@ simulx <- function(project=NULL, model=NULL,
         else
           app <- T
         writeDatamlx(r,result.folder=result.folder,result.file=result.file,
-                     sep=sep,app.dir=app,app.file=app)
+                     sep=sep,digits=digits,app.dir=app,app.file=app)
         
       } 
       if (out.simul == T){
@@ -372,8 +387,8 @@ simulx <- function(project=NULL, model=NULL,
     names(R.complete) <- names(r)
     for (k in (1:length(r)))
       attr(R.complete[[k]],"type") <- r.attr[k]
-#     if (!is.null(result.file))
-#       writeDatamlx(R.complete,result.file,sep=sep)
+    #     if (!is.null(result.file))
+    #       writeDatamlx(R.complete,result.file,sep=sep)
   } 
   
   if (test.pop == T){
@@ -382,11 +397,11 @@ simulx <- function(project=NULL, model=NULL,
     pop <- cbind(pop=(1:npop),pop)
     if (write.simul==TRUE){
       r <- list(population=pop)
-      writeDatamlx(r,result.folder=result.folder,sep=sep,app.dir=T)
+      writeDatamlx(r,result.folder=result.folder,sep=sep,digits=digits,app.dir=T)
     } 
-# else {
-      R.complete$population <- pop
-#     }
+    # else {
+    R.complete$population <- pop
+    #     }
   }
   
   Sys.setenv(LIXOFT_HOME="")
@@ -526,3 +541,26 @@ mergeres <- function(r,s,m=NULL,N=NULL){
   } 
   return(u)
 }
+
+
+sim.pop <- function(n,mu,infop,fim,kw.max)
+{
+  p1.name <- names(fim$se)
+  np <- length(p1.name)
+  p1.trans=rep("N",np)
+  p2.name <- sub("_pop","",p1.name)
+  i.pop <- match(infop$name,p2.name)
+  i1 <- which(!is.na(i.pop))
+  p1.trans[i.pop[i1]] <- infop$trans[i1]
+  i.omega <- grep("omega_",p1.name)
+  p1.trans[i.omega] <- "L"
+  i.omega2 <- grep("omega2_",p1.name)
+  p1.trans[i.omega2] <- "L"
+  param <- data.frame(pop.param=mu,sd=fim$se,trans=p1.trans)
+  if (is.null(kw.max))
+    x <- simpopmlx(n=n,parameter=param,corr=fim$mat)
+  else
+    x <- simpopmlx(n=n,parameter=param,corr=fim$mat,kw.max=kw.max)
+  return(x)
+}
+
