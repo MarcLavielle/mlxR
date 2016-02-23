@@ -4,7 +4,7 @@
 \alias{inlineModel}
 \title{inline model}
 \usage{
-inlineModel(str, filename = "temp_model.txt")
+inlineModel(str, filename = NULL)
 }
 \arguments{
 \item{str}{model}

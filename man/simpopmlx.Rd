@@ -2,12 +2,34 @@
 % Please edit documentation in R/simpopmlx.R
 \name{simpopmlx}
 \alias{simpopmlx}
-\title{}
+\title{Population parameters simulation}
 \usage{
 simpopmlx(n = 1, project = NULL, fim = "needed", parameter = NULL,
   corr = NULL, kw.max = 100)
 }
-\description{
+\arguments{
+\item{n}{the number of vectors of population parameters (default = 1),}
 
+\item{project}{a Monolix project, assuming that the Fisher information Matrix was estimated by Monolix.}
+
+\item{fim}{the Fisher Information Matrix estimated by Monolix.}
+
+\item{parameter}{a data frame with a column \samp{pop.param} (no default), a column \samp{sd} (no default),
+and possibly a column \samp{trans} (default ='N').}
+
+\item{corr}{correlation matrix of the population parameters (default = identity)}
+
+\item{kw.max}{maximum number of trials for generating a positive definite covariance matrix (default = 100)}
+}
+\description{
+Draw population parameters using the covariance matrix of the estimates
+}
+\details{
+See http://simulx.webpopix.org/mlxr/simpopmlx/ for more details.
+}
+\examples{
+\dontrun{
+
+}
 }
 
