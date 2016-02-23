@@ -1,7 +1,21 @@
+#' Population parameters simulation
 #' 
+#' Draw population parameters using the covariance matrix of the estimates
+#' 
+#' See http://simulx.webpopix.org/mlxr/simpopmlx/ for more details.
+#' @param n the number of vectors of population parameters (default = 1), 
+#' @param project a Monolix project, assuming that the Fisher information Matrix was estimated by Monolix.
+#' @param fim the Fisher Information Matrix estimated by Monolix. 
+#' @param parameter a data frame with a column \samp{pop.param} (no default), a column \samp{sd} (no default), 
+#' and possibly a column \samp{trans} (default ='N'). 
+#' @param corr correlation matrix of the population parameters (default = identity) 
+#' @param kw.max maximum number of trials for generating a positive definite covariance matrix (default = 100) 
+#' @examples
+#' \dontrun{
+#' 
+#' }
 #' @export
-simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.max=100)
-{
+simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.max=100) {
   
   mu <- parameter$pop.param
   sd <- parameter$sd
