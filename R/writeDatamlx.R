@@ -1,3 +1,4 @@
+#' @export
 writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,digits=3, app.file=F, app.dir=F) 
 {
   

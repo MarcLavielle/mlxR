@@ -1,3 +1,4 @@
+#' @export
 statmlx <- function(r, stat, probs)
 {
   list.stat <- c("mean","sd","median","var") 
