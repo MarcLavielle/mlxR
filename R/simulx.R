@@ -80,10 +80,8 @@
 
 simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL, 
                    regressor=NULL, varlevel=NULL, group=NULL, 
-                   data=NULL, project=NULL, 
-                   nrep=1, npop=NULL, fim=NULL, 
-                   result.folder=NULL, result.file=NULL, 
-                   stat=NULL, probs=c(0.1, 0.5, 0.9), 
+                   data=NULL, project=NULL, nrep=1, npop=NULL, fim=NULL, 
+                   result.folder=NULL, result.file=NULL, resume.f="statmlx",
                    settings=NULL)
 { 
   #--------------------------------------------------
@@ -141,6 +139,34 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   regressor <- mklist(regressor)
   varlevel  <- mklist(varlevel)
   output    <- mklist(output)
+  
+  #--------------------------------------------------
+  #     resume output
+  #--------------------------------------------------
+  if (!is.null(result.folder) || !is.null(result.file))
+    write.simul=TRUE
+  else
+    write.simul=FALSE
+  
+  resume.n <- NULL
+  resume.0 <- NULL
+  resume.a <- list()
+  for (k in (1:length(output))){
+    outk <- output[[k]]
+    if (is.null(outk$time))
+      outk.n <- "parameter"
+    else
+      outk.n <- outk$name
+    outk$name <- NULL
+    outk$time <- NULL
+    if (length(outk)>0){
+      resume.n <- c(resume.n, outk.n)
+      resume.a <- c(resume.a, rep(list(outk),length(outk.n)))
+    } else if (write.simul==T) {
+      resume.0 <- c(resume.0, outk.n)
+    }
+  }
+  names(resume.a)=resume.n
   
   #--------------------------------------------------
   #     Monolix project
@@ -281,17 +307,13 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   if (nrep>1){
     if (test.N == F)
       test.rep <- TRUE
-    else if (test.N==T && !is.null(group))
+    else if (is.null(group))
       test.rep <- TRUE
   }
   
-  if (!is.null(result.folder) || !is.null(result.file))
-    write.simul=TRUE
-  else
-    write.simul=FALSE
   
-  if (!is.null(stat)) stat.simul <- T else stat.simul <- F
-  if (stat.simul==T | write.simul==F) out.simul <- T else out.simul <- F
+  # if (!is.null(stat)) stat.simul <- T else stat.simul <- F
+  # if (stat.simul==T | write.simul==F) out.simul <- T else out.simul <- F
   
   R.complete <- list()
   rs <- NULL
@@ -309,6 +331,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       if (test.N==F)  
         lv$group <- group
       dataIn <- simulxunit(model=model,lv=lv,settings=c(settings, data.in=T))
+      settings$data.in=F
+      settings$load.design=F
     }
     for (irep in (1:nrep)){
       irw <- irw + 1
@@ -318,11 +342,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
         cat("replicate: ",irw,"\n")
       
       if (test.rep == T){
-        settings$data.in=F
-        #         if (irep==1 && is.null(settings$load.design))
-        #           settings$load.design=T
-        #         else
-        settings$load.design=F
         r <- simulxunit(data = dataIn,settings=settings)
       } else {
         if (test.N==T && !is.null(group))  
@@ -331,17 +350,32 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           lv$group <- group
         r <- simulxunit(model=model,lv=lv,settings=settings)
       }
-      r.attr <- sapply(r,attr,"type")
       
-      if (stat.simul == T){
-        ir <- which(unlist(r.attr) %in% c("longitudinal", "parameter"))
-        rs <- statmlx(r[ir], stat, probs)
-        names(rs) <- names(r)[ir]
-        if (nrep>1){
-          for (k in (1:length(rs)))
-            rs[[k]] <- cbind(list(rep=as.factor(irw)), rs[[k]])
+      rs <- r
+      rs[resume.0] <- NULL
+      for (k in (1:length(resume.n))){
+        # resume.e <- c(list(res$e), resume.a)
+        rnk <- resume.n[k]
+        if (!is.null(rnk)){
+          resak <- resume.a[[rnk]]
+          rs[[rnk]] <- do.call(resume.f, c(list(rs[[rnk]]),resak))
         }
       }
+      
+      r.attr <- sapply(r,attr,"type")
+      # if (stat.simul == T){
+      #   ir <- which(unlist(r.attr) %in% c("longitudinal", "parameter"))
+      #   rs <- statmlx(r[ir], stat, probs)
+      #   names(rs) <- names(r)[ir]
+      # } else if (write.simul==FALSE) {
+      #   rs <- r
+      # }
+      if (nrep>1){
+        for (k in (1:length(rs)))
+          if (is.data.frame(rs[[k]]))
+            rs[[k]] <- cbind(list(rep=as.factor(irw)), rs[[k]])
+      }
+      
       
       if (write.simul==TRUE){
         for (k in (1:length(r))){
@@ -358,38 +392,48 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
                      sep=sep,digits=digits,app.dir=app,app.file=app)
         
       } 
-      if (out.simul == T){
-        if (!is.null(stat))  r <- rs
+      # out.simul <- T
+      # if (out.simul == T){
+        # if (!is.null(stat))  r <- rs
         if (irep==1) {
-          res <- r
+          res <- rs
         } else {
-          for(k in (1:length(r)))
-            res[[k]] <- rbind(res[[k]],r[[k]])
+          for(k in (1:length(rs)))
+            if (is.data.frame(rs[[k]]))
+              res[[k]] <- rbind(res[[k]],rs[[k]])
+            else
+              res[[k]] <- rs[[k]]
         }  
-      }
+      # }
     } # irep
-    if (out.simul==T){
-      for (k in (1:length(r))){
+    # if (out.simul==T){
+      for (k in (1:length(res))){
         Rk <- res[[k]]
-        if (npop>1)
-          Rk <- cbind(list(pop=as.factor(ipop)),Rk)
-        if (ipop==1){
+        if (is.data.frame(Rk)){
+          if (npop>1)
+            Rk <- cbind(list(pop=as.factor(ipop)),Rk)
+          if (ipop==1){
+            R.complete[[k]] <- Rk
+          }else{
+            R.complete[[k]] <- rbind(R.complete[[k]],Rk)
+          }
+        } else
           R.complete[[k]] <- Rk
-        }else{
-          R.complete[[k]] <- rbind(R.complete[[k]],Rk)
-        }
       }
-    }
+    # }
     
   } # ipop
   
-  if (out.simul==T){
-    names(R.complete) <- names(r)
-    for (k in (1:length(r)))
-      attr(R.complete[[k]],"type") <- r.attr[k]
-    #     if (!is.null(result.file))
-    #       writeDatamlx(R.complete,result.file,sep=sep)
-  } 
+  # if (out.simul==T){
+    names(R.complete) <- names(res)
+    for (k in (1:length(res))){
+      attrk <- attr(r[[names(res)[k]]],'type')
+      if (!is.null(attrk))
+        attr(R.complete[[k]],"type") <- attrk
+      #     if (!is.null(result.file))
+      #       writeDatamlx(R.complete,result.file,sep=sep)
+    } 
+  # }
   
   if (test.pop == T){
     pop <- as.data.frame(pop.mat)
