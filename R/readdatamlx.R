@@ -192,7 +192,7 @@ readDatamlx  <- function(infoProject=NULL, project=NULL, datafile=NULL, header=N
   if (!is.null(iytype)){ 
     ytype <- factor(S[iobs1,iytype])
     l.ytype <- levels(ytype)
-    n.y <- length(l.ytype)
+    n.y <- length(observationName)
     if (is.null(observationName))
       observationName <- paste0("y",l.ytype)
     y<- list()
