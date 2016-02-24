@@ -15,8 +15,8 @@ readDatamlx  <- function(infoProject=NULL, project=NULL, datafile=NULL, header=N
     datafile        = infoProject$datafile
   } 
   
-  headerList      = c('ID','TIME','AMT','ADM','RATE','TINF','Y','YTYPE','X','COV','CAT','OCC')
-  newList         = c('id','time','amount','type','rate','tinf','y','ytype','x','cov','cat','occ')
+  headerList      = c('ID','TIME','AMT','ADM','RATE','TINF','Y','YTYPE','X','COV','CAT','OCC','MDV')
+  newList         = c('id','time','amount','type','rate','tinf','y','ytype','x','cov','cat','occ','mdv')
   # newList         = cellfun(@lower,headerList,'UniformOutput',false)
   newHeader       = vector(length=length(header))
   ixdose = NULL
@@ -25,7 +25,7 @@ readDatamlx  <- function(infoProject=NULL, project=NULL, datafile=NULL, header=N
   header=unlist(strsplit(header, ","))  
   nlabel = length(header)
   
-  icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- NULL
+  icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
   
   for (i in 1:length(headerList))
   {
@@ -185,6 +185,8 @@ readDatamlx  <- function(infoProject=NULL, project=NULL, datafile=NULL, header=N
   #**************************************************************************
   
   iobs1   = findstrcmp(S[[iy]],'.', not=TRUE)
+  if (!is.null(imdv))
+    iobs1 <- iobs1[S[iobs1,imdv]==0]
   i0 <- c(grep(' .',S[iobs1,iy],fixed=TRUE),grep('. ',S[iobs1,iy],fixed=TRUE))
   if (length(i0)>0)
     iobs1 <- iobs1[-i0]
@@ -192,13 +194,17 @@ readDatamlx  <- function(infoProject=NULL, project=NULL, datafile=NULL, header=N
   if (!is.null(iytype)){ 
     ytype <- factor(S[iobs1,iytype])
     l.ytype <- levels(ytype)
-    n.y <- length(observationName)
     if (is.null(observationName))
       observationName <- paste0("y",l.ytype)
+    n.y <- length(observationName)
+    # n.y <- length(l.ytype)
+    # if (length(observationName)<n.y)
+    #   observationName <- paste0("y",l.ytype)
     y<- list()
     for (iy in (1:n.y)){
       y[[iy]] <- yvalues[ytype==l.ytype[iy],]
       names(y[[iy]])[3] <- observationName[iy]
+      attr(y[[iy]],'type') <- "longitudinal"
     }
     #     yvalues$ytype <- observationName[S[[iytype]][iobs1]]
   } else {
@@ -206,8 +212,12 @@ readDatamlx  <- function(infoProject=NULL, project=NULL, datafile=NULL, header=N
     if (is.null(observationName))
       observationName <- "y"
     names(y)[3] <- observationName
+    attr(y,'type') <- "longitudinal"
+    y <- list(y)
   }
-  datas$observation = y
+  names(y) <- observationName
+  datas <- c(datas,y)
+  # datas$observation = y
   
   ##************************************************************************
   #       REGRESSOR FIELD
