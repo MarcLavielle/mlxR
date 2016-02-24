@@ -81,7 +81,7 @@
 simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL, 
                    regressor=NULL, varlevel=NULL, group=NULL, 
                    data=NULL, project=NULL, nrep=1, npop=NULL, fim=NULL, 
-                   result.folder=NULL, result.file=NULL, resume.f="statmlx",
+                   result.folder=NULL, result.file=NULL, stat.f="statmlx",
                    settings=NULL)
 { 
   #--------------------------------------------------
@@ -109,7 +109,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   if (is.null(settings$kw.max)) kw.max <- 500
   
   
-  if (!is.null(data)){
+  if (!is.null(data))
+  {
     r <- simulxunit(data=data,settings=settings)
     Sys.setenv(LIXOFT_HOME="")
     Sys.setenv('PATH'=myOldENVPATH);
@@ -141,16 +142,16 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   output    <- mklist(output)
   
   #--------------------------------------------------
-  #     resume output
+  #     stat output
   #--------------------------------------------------
   if (!is.null(result.folder) || !is.null(result.file))
     write.simul=TRUE
   else
     write.simul=FALSE
   
-  resume.n <- NULL
-  resume.0 <- NULL
-  resume.a <- list()
+  stat.n <- NULL
+  stat.0 <- NULL
+  stat.a <- list()
   for (k in (1:length(output))){
     outk <- output[[k]]
     if (is.null(outk$time))
@@ -159,21 +160,24 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       outk.n <- outk$name
     outk$name <- NULL
     outk$time <- NULL
-    if (length(outk)>0){
-      resume.n <- c(resume.n, outk.n)
-      resume.a <- c(resume.a, rep(list(outk),length(outk.n)))
+    if (length(outk)>0)
+    {
+      stat.n <- c(stat.n, outk.n)
+      stat.a <- c(stat.a, rep(list(outk),length(outk.n)))
     } else if (write.simul==T) {
-      resume.0 <- c(resume.0, outk.n)
+      stat.0 <- c(stat.0, outk.n)
     }
   }
-  names(resume.a)=resume.n
+  names(stat.a)=stat.n
   
   #--------------------------------------------------
   #     Monolix project
   #--------------------------------------------------
-  if (!(is.null(project)))  {
+  if (!(is.null(project)))  
+  {
     
-    if (!is.null(npop)){
+    if (!is.null(npop))
+    {
       ipop <- T
       if (is.null(fim))  fim <- "needed"
     }
@@ -197,13 +201,13 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     fim       <- ans$fim
     infoParam <- ans$infoParam
     
-    if (ipop==T){
+    if (ipop==T)
+    {
       if(is.null(fim))
         stop('The covariance matrix of the population parameters is requested for simulating several replicates 
            of the population parameters')
-      else {
+      else 
         parameter[[1]] <- sim.pop(npop,parameter[[1]],infoParam,fim,kw.max=kw.max)
-      }
     }
   }
   #--------------------------------------
@@ -219,22 +223,26 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   id <- NULL
   test.N <- F
   test.pop <- F
-  for (k in (1:length(l.input))){
+  for (k in (1:length(l.input)))
+  {
     lk <- l.input[k]
     eval(parse(text=paste0('pk <- ',lk))) 
     pk<- dpopid(pk,lk)
-    if (!is.null(pk$N)){
+    if (!is.null(pk$N))
+    {
       test.N <- T
       N <- unique(c(N,pk$N))
       if (length(N)>1)
         stop('\n\nDifferent numbers of subjects are defined in different inputs')
-      if (!is.null(id)) {
+      if (!is.null(id)) 
+      {
         if (!identical(id,pk$id))
           stop(paste("\n\nDifferent id's are defined in different inputs"))
       }  else
         id <- pk$id
     }
-    if (!is.null(pk$npop)){
+    if (!is.null(pk$npop))
+    {
       test.pop <- T
       npop <- unique(c(npop,pk$npop))
       if (length(npop)>1)
@@ -246,10 +254,13 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   #--------------------------------------------------
   #     Pop parameters
   #--------------------------------------------------
-  if (test.pop == T){
-    for (k in (1: length(parameter))){
+  if (test.pop == T)
+  {
+    for (k in (1: length(parameter)))
+    {
       paramk <- parameter[[k]]
-      if (isfield(paramk,"pop")){
+      if (isfield(paramk,"pop"))
+      {
         if (isfield(paramk,"id"))
           stop("\n\n Both 'id' and 'pop' cannot be defined in the same data frame")
         npop <- nrow(paramk)
@@ -264,23 +275,27 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     } 
   }
   
-  if (test.N==T && !is.null(group)){
+  if (test.N==T && !is.null(group))
+  {
     if (any(sapply(group, function(x) is.null(x$size))))
       stop("'size' is missing in group")
     g.size <- sapply(group, function(x) x$size)
     if (any(sapply(group, function(x) !is.null(x$level))))
       warning("\n\n'level' in group is ignored when id's are defined in the inputs of simulx")
     ng <- length(group)
-    if (ng==1){
+    if (ng==1)
+    {
       if (!identical(names(group[[1]]),'size'))
         stop("\n\nOnly 'size' can be defined in group when a single group is created and when id's are defined in the inputs of simulx")
     } else {
       u.name <- unique(unlist(sapply(group, function(x) names(x))))
       if (!all(u.name %in% c("size","treatment")))
         stop("\n\nOnly 'size' and 'treatment' can be defined in group when several groups are created and when id's are defined in the inputs of simulx")
-      if ("treatment" %in% u.name){
+      if ("treatment" %in% u.name)
+      {
         tr <- NULL
-        for (k in (1:ng)){
+        for (k in (1:ng))
+        {
           tk <- as.data.frame(group[[k]]$treatment)
           tk <- tk[rep(seq.int(1,nrow(tk)), group[[k]]$size), ]
           #           tk$group <- k
@@ -311,39 +326,40 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       test.rep <- TRUE
   }
   
-  
-  # if (!is.null(stat)) stat.simul <- T else stat.simul <- F
-  # if (stat.simul==T | write.simul==F) out.simul <- T else out.simul <- F
-  
   R.complete <- list()
   rs <- NULL
-  #   test.rep = F ###   OJO !!! 
   
   
-  for (ipop in (1:npop)){
-    if (disp.iter==TRUE) {
+  for (ipop in (1:npop))
+  {
+    if (disp.iter==TRUE) 
+    {
       if (nrep>1) cat("\n")
       cat("population: ",ipop,"\n")
     }
     irw <- 0
     if (test.pop == T)  parameter[[k.pop]] <- pop.mat[ipop,]
-    if (test.rep == T){
+    if (test.rep == T)
+    {
       if (test.N==F)  
         lv$group <- group
       dataIn <- simulxunit(model=model,lv=lv,settings=c(settings, data.in=T))
       settings$data.in=F
       settings$load.design=F
     }
-    for (irep in (1:nrep)){
+    for (irep in (1:nrep))
+    {
       irw <- irw + 1
       settings$seed <- settings$seed +12345
       
       if (disp.iter==TRUE && nrep>1)  
         cat("replicate: ",irw,"\n")
       
-      if (test.rep == T){
+      if (test.rep == T)
+      {
         r <- simulxunit(data = dataIn,settings=settings)
-      } else {
+      } else 
+      {
         if (test.N==T && !is.null(group))  
           lv <- resample.data(lv,id,sum(g.size))
         if (test.N==F)  
@@ -352,33 +368,30 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       }
       
       rs <- r
-      rs[resume.0] <- NULL
-      for (k in (1:length(resume.n))){
-        # resume.e <- c(list(res$e), resume.a)
-        rnk <- resume.n[k]
-        if (!is.null(rnk)){
-          resak <- resume.a[[rnk]]
-          rs[[rnk]] <- do.call(resume.f, c(list(rs[[rnk]]),resak))
+      rs[stat.0] <- NULL
+      for (k in (1:length(stat.n)))
+      {
+        rnk <- stat.n[k]
+        if (!is.null(rnk))
+        {
+          resak <- stat.a[[rnk]]
+          rs[[rnk]] <- do.call(stat.f, c(list(rs[[rnk]]),resak))
         }
       }
       
       r.attr <- sapply(r,attr,"type")
-      # if (stat.simul == T){
-      #   ir <- which(unlist(r.attr) %in% c("longitudinal", "parameter"))
-      #   rs <- statmlx(r[ir], stat, probs)
-      #   names(rs) <- names(r)[ir]
-      # } else if (write.simul==FALSE) {
-      #   rs <- r
-      # }
-      if (nrep>1){
+      if (nrep>1)
+      {
         for (k in (1:length(rs)))
           if (is.data.frame(rs[[k]]))
             rs[[k]] <- cbind(list(rep=as.factor(irw)), rs[[k]])
       }
       
       
-      if (write.simul==TRUE){
-        for (k in (1:length(r))){
+      if (write.simul==TRUE)
+      {
+        for (k in (1:length(r)))
+        {
           r[[k]] <- data.frame(lapply(r[[k]], function(y) if(is.numeric(y)) signif(y, 5) else y)) 
           if (npop>1)  r[[k]] <- cbind(list(pop=as.factor(ipop)),r[[k]])
           if (nrep>1)  r[[k]] <- cbind(list(rep=as.factor(irw)), r[[k]])
@@ -392,60 +405,54 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
                      sep=sep,digits=digits,app.dir=app,app.file=app)
         
       } 
-      # out.simul <- T
-      # if (out.simul == T){
-        # if (!is.null(stat))  r <- rs
-        if (irep==1) {
-          res <- rs
-        } else {
-          for(k in (1:length(rs)))
-            if (is.data.frame(rs[[k]]))
-              res[[k]] <- rbind(res[[k]],rs[[k]])
-            else
-              res[[k]] <- rs[[k]]
-        }  
-      # }
+      if (irep==1) 
+      {
+        res <- rs
+      } else 
+      {
+        for(k in (1:length(rs)))
+          if (is.data.frame(rs[[k]]))
+            res[[k]] <- rbind(res[[k]],rs[[k]])
+          else
+            res[[k]] <- rs[[k]]
+      }  
     } # irep
-    # if (out.simul==T){
-      for (k in (1:length(res))){
-        Rk <- res[[k]]
-        if (is.data.frame(Rk)){
-          if (npop>1)
-            Rk <- cbind(list(pop=as.factor(ipop)),Rk)
-          if (ipop==1){
-            R.complete[[k]] <- Rk
-          }else{
-            R.complete[[k]] <- rbind(R.complete[[k]],Rk)
-          }
-        } else
+    for (k in (1:length(res)))
+    {
+      Rk <- res[[k]]
+      if (is.data.frame(Rk))
+      {
+        if (npop>1)
+          Rk <- cbind(list(pop=as.factor(ipop)),Rk)
+        if (ipop==1)
           R.complete[[k]] <- Rk
-      }
-    # }
+        else
+          R.complete[[k]] <- rbind(R.complete[[k]],Rk)
+      } else
+        R.complete[[k]] <- Rk
+    }
     
   } # ipop
   
-  # if (out.simul==T){
-    names(R.complete) <- names(res)
-    for (k in (1:length(res))){
-      attrk <- attr(r[[names(res)[k]]],'type')
-      if (!is.null(attrk))
-        attr(R.complete[[k]],"type") <- attrk
-      #     if (!is.null(result.file))
-      #       writeDatamlx(R.complete,result.file,sep=sep)
-    } 
-  # }
+  names(R.complete) <- names(res)
+  for (k in (1:length(res)))
+  {
+    attrk <- attr(r[[names(res)[k]]],'type')
+    if (!is.null(attrk))
+      attr(R.complete[[k]],"type") <- attrk
+  } 
   
-  if (test.pop == T){
+  if (test.pop == T)
+  {
     pop <- as.data.frame(pop.mat)
     pop <- format(pop, digits = 5, justify = "left")
     pop <- cbind(pop=(1:npop),pop)
-    if (write.simul==TRUE){
+    if (write.simul==TRUE)
+    {
       r <- list(population=pop)
       writeDatamlx(r,result.folder=result.folder,sep=sep,digits=digits,app.dir=T)
     } 
-    # else {
     R.complete$population <- pop
-    #     }
   }
   
   Sys.setenv(LIXOFT_HOME="")
