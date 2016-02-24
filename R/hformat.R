@@ -306,6 +306,7 @@ merge.treatment <- function(treatment,N)
   }
   
   if (isfield(ptr,"target")){
+    ptr$target = as.factor(ptr$target)
     list.target <- levels(ptr$target)
     nt <- length(list.target)
     depot <- vector("list", nt)
