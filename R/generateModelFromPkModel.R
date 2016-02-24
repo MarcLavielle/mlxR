@@ -2,9 +2,11 @@ generateModelFromPkModel <-  function(parameter,output)
 {
   if (is.data.frame(parameter)){
     p_name <- names(parameter)
-    i0 <- which(p_name == "id")
+    i0 <- which(p_name %in% c("id", "group"))
     p_name <- p_name[-i0]
-  } else
+  } else if (is.vector(parameter))
+    p_name <- names(parameter)
+    else
     p_name   = parameter$name
   str1 <- paste(p_name,collapse=",")
   model_txt="
