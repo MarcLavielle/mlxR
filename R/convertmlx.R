@@ -153,6 +153,7 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
   if (length(df)>1){
     attr(df,"type") <- "parameter"
     dd$parameter = df
+    dd[names(dd$parameter)] <- NULL
   }
   
   if (!is.null(var)){
