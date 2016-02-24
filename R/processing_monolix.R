@@ -27,14 +27,17 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   if (r.data==TRUE){
     datas <- readDatamlx(infoProject=infoProject)
     
-    dobs <- datas$observation
-    if (!is.null(names(dobs)))
-      dobs <- list(dobs)
+    y.attr <- sapply(datas,attr,"type")
+    j.long <- which(y.attr=="longitudinal")
+    # dobs <- datas$observation
+    # if (!is.null(names(dobs)))
+    #   dobs <- list(dobs)
     datas$observation=list()
-    y <- list()
-    for (iy in (1:length(dobs))){
-      niy <- names(dobs[[iy]])
-      yk <- list(ylabel="observation", colNames=niy, name=niy[length(niy)], value=dobs[[iy]] )
+    # y <- list()
+    for (iy in (1:length(j.long))){
+      yi <- datas[[j.long[iy]]]
+      niy <- names(yi)
+      yk <- list(ylabel="observation", colNames=niy, name=niy[length(niy)], value=yi )
       datas$observation[[iy]] <- yk
     }    
     if (!is.null(datas$treatment)){
@@ -55,13 +58,6 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
     #   data$id <- data.frame(NewId=seq(1:N),OriId=new.id)
     
     datas$id <- data.frame(newId=seq(1:datas$N),oriId=datas$idOri)
-    if (!is.null(group)){
-      if (is.null(group[[1]]$size))
-        stop("'size' is missing in group")
-      if (!is.null(group[[1]]$level))
-        warning("'level' in group is ignored with a Monolix project")
-      datas <- resample.data(datas,group[[1]]$size)
-    }
     ##*********************************************************************
     #       treatment (TREATMENT)
     #**********************************************************************
@@ -188,32 +184,33 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
     regressorLine <-  grep('regressor', lines, fixed=TRUE, value=TRUE)
     if(length(regressorLine))
     {
-    regModelNamesTable<-strsplit(regressorLine,"[\\{ \\} , ]")[[1]]
-    regModelNames<-c()
-    for( i in seq(1:length(regModelNamesTable))){
-      if(!identical(regModelNamesTable[i],"")&&!length(grep("=",regModelNamesTable[i],fixed=TRUE,value=TRUE))
-         &&!length(grep("regressor",regModelNamesTable[i],fixed=TRUE,value=TRUE))
-      ){
-        regModelNames<-c(regModelNames,regModelNamesTable[i])
-        nbModelreg = nbModelreg +1
+      regModelNamesTable<-strsplit(regressorLine,"[\\{ \\} , ]")
+      regModelNames<-c()
+      for( i in seq(1:length(regModelNamesTable))){
+        regi <- regModelNamesTable[[i]][1]
+        if(!identical(regi,"")&&!length(grep("=",regi,fixed=TRUE,value=TRUE))
+           &&!length(grep("regressor",regi,fixed=TRUE,value=TRUE))
+        ){
+          regModelNames<-c(regModelNames,regi)
+          nbModelreg = nbModelreg +1
+        }
       }
-    }
-    nbregOrig<-0
-    iregModel <-1
-    for( i in seq(1:length(namesReg))){
-      if(!identical(tolower(namesReg[i]),"id") &&
+      nbregOrig<-0
+      iregModel <-1
+      for( i in seq(1:length(namesReg))){
+        if(!identical(tolower(namesReg[i]),"id") &&
            !identical(tolower(namesReg[i]),"time")){
-        namesReg[i] <- regModelNames[iregModel]
-        
-        iregModel <-iregModel +1 
-        nbregOrig <- nbregOrig +1
+          namesReg[i] <- regModelNames[iregModel]
+          
+          iregModel <-iregModel +1 
+          nbregOrig <- nbregOrig +1
+        }
       }
-    }
-    if(nbregOrig +1 !=  iregModel)
-    {
-      stop("inconsistent number of regressor between model and dregressor Field")
-    }
-    names(datas$regressor)<-namesReg
+      if(nbregOrig +1 !=  iregModel)
+      {
+        stop("inconsistent number of regressor between model and dregressor Field")
+      }
+      names(datas$regressor)<-namesReg
     }
     #---------------------------------------------------------------
   }
@@ -223,7 +220,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   ##initialize latent covariates defined in the model but not used,  in parameter
   paramp[[1]]<-initLatentCov(paramp[[1]],model)
   gr    <- mklist(gr)
-#   parameter <- mklist(paramp)
+  #   parameter <- mklist(paramp)
   parameter <- paramp
   treatment <- mklist(treatment)
   regressor <- mklist(datas$regressor)
@@ -725,7 +722,7 @@ sectionsModel  <-  function(file_model)
       sections_i <- sections[[i]]      
       idx <- grep(sections_i,lines, fixed=TRUE)
       if (length(idx)>0)
-      terms <- c(terms,sections_i)
+        terms <- c(terms,sections_i)
     }
     return(terms)
   }else
@@ -833,7 +830,7 @@ setErrorModelName<- function(param,model)
         errorargs<-strsplit(errorsub[[1]][2],',')
         for(ee in seq(1:length(errorargs[[1]]))){
           errorused<-c(errorused,(errorargs[[1]][ee]))
-      }        
+        }        
       }       
     }
   }
