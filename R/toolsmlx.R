@@ -69,7 +69,7 @@ mklist <- function(x)
       } else if (!is.null(sk$header)){
         s[[k]] <- data.frame(sk$value)
         names(s[[k]]) <- sk$header
-      } else if (!is.null(sk$value)){
+      } else if (!is.null(sk$value) && is.null(sk$time)){
         s[[k]] <- sk$value
         names(s[[k]]) <- sk$name
       }
