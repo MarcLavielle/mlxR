@@ -83,7 +83,7 @@ statmlx <- function(r, FUN="mean", probs=c(0.05, 0.5, 0.95),
       n.srj <- paste0(names(r),".",statj)
     } else {
       if (length(rrr)>0){
-        aX <- aggregate(r, by=rrr, statj, probs=pr)
+        aX <- aggregate(r, by=rrr, statj, probs=probs)
         nX <- length(aX)
         X <- NULL
         for (k in (1:nX))
