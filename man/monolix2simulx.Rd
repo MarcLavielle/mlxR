@@ -4,23 +4,31 @@
 \alias{monolix2simulx}
 \title{Convert a Monolix Project  into an executable for the simulator  Simulx}
 \usage{
-monolix2simulx(project, parameter = NULL)
+monolix2simulx(project, parameter = NULL, group = NULL, open = FALSE,
+  r.data = TRUE, fim = NULL)
 }
 \arguments{
 \item{project}{: the name of a Monolix project}
 
 \item{parameter}{: string $(NameOfTypeOfParameter), the type of specific parameters to use
 example: "mode", "mean"...}
+
+\item{group}{: a list with the number of subjects}
+
+\item{open}{: load the R script created if \code{open=TRUE}}
+
+\item{r.data}{: read the data if \code{r.data=TRUE}}
 }
 \value{
 creates a folder projectNameR  containing files :
 \itemize{
   \item \code{projectName.R} :  executable R code for the simulator,
   \item \code{treatment.txt} :  contains the treatment informations,
-  \item \code{parameters.txt} : contains the  population parameters ouput from Monolix,
-  \item \code{group.txt} : contains the group informations,
+  \item \code{populationParameter.txt} : contains the  population parameters estimated from Monolix,
+  \item \code{individualParameter.txt} : contains the  individual parameters (mode/mean) estimated from Monolix (if used for the simulation),
+  \item \code{individualCovariate.txt} : contains the individual covariates,
+  \item \code{originalId.txt} : contains the original id's when group is used with a different size than the original one,
   \item \code{outputi.txt} : contains the output number i informations (time, id),
-  \item \code{covariates.txt} : contains the covariates parameters,
   \item \code{$(NameOfTypeOfParameter)s.txt} : contains the specific parameter used.
 }
 

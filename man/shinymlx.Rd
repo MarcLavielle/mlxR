@@ -74,8 +74,6 @@ See http://simulx.webpopix.org/mlxr/shinymlx/ for more details.
 \examples{
 \dontrun{
 library(mlxR)
-library(shiny)
-
 PKPDmodel <- inlineModel("
 [LONGITUDINAL]
 input={ka,V,Cl,Imax,IC50,S0,kout}
@@ -92,9 +90,8 @@ f1  <- list(name = 'C', time = seq(0, 250, by=1))
 f2  <- list(name = 'E', time = seq(0, 250, by=1))
 f   <- list(f1, f2)
 
-app <- shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2),
-                output=f, style="dashboard1")
-shiny:runApp(app)
+shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f,
+         style="dashboard1")
 
 #------------------------------------------------------------------------
 p1 <- list(
@@ -109,9 +106,8 @@ adm <- list(
   amount = list(widget="slider", value=40, min=0, max=50, step=5)
 )
 s <- list(select.x=FALSE, select.y=FALSE)
-app <- shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2),
-                output=f, style="navbar1", settings=s)
-shiny:runApp(app)
+shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f,
+         style="navbar1", settings=s)
 }
 }
 

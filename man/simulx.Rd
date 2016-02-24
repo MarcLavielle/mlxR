@@ -4,21 +4,21 @@
 \alias{simulx}
 \title{Simulation of mixed effects models and longitudinal data}
 \usage{
-simulx(model = NULL, group = NULL, treatment = NULL, parameter = NULL,
-  output = NULL, data = NULL, project = NULL, settings = NULL,
-  regressor = NULL, varlevel = NULL)
+simulx(model = NULL, parameter = NULL, output = NULL, treatment = NULL,
+  regressor = NULL, varlevel = NULL, group = NULL, data = NULL,
+  project = NULL, nrep = 1, npop = NULL, fim = NULL,
+  result.folder = NULL, result.file = NULL, stat = NULL, probs = c(0.1,
+  0.5, 0.9), settings = NULL)
 }
 \arguments{
-\item{model}{a \code{Mlxtran} or \code{PharmML} model used for the simulation}
+\item{model}{a \code{Mlxtran}, \code{R} or \code{PharmML} model used for the simulation}
 
-\item{group}{a list, or a list of lists, with fields:
+\item{parameter}{a vector of parameters with their names and values}
+
+\item{output}{a list (or list of lists) with fields:
 \itemize{
-  \item \code{size} : size of the group (default=1),
-  \item \code{level} : level(s) of randomization,
-  \item \code{parameter} : if different parameters per group are defined,
-  \item \code{output} : if different outputs per group are defined,
-  \item \code{treatment} : if different treatements per group are defined,
-  \item \code{regressor} : if different regression variables per group are defined.
+  \item \code{name}: a vector of output names
+  \item \code{time}: a vector of times (only for the longitudinal outputs)
 }}
 
 \item{treatment}{a list with fields
@@ -29,28 +29,6 @@ simulx(model = NULL, group = NULL, treatment = NULL, parameter = NULL,
   \item \code{tinf} : a scalar or a vector of infusion times (default=0),
   \item \code{type} : the type of input (default=1),
   \item \code{target} : the target compartment (default=NULL).
-}}
-
-\item{parameter}{a vector of parameters with their names and values}
-
-\item{output}{a list (or list of lists) with fields:
-\itemize{
-  \item \code{name}: a vector of output names
-  \item \code{time}: a vector of times (only for the longitudinal outputs)
-}}
-
-\item{data}{a list}
-
-\item{project}{the name of a Monolix project}
-
-\item{settings}{a list of optional settings
-\itemize{
-  \item \code{record.file} : name of the datafile where the simulated data is written (string),
-  \item \code{seed} : initialization of the random number generator (integer),
-  \item \code{load.design} : TRUE/FALSE (if load.design is not defined, a test is automatically performed to check if a new design has been defined),
-  \item \code{data.in} : TRUE/FALSE (default=FALSE)
-  \item \code{id.out}  : add columns id (when N=1) and group (when #group=1), TRUE/FALSE (default=FALSE)
-  \item \code{Nmax} : maximum group size used in a single call of mlxCompute (default=100)
 }}
 
 \item{regressor}{a list, or a list of lists, with fields
@@ -65,12 +43,53 @@ simulx(model = NULL, group = NULL, treatment = NULL, parameter = NULL,
   \item \code{name} : a vector of names of variability levels,
   \item \code{time} : a vector of times that define the occasions.
 }}
+
+\item{group}{a list, or a list of lists, with fields:
+\itemize{
+  \item \code{size} : size of the group (default=1),
+  \item \code{level} : level(s) of randomization,
+  \item \code{parameter} : if different parameters per group are defined,
+  \item \code{output} : if different outputs per group are defined,
+  \item \code{treatment} : if different treatements per group are defined,
+  \item \code{regressor} : if different regression variables per group are defined.
+}}
+
+\item{data}{a list}
+
+\item{project}{the name of a Monolix project}
+
+\item{nrep}{number of replicates}
+
+\item{npop}{number of population parameters to draw randomly}
+
+\item{fim}{a string with the Fisher Information Matrix to be used}
+
+\item{result.folder}{the name of the folder where the outputs of simulx should be stored}
+
+\item{result.file}{the name of the single file where the outputs of simulx should be saved}
+
+\item{probs}{a vector of quantiles  between 0 and 1. Only used when "quantile" has been defined in \code{stat}}
+
+\item{settings}{a list of optional settings
+\itemize{
+  \item \code{seed} : initialization of the random number generator (integer),
+  \item \code{load.design} : TRUE/FALSE (if load.design is not defined, a test is automatically performed to check if a new design has been defined),
+  \item \code{data.in} : TRUE/FALSE (default=FALSE)
+  \item \code{id.out}  : add columns id (when N=1) and group (when #group=1), TRUE/FALSE (default=FALSE)
+  \item \code{kw.max} : maximum number of trials for generating a positive definite covariance matrix (default = 100)
+  \item \code{sep} : the field separator character (default = ",")
+  \item \code{digits} : number of decimal digits in output files (default = 5)
+  \item \code{disp.iter} : TRUE/FALSE (default = FALSE) display replicate and population numbers
+  \item \code{record.file} : name of the datafile where the simulated data is written (DEPRECATED),
+}}
+
+\item{stats}{a string, or a list of strings, with the name of the functions to apply to the result of the simulation}
 }
 \value{
 A list of data frames. Each data frame is an output of simulx
 }
 \description{
-Compute predictions and sample data from \code{Mlxtran} and \code{PharmML} models
+Compute predictions and sample data from \code{Mlxtran}, \code{R} and \code{PharmML} models
 }
 \details{
 simulx takes advantage of the modularity of hierarchical models for simulating
@@ -80,11 +99,11 @@ covariates, individual parameters and longitudinal data.
 Furthermore, \code{simulx} allows to draw different types of longitudinal data,
 including continuous, count, categorical, and time-to-event data.
 
-The models are encoded using either the model coding language \samp{Mlxtran} or the
-markup language \samp{PharmML}. These models are automatically converted into C++ codes,
+The models are encoded using either the model coding language \samp{Mlxtran}, \samp{R} or the
+markup language \samp{PharmML}. \samp{Mlxtran} models are automatically converted into C++ codes,
 compiled on the fly and linked to R using the \samp{Rcpp} package.
 That allows one to implement very easily complex models and to take advantage
-of the numerical sovers used by the C++ \samp{MlxLibrary}.
+of the numerical sovers used by the C++ \samp{mlxLibrary}.
 
 See http://simulx.webpopix.org for more details.
 }
