@@ -47,110 +47,115 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
   }
   for(k in seq(1,length(data))){
     ak=data[[k]]
-    nk =length(ak$value)
-    vk=numeric(0)
-    idk=numeric(0)
-    tk=numeric(0)
-    gk=numeric(0)
-    for(i in seq(1,nk)){
-      vki = ak$value[[i]]
-      vk=c(vk, vki)
-      nki=length(vki)
-      idk=c(idk, rep(i,nki))
-      if(iop.group==1)
-        gk=c(gk, rep(gr[i],nki))
-      
-      tki = ak$time[[i]]
-      tk=c(tk, tki)
-    }
-    ick <- which(ak$name==cv$name)
-    if (length(ick)>0){
-      vk <- cv$categories[[ick]][vk]
-    }else{
-      if (isfield(ak,"categories")){
-        vk <- ak$categories[vk]
+    if (length(unlist(ak$value))>0)
+    {
+      nk =length(ak$value)
+      vk=numeric(0)
+      idk=numeric(0)
+      tk=numeric(0)
+      gk=numeric(0)
+      for(i in seq(1,nk)){
+        vki = ak$value[[i]]
+        vk=c(vk, vki)
+        nki=length(vki)
+        idk=c(idk, rep(i,nki))
+        if(iop.group==1)
+          gk=c(gk, rep(gr[i],nki))
+        
+        tki = ak$time[[i]]
+        tk=c(tk, tki)
       }
-    }
-    if(length(tk)>0){
-      iop.tk=1
-    }else{
-      iop.tk=0
-    }
-    if(length(unique(idk))>1){
-      iop.id=1
-    }else{
-      iop.id=0
-    }
-    if(iop.id==0){
-      if(iop.tk==1){
-        dk=data.frame(time=tk, value=vk)
+      ick <- which(ak$name==cv$name)
+      if (length(ick)>0){
+        vk <- cv$categories[[ick]][vk]
       }else{
-        dk=data.frame(value=vk)
-      }
-    }else{
-      if(iop.group==0){
-        if(iop.tk==1){
-          dk=data.frame(id=factor(idk), time=tk, value=vk)
-        }else{
-          dk=data.frame(id=factor(idk), value=vk)
-        }
-      }else{
-        if(iop.tk==1){
-          dk=data.frame(id=factor(idk), group=factor(gk), time=tk, value=vk)
-        }else{
-          dk=data.frame(id=factor(idk), group=factor(gk), value=vk)
+        if (isfield(ak,"categories")){
+          vk <- ak$categories[vk]
         }
       }
-    }
-    names(dk)[names(dk)=="value"] <- ak$name
-    
-    if (id.out==TRUE){
-      if (is.null(dk$id)){
-        dk$id <- 1
-        nk <- length(dk)
-        dk <- dk[,c(nk,(1:(nk-1)))]
+      if(length(tk)>0){
+        iop.tk=1
+      }else{
+        iop.tk=0
       }
-      if (is.null(dk$group)){
-        dk$group <- 1
-        nk <- length(dk)
-        dk <- dk[,c(1,nk,(2:(nk-1)))]
+      # if(length(unique(idk))>1){
+      if(N>1){
+        iop.id=1
+      }else{
+        iop.id=0
       }
-    }
-    if (iop.tk==0){
       if(iop.id==0){
-        df <- c(df,dk)
-      }else{
-        if (is.null(df)){
-          df <- dk
+        if(iop.tk==1){
+          dk=data.frame(time=tk, value=vk)
         }else{
-          df <- cbind(df,dk)
-          
-          j1 <- which(names(df)=="id")
-          if (length(j1>1))
-            j1 <- j1[-1]
-          
-          j2 <- which(names(df)=="group")
-          if (length(j2>1))
-            j2 <- j2[-1]
-          df <- df[-c(j1,j2)]
-          
+          dk=data.frame(value=vk)
+        }
+      }else{
+        if(iop.group==0){
+          if(iop.tk==1){
+            dk=data.frame(id=factor(idk), time=tk, value=vk)
+          }else{
+            dk=data.frame(id=factor(idk), value=vk)
+          }
+        }else{
+          if(iop.tk==1){
+            dk=data.frame(id=factor(idk), group=factor(gk), time=tk, value=vk)
+          }else{
+            dk=data.frame(id=factor(idk), group=factor(gk), value=vk)
+          }
         }
       }
+      names(dk)[names(dk)=="value"] <- ak$name
+      
+      if (id.out==TRUE){
+        if (is.null(dk$id)){
+          dk$id <- 1
+          nk <- length(dk)
+          dk <- dk[,c(nk,(1:(nk-1)))]
+        }
+        if (is.null(dk$group)){
+          dk$group <- 1
+          nk <- length(dk)
+          dk <- dk[,c(1,nk,(2:(nk-1)))]
+        }
+      }
+      if (iop.tk==0){
+        if(iop.id==0){
+          df <- c(df,dk)
+        }else{
+          if (is.null(df)){
+            df <- dk
+          }else{
+            df <- cbind(df,dk)
+            
+            j1 <- which(names(df)=="id")
+            if (length(j1>1))
+              j1 <- j1[-1]
+            
+            j2 <- which(names(df)=="group")
+            if (length(j2>1))
+              j2 <- j2[-1]
+            df <- df[-c(j1,j2)]
+            
+          }
+        }
+      }
+      if(iop.id==0)
+        df <- data.frame(df)
+      
+      attr(dk,"name")=ak$name
+      attr(dk,"type")=ak$label
+      dd[[ak$name]] = dk
     }
-    if(iop.id==0)
-      df <- data.frame(df)
-    
-    attr(dk,"name")=ak$name
-    attr(dk,"type")=ak$label
-    dd[[ak$name]] = dk
-    
   }
   
   #   if (length(df)>0){
   #     if (length(df[[1]])>1)
   #       dd$parameter = df
   #   }
-  if (length(df)>1){
+  # if (length(df)>1){
+  if (!is.null(df))
+  {
     attr(df,"type") <- "parameter"
     dd$parameter = df
     dd[names(dd$parameter)] <- NULL
@@ -249,19 +254,25 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
       ng <- length(trt)
       id0 <- 0
       treatment <- NULL
-      for (k in (1:ng)){
+      for (k in (1:ng))
+      {
         trtk <- as.data.frame(trt[[k]])
-        trtk <- trtk[,c("time","amount","rate","type")]
         dk <- nrow(trtk)
         nk <- prod(dataIn$group[[k]]$size)
-        trtk <- do.call("rbind", replicate(nk, trtk, simplify = FALSE))
-        if (ng>1 & iop.group==1)
-          trtk <- cbind(list(group=k),trtk)
-        trtk <- cbind(list(id=rep(((1:nk)+id0),each=dk)),trtk)
+        if (dk>0)
+        {
+          trtk <- trtk[,c("time","amount","rate","type")]
+          trtk <- do.call("rbind", replicate(nk, trtk, simplify = FALSE))
+          if (ng>1 & iop.group==1)
+            trtk <- cbind(list(group=k),trtk)
+          trtk <- cbind(list(id=rep(((1:nk)+id0),each=dk)),trtk)
+          treatment <- rbind(treatment,trtk)
+        }
         id0 <- id0 + nk
-        treatment <- rbind(treatment,trtk)
       }
-    }else{
+    }
+    else
+    {
       treatment <- as.data.frame(trt)
       treatment <- treatment[,c("time","amount","rate","type")]
       treatment$id <- NULL

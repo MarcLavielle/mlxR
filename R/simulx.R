@@ -52,15 +52,14 @@
 #'   \item \code{treatment} : if different treatements per group are defined,
 #'   \item \code{regressor} : if different regression variables per group are defined.
 #' }
-#' @param data a list
+#' @param data a list (output of simulx when settings$data.in==TRUE)
 #' @param project the name of a Monolix project
 #' @param nrep number of replicates
 #' @param npop number of population parameters to draw randomly 
 #' @param fim a string with the Fisher Information Matrix to be used 
 #' @param result.folder the name of the folder where the outputs of simulx should be stored
 #' @param result.file the name of the single file where the outputs of simulx should be saved
-#' @param stats a string, or a list of strings, with the name of the functions to apply to the result of the simulation
-#' @param probs a vector of quantiles  between 0 and 1. Only used when "quantile" has been defined in \code{stat} 
+#' @param stat.f a R function for computing some summary (mean, quantiles, survival,...) of the simulated data. Default = "statmlx"}.
 #' @param settings a list of optional settings
 #' \itemize{
 #'   \item \code{seed} : initialization of the random number generator (integer),
@@ -334,8 +333,10 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   {
     if (disp.iter==TRUE) 
     {
-      if (nrep>1) cat("\n")
-      cat("population: ",ipop,"\n")
+      if (nrep>1) 
+        cat("\n")
+      if (npop>1)
+        cat("population: ",ipop,"\n")
     }
     irw <- 0
     if (test.pop == T)  parameter[[k.pop]] <- pop.mat[ipop,]
@@ -358,7 +359,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       if (test.rep == T)
       {
         r <- simulxunit(data = dataIn,settings=settings)
-      } else 
+      } 
+      else 
       {
         if (test.N==T && !is.null(group))  
           lv <- resample.data(lv,id,sum(g.size))
@@ -393,8 +395,10 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
         for (k in (1:length(r)))
         {
           r[[k]] <- data.frame(lapply(r[[k]], function(y) if(is.numeric(y)) signif(y, 5) else y)) 
-          if (npop>1)  r[[k]] <- cbind(list(pop=as.factor(ipop)),r[[k]])
-          if (nrep>1)  r[[k]] <- cbind(list(rep=as.factor(irw)), r[[k]])
+          if (npop>1)  
+            r[[k]] <- cbind(list(pop=as.factor(ipop)),r[[k]])
+          if (nrep>1)  
+            r[[k]] <- cbind(list(rep=as.factor(irw)), r[[k]])
           attr(r[[k]],"type") <- r.attr[k]
         }
         if (ipop==1 & irep==1)

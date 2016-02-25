@@ -1,5 +1,18 @@
+#' Read formatted data file
+#' 
+#' Read data in a NONMEM/Monolix format
+#' 
+#' See http://simulx.webpopix.org/mlxr/readDatamlx/ for more details.
+#' @param project a Monolix project
+#' @param datafile a formatted data file 
+#' @param header a vector of strings (mandatory if \code{datafile} is used) 
+#' @param infoProject an xmlfile 
+#' @examples
+#' \dontrun{
+#' 
+#' }
 #' @export
-readDatamlx  <- function(infoProject=NULL, project=NULL, datafile=NULL, header=NULL){
+readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=NULL){
   # READDATAMLX
   #
   # READDATAMLX reads a datafile and create a list.

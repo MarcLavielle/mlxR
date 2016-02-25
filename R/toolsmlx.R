@@ -93,21 +93,23 @@ dpopid <- function(x,s)
           xk <- NULL
       }
       if (!is.null(xk$id)){
-        idk <- as.factor(unique(xk$id))
+        # idk <- as.factor(unique(xk$id))
+        idk <- levels(factor(xk$id))
         if (!is.null(r$id)) {
-          if (!identical(idk,r$id))
-            stop(paste("Different id's are defined in ",s))
+           if (!identical(idk,r$id))
+             stop(paste("Different id's are defined in ",s))
         } else
-          r$id <- as.factor(idk)
+          # r$id <- as.factor(idk)
+        r$id <- idk
         r$N <- unique(c(r$N,length(idk)))
-        if (length(r$N)>1)
-          stop(paste('Different numbers of subjects are defined in ',s))
+         if (length(r$N)>1)
+           stop(paste('Different numbers of subjects are defined in ',s))
         r$j <- c(r$j,k)
       }
       if (!is.null(xk$pop)){
         r$npop <- unique(c(r$npop,length(unique(xk$pop))))
-        if (length(r$npop)>1)
-          stop(paste('Different numbers of populations are defined in ',s))
+         if (length(r$npop)>1)
+           stop(paste('Different numbers of populations are defined in ',s))
         r$pop <- c(r$pop,k)
       }
     } # else if (is.list(xk))

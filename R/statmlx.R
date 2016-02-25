@@ -1,8 +1,20 @@
-# ' @export
+#' Summary of data
+#'
+#' Compute some statistical summary (mean, quantile, variance, survival rate,...)
+#' 
+#' See http://simulx.webpopix.org/stamlx for more details.      
+#' @param r a data frame
+#' @param type a string, type = {"continuous", "event"}. Default = "continuous"
+#' @param stats a string, or a list of strings, with the name of the functions to apply to the result of the simulation
+#' @param probs a vector of quantiles  between 0 and 1. Only used when "quantile" has been defined in \code{FUN} 
+#' @param surv.time a scalar or a vector of times. Only used when "event" has been defined in \code{type} 
+#' 
+#' @return A data frame. 
+#' 
+#' @export
 
 
-statmlx <- function(r, FUN="mean", probs=c(0.05, 0.5, 0.95), 
-                    type="continuous", surv.time=NULL)
+statmlx <- function(r, type="continuous", FUN="mean", probs=c(0.05, 0.5, 0.95), surv.time=NULL)
 {
   if (any(!(FUN %in% c("mean","sd","median","var","quantile"))))
     stop("\n\n possible values for 'FUN' are {'mean','sd','median','var','quantile'} ")

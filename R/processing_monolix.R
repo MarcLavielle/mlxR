@@ -184,15 +184,19 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
     regressorLine <-  grep('regressor', lines, fixed=TRUE, value=TRUE)
     if(length(regressorLine))
     {
-      regModelNamesTable<-strsplit(regressorLine,"[\\{ \\} , ]")
       regModelNames<-c()
-      for( i in seq(1:length(regModelNamesTable))){
-        regi <- regModelNamesTable[[i]][1]
-        if(!identical(regi,"")&&!length(grep("=",regi,fixed=TRUE,value=TRUE))
-           &&!length(grep("regressor",regi,fixed=TRUE,value=TRUE))
-        ){
-          regModelNames<-c(regModelNames,regi)
-          nbModelreg = nbModelreg +1
+      for(line in seq(1:length(regressorLine)))
+      {
+        regModelNamesTable<-strsplit(regressorLine[line],"[\\{ \\} , ]")[[1]]
+        for( i in seq(1:length(regModelNamesTable))){
+          regi <- regModelNamesTable[i]
+          if(!identical(regi,"")&&!length(grep("=",regi,fixed=TRUE,value=TRUE))
+             &&!length(grep("regressor",regi,fixed=TRUE,value=TRUE))
+                       &&!length(grep("use",regi,fixed=TRUE,value=TRUE))
+          ){
+            regModelNames<-c(regModelNames,regi)
+            nbModelreg = nbModelreg +1
+          }
         }
       }
       nbregOrig<-0
@@ -210,8 +214,10 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       {
         stop("inconsistent number of regressor between model and dregressor Field")
       }
+      
       names(datas$regressor)<-namesReg
     }
+    
     #---------------------------------------------------------------
   }
   

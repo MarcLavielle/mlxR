@@ -1,3 +1,20 @@
+#' Write formatted data file
+#' 
+#' Write data contained in a list of dataframes in a single file (NONMEM/Monolix format)
+#' or in several files as tables
+#' 
+#' See http://simulx.webpopix.org/mlxr/writeDatamlx/ for more details.
+#' @param r a list of dataframes
+#' @param result.file a string with the name of the file 
+#' @param result.folder a string with the name of the folder 
+#' @param sep (default = ",") 
+#' @param ext a string with the extension of the file names 
+#' @param digit (default = 5) 
+#' @examples
+#' \dontrun{
+#' 
+#' }
+#' @export
 #' @export
 writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,digits=5, app.file=F, app.dir=F) 
 {
