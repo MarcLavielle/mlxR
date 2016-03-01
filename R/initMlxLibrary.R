@@ -141,9 +141,6 @@ You can also run the following R command from the console:
   #--- load Mlxlibrary
   mlxComputeRLibraryBuilder(mlxlibrary.path)
   
-  #--- load C++ Data reader for Mlxlibrary
-  mlxDataReaderRLibraryBuilder(mlxlibrary.path)
-  
   unlock <- unlockBinding
   unlock( "mlx_library_ready", NAMESPACE )
   NAMESPACE[["mlx_library_ready"]] <- TRUE
