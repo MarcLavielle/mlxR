@@ -397,7 +397,7 @@ readPopEstimate  <-  function(filename, fim=NULL) {
 readIndEstimate  <-  function(filename, estim=NULL) {
   if (file.exists(filename)) {
     data         = read.table(filename,  header = TRUE)
-    data[[1]]    = c(1: length(data[[1]]))
+    # data[[1]]    = c(1: length(data[[1]]))
     header       = names(data)
     idx          = grep(paste0("_", estim), header)
     name         = header[idx]

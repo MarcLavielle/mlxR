@@ -70,7 +70,7 @@
 #'   \item \code{sep} : the field separator character (default = ",") 
 #'   \item \code{digits} : number of decimal digits in output files (default = 5) 
 #'   \item \code{disp.iter} : TRUE/FALSE (default = FALSE) display replicate and population numbers
-#'   \item \code{record.file} : name of the datafile where the simulated data is written (DEPRECATED),
+#'   \item \code{replacement} : TRUE/FALSE (default = FALSE) sample id's with/without replacement
 #' }       
 #' 
 #' @return A list of data frames. Each data frame is an output of simulx
@@ -106,6 +106,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   if (is.null(settings$digits)) digits <- 5
   kw.max <- settings$kw.max
   if (is.null(settings$kw.max)) kw.max <- 500
+  replacement <- settings$replacement
+  if (is.null(settings$replacement)) replacement <- FALSE
   
   
   if (!is.null(data))
@@ -199,7 +201,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     varlevel  <- ans$occasion
     fim       <- ans$fim
     infoParam <- ans$infoParam
-    
+    id        <- as.factor(ans$id$oriId)
+    N         <- nlevels(id)
     if (ipop==T)
     {
       if(is.null(fim))
@@ -208,13 +211,14 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       else 
         parameter[[1]] <- sim.pop(npop,parameter[[1]],infoParam,fim,kw.max=kw.max)
     }
+    test.project <- T
+    test.N <- T
+    test.pop <- F
   }
+  else
+  {
+    test.project <- F
   #--------------------------------------
-  lv <- list(treatment=treatment,
-             parameter=parameter,
-             output=output,
-             regressor=regressor,
-             varlevel=varlevel)
   
   l.input <- c('parameter', 'treatment', 'regressor', 'varlevel', 'output')
   popid <- list()
@@ -230,15 +234,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     if (!is.null(pk$N))
     {
       test.N <- T
-      N <- unique(c(N,pk$N))
-      if (length(N)>1)
-        stop('\n\nDifferent numbers of subjects are defined in different inputs')
-      if (!is.null(id)) 
-      {
-        if (!identical(id,pk$id))
-          stop(paste("\n\nDifferent id's are defined in different inputs"))
-      }  else
-        id <- pk$id
+      if (!is.null(pk$id)) 
+        id <- unique(c(id, pk$id))
     }
     if (!is.null(pk$npop))
     {
@@ -249,7 +246,10 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     }
     popid[[k]] <- pk
   }
-  
+  if (test.N==T)
+    id <- as.factor(id)
+    N <- length(id)
+  }
   #--------------------------------------------------
   #     Pop parameters
   #--------------------------------------------------
@@ -273,6 +273,13 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       }
     } 
   }
+  
+  lv <- list(treatment=treatment,
+             parameter=parameter,
+             output=output,
+             regressor=regressor,
+             varlevel=varlevel,
+             id=id)
   
   if (test.N==T && !is.null(group))
   {
@@ -304,7 +311,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
             tr <- merge(tr,tk, all=T)
         }
         tr[is.na(tr)]='.'
-        tr <- cbind(data.frame(id=seq(1:sum(g.size))),tr)
+        tr <- cbind(data.frame(id=as.factor(seq(1:sum(g.size)))),tr)
         lv$treatment <- tr
       }
       gr.ori <- NULL
@@ -363,7 +370,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       else 
       {
         if (test.N==T && !is.null(group))  
-          lv <- resample.data(lv,id,sum(g.size))
+          lv <- resample.data(lv,id,sum(g.size),replacement)
         if (test.N==F)  
           lv$group <- group
         r <- simulxunit(model=model,lv=lv,settings=settings)

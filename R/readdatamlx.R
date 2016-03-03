@@ -12,7 +12,7 @@
 #' 
 #' }
 #' @export
-readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=NULL){
+readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=NULL, addl.ss=10){
   # READDATAMLX
   #
   # READDATAMLX reads a datafile and create a list.
@@ -28,9 +28,10 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     datafile        = infoProject$datafile
   } 
   
-  headerList      = c('ID','TIME','AMT','ADM','RATE','TINF','Y','YTYPE','X','COV','CAT','OCC','MDV')
-  newList         = c('id','time','amount','type','rate','tinf','y','ytype','x','cov','cat','occ','mdv')
-  # newList         = cellfun(@lower,headerList,'UniformOutput',false)
+  headerList      = c('ID','TIME','AMT','ADM','RATE','TINF','Y','YTYPE',
+                      'X','COV','CAT','OCC','MDV','EVID','ADDL','SS','II')
+  newList         = tolower(headerList)
+  newList[3:4] <- c('amount','type')
   newHeader       = vector(length=length(header))
   ixdose = NULL
   datas=NULL
@@ -39,6 +40,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   nlabel = length(header)
   
   icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
+  ievid <- iaddl <- iii <- iss <- NULL
   
   for (i in 1:length(headerList))
   {
@@ -51,6 +53,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     if (!is.null(ih))
       newHeader[ih]=newList[i]      
   }
+  
+  # iss <- ists
   
   ##************************************************************************
   #       Gestion du format du fichier de donnees
@@ -145,7 +149,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   ids = iduf[ib]
   
   iu    = ia
-  idnum = as.factor(ic[idnumf])
+  # idnum = as.factor(ic[idnumf])
+  idnum = as.factor(S[[iid]])
+  iduf = as.factor(iduf)
   N     = length(iduf)
   
   #   iop_id = 0
@@ -169,13 +175,19 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   
   if (!is.null(icat)) {
     for (j in (1:length(icat)))
-      S[[icat[j]]] <- as.factor(S[[icat[j]]])    
+    {
+      Scatj <- S[[icat[j]]]  
+      Scatj <- gsub(" ", "", Scatj, fixed = TRUE)
+      S[[icat[j]]] <- as.factor(Scatj)  
+    }
   }
   ##************************************************************************
   #       TREATMENT FIELD
   #**************************************************************************
   if (!is.null(iamt)) {
     i1 = findstrcmp(S[[iamt]],'.', not=TRUE)
+    if (!is.null(ievid))
+      i1 <- i1[S[i1,ievid]!=0]
     i0 <- c(grep(' .',S[i1,iamt],fixed=TRUE),grep('. ',S[i1,iamt],fixed=TRUE))
     if (length(i0)>0)
       i1 <- i1[-i0]
@@ -190,6 +202,57 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     else
       u=cbind(list(idnum[i1], t[i1]),S[i1,ixdose])
     names(u) = c('id',newHeader[[itime]],newHeader[ixdose])
+    #
+    u.addl <- NULL
+    u.ss <- NULL
+    if (!is.null(iaddl))
+    {
+      addl <- S[i1,iaddl]
+      ii <- S[i1,iii]
+      j.addl <- which(addl>0)
+      if (length(j.addl)>0)
+      {
+        for (j in (1:length(j.addl)))
+        {
+          k <- j.addl[j]
+          adk <- addl[k]
+          uk <- u[rep(k, adk),]
+          uk$time <- u$time[k] + ii[k]*seq(1:adk)
+          u.addl <- rbind(u.addl,uk)
+        }
+      }
+      j.addl <- which(addl<0)
+      if (length(j.addl)>0)
+      {
+        for (j in (1:length(j.addl)))
+        {
+          k <- j.addl[j]
+          adk <- -addl[k]
+          uk <- u[rep(k, adk),]
+          uk$time <- u$time[k] - ii[k]*seq(1:adk)
+          u.addl <- rbind(u.addl,uk)
+        }
+      }
+    }
+    if (!is.null(iss))
+    {
+      ss <- S[i1,iss]
+      ii <- S[i1,iii]
+      j.ss <- which(ss==1)
+      if (length(j.ss)>0)
+      {
+        for (j in (1:length(j.ss)))
+        {
+          k <- j.ss[j]
+          uk <- u[rep(k, addl.ss),]
+          uk$time <- u$time[k] - ii[k]*seq(1:addl.ss)
+          u.ss <- rbind(u.ss,uk)
+        }
+      }
+    }
+    u <- rbind(u,u.addl)
+    u <- rbind(u,u.ss)
+    u <- u[order(u$id,u$time),]
     datas   = list(treatment = u)
   }
   
@@ -200,6 +263,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   iobs1   = findstrcmp(S[[iy]],'.', not=TRUE)
   if (!is.null(imdv))
     iobs1 <- iobs1[S[iobs1,imdv]==0]
+  if (!is.null(ievid))
+    iobs1 <- iobs1[S[iobs1,ievid]==0]
   i0 <- c(grep(' .',S[iobs1,iy],fixed=TRUE),grep('. ',S[iobs1,iy],fixed=TRUE))
   if (length(i0)>0)
     iobs1 <- iobs1[-i0]
@@ -274,7 +339,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   nc = length(icov) + length(icat)
   if (nc>0) {
     ic <- c(icov,icat)
-    cdf <- data.frame(id=seq(1:N))
+    cdf <- data.frame(id=iduf)
     for (k in (1:nc))
       cdf[[k+1]] <- S[[ic[k]]][iu]
     names(cdf)[2:(nc+1)]=names(S)[ic]    

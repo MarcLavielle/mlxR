@@ -51,7 +51,12 @@ mklist <- function(x)
         }
       } else {
         if (!is.null(xk))
-          s[length(s)+1]=list(xk)         
+        {
+          if (is.character(xk))
+            s[[length(s)+1]]=list(name=xk) 
+          else
+            s[length(s)+1]=list(xk) 
+        }
       }
     }
   } else {
@@ -83,7 +88,8 @@ dpopid <- function(x,s)
 {
   n <- length(x)
   r <- list(name=s,j=NULL,id=NULL,N=NULL,pop=NULL,npop=NULL)
-  for (k in (1:n)){
+  for (k in (1:n))
+  {
     xk <- x[[k]]
     if (is.list(xk)) {
       if (!is.data.frame(xk)){
@@ -95,35 +101,35 @@ dpopid <- function(x,s)
       if (!is.null(xk$id)){
         # idk <- as.factor(unique(xk$id))
         idk <- levels(factor(xk$id))
-        if (!is.null(r$id)) {
-           if (!identical(idk,r$id))
-             stop(paste("Different id's are defined in ",s))
-        } else
-          # r$id <- as.factor(idk)
-        r$id <- idk
-        r$N <- unique(c(r$N,length(idk)))
-         if (length(r$N)>1)
-           stop(paste('Different numbers of subjects are defined in ',s))
+        # if (!is.null(r$id)) {
+        # if (!identical(idk,r$id))
+        #   stop(paste("Different id's are defined in ",s))
+        # } else
+        # r$id <- as.factor(idk)
+        r$id <- unique(c(r$id,idk))
+        # r$N <- unique(c(r$N,length(idk)))
+        # if (length(r$N)>1)
+        #   stop(paste('Different numbers of subjects are defined in ',s))
         r$j <- c(r$j,k)
       }
       if (!is.null(xk$pop)){
         r$npop <- unique(c(r$npop,length(unique(xk$pop))))
-         if (length(r$npop)>1)
-           stop(paste('Different numbers of populations are defined in ',s))
+        if (length(r$npop)>1)
+          stop(paste('Different numbers of populations are defined in ',s))
         r$pop <- c(r$pop,k)
       }
     } # else if (is.list(xk))
   }
+  if (!is.null(r$id))
+    r$N <- length(r$id)
   return(r)
 }  
 
 
-resample.data  <- function(data,idOri,N)
+resample.data  <- function(data,idOri,N,replacement=F)
 {
   n <- length(unique(idOri))
-  
-  iop.replace <- FALSE
-  if (iop.replace==TRUE){
+  if (replacement==TRUE){
     new.id <- sample(1:n,N,replace=TRUE)
   } else{
     K <- floor(N/n)
@@ -132,32 +138,47 @@ resample.data  <- function(data,idOri,N)
   
   data$N <- NULL
   data$idOri <- NULL  
-  for  (j in (1:length(data))){
+  for  (j in (1:length(data)))
+  {
     dataj <- data[[j]]
-    for  (k in (1:length(dataj))){
+    for  (k in (1:length(dataj)))
+    {
       datak <- dataj[[k]]
       
-      if (is.data.frame(datak)){
-        if (!is.null(datak$id)){
+      if (is.data.frame(datak))
+      {
+        if (!is.null(datak$id))
+        {
           ik  <- which(names(datak)=="id")
           idk <- datak$id
           dkv=NULL
-          for (i in 1:N){
+          for (i in 1:N)
+          {
             ji <- which(idk==new.id[i])
-            dkji <- datak[ji,]
-            dkji[,ik] <- i
-            dkv <- rbind(dkv,dkji,deparse.level=0)
+            if (length(ji)>0)
+            {
+              dkji <- datak[ji,]
+              dkji[,ik] <- i
+              dkv <- rbind(dkv,dkji,deparse.level=0)
+            }
           } 
+          dvkid <- as.factor(c(dkv$id, (1:N)))
+          dkv$id <- dvkid[1:length(dkv$id)]
           data[[j]][[k]] <- dkv
         }
-      }else if (is.list(datak)){
-        for (m in (1:length(datak))){
+      }
+      else if (is.list(datak))
+      {
+        for (m in (1:length(datak)))
+        {
           datam <- datak[[m]]
-          if (is.data.frame(datam) && !is.null(datam$id)){
+          if (is.data.frame(datam) && !is.null(datam$id))
+          {
             ik  <- which(names(datam)=="id")
             idk <- datam$id
             dkv=NULL
-            for (i in 1:N){
+            for (i in 1:N)
+            {
               ji <- which(idk==new.id[i])
               dkji <- datam[ji,]
               dkji[,ik] <- i
@@ -169,7 +190,7 @@ resample.data  <- function(data,idOri,N)
       }
     }
   }
-  data$id <- data.frame(newId=seq(1:N),oriId=idOri[new.id])
+  data$id <- data.frame(newId=as.factor(seq(1:N)),oriId=idOri[new.id])
   return(data)
 }
 

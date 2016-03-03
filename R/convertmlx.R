@@ -289,7 +289,7 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
     for (k in (1:length(dd))){
       ddk <- dd[[k]]
       if (!is.null(ddk$id)){
-        ddk$group <- gr.ori[ddk$id]
+        ddk$group <- gr.ori[as.numeric(as.character(ddk$id))]
         dd[[k]] <- ddk
       }
     }
