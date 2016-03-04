@@ -558,7 +558,7 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL)
     if (!exists("gr.ori"))
       gr.ori <- NULL
     dataOut  <- convertmlx(dataOut,dataIn,trt,iop.group,id.out,id.ori,gr.ori)
-    if(!is.null(id.ori))
+    if(!is.null(id.ori) && is.data.frame(id.ori))
       dataOut$originalId <- id.ori
     return(dataOut)
   }

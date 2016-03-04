@@ -54,6 +54,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   if(file.exists(Rproject) )
     unlink(Rproject, recursive = TRUE, force = TRUE)
   modelname = basename(model)
+  Sys.sleep(0.2)
   dir.create(Rproject, showWarnings = FALSE, recursive = FALSE, mode = "0777")
   file.copy(model, Rproject, overwrite = FALSE)
   file.remove(model)

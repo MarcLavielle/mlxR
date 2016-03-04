@@ -34,22 +34,29 @@ fsort <- function(X){
 mklist <- function(x)
 {
   s <- list()
-  if (is.list(x) && is.null(names(x))){
+  if (is.list(x) && is.null(names(x)))
+  {
     n <- length(x)
-    for (k in (1:n)){
+    for (k in (1:n))
+    {
       xk <- x[[k]]
-      if (is.list(xk) && is.null(names(xk))){
+      if (is.list(xk) && is.null(names(xk)))
+      {
         nk <- length(xk)
-        for (j in (1:nk)){
+        for (j in (1:nk))
+        {
           xkj <- xk[[j]]
-          if (!is.null(xkj)){
+          if (!is.null(xkj))
+          {
             if (is.list(xk) && is.null(names(xk)))
               s[[length(s)+1]]=xkj
             else
               s[[length(s)+1]]=list(xkj)
           }
         }
-      } else {
+      } 
+      else 
+      {
         if (!is.null(xk))
         {
           if (is.character(xk))
@@ -59,22 +66,35 @@ mklist <- function(x)
         }
       }
     }
-  } else {
+  } 
+  else 
+  {
     if (!is.null(x))
       s[length(s)+1]=list(x)
     else
       s <- NULL
   }
-  for (k in (1:length(s))){
+  for (k in (1:length(s)))
+  {
     sk <- s[[k]]
-    if (is.list(sk)){
-      if (!is.null(sk$colNames)){
-        s[[k]] <- data.frame(sk$value)
-        names(s[[k]]) <- sk$colNames
-      } else if (!is.null(sk$header)){
-        s[[k]] <- data.frame(sk$value)
-        names(s[[k]]) <- sk$header
-      } else if (!is.null(sk$value) && is.null(sk$time)){
+    if (is.list(sk))
+    {
+      if (!is.null(sk$header))
+      {
+        sk$colNames <- sk$header
+        sk$header <- NULL
+      }
+      if (!is.null(sk$colNames))
+      {
+        dsk <- data.frame(sk$value)
+        names(dsk) <- sk$colNames
+        if (!is.null(sk$name))
+          s[[k]] <- list(name=sk$name, time=dsk)
+        else
+          s[[k]] <- dsk
+      } 
+      else if (!is.null(sk$value) && is.null(sk$time))
+      {
         s[[k]] <- sk$value
         names(s[[k]]) <- sk$name
       }

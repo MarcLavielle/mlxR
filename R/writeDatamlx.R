@@ -39,19 +39,21 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
     }
     for (k in (1:length(nr0))){
       rk <- r[[nr0[k]]]
-      fk <- file.path(result.folder,paste0(nr0[k],ext))
-      for (j in (1:ncol(rk))){
-        if (typeof(rk[,j])=="double")
-          rk[,j] <- round(rk[,j], digits=digits)
-        i.na <- which(is.na(rk[,j]))
-        if (length(i.na)>0)
-          rk[i.na,j]="."
+      if (!is.null(ncol(rk))){
+        fk <- file.path(result.folder,paste0(nr0[k],ext))
+        for (j in (1:ncol(rk))){
+          if (typeof(rk[,j])=="double")
+            rk[,j] <- round(rk[,j], digits=digits)
+          i.na <- which(is.na(rk[,j]))
+          if (length(i.na)>0)
+            rk[i.na,j]="."
+        }
+        
+        if (app.file == F) 
+          write.table(rk,fk,row.names=FALSE,quote=FALSE,sep=sep,append=F)
+        else
+          write.table(rk,fk,row.names=FALSE,col.names=FALSE,quote=FALSE,sep=sep,append=T)
       }
-      
-      if (app.file == F) 
-        write.table(rk,fk,row.names=FALSE,quote=FALSE,sep=sep,append=F)
-      else
-        write.table(rk,fk,row.names=FALSE,col.names=FALSE,quote=FALSE,sep=sep,append=T)
     }
   }
   
@@ -116,14 +118,14 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
     if (!is.null(M$time)) lo <- c(lo, "time")
     lo <- paste(lo,collapse=",")
     eval(parse(text=paste0("M <- M[with(M, order(",lo,")), ]")))
-
+    
     if (app.file == F) 
       write.table(M,result.file,row.names=FALSE,quote=FALSE,sep=sep,append=F)
     else
       write.table(M,result.file,row.names=FALSE,col.names=FALSE,quote=FALSE,sep=sep,append=T)
     
-#     write.table(M,result.file,row.name=FALSE,quote=FALSE,sep=sep)
-#     zz <- file(result.file)
-#     close(zz)
+    #     write.table(M,result.file,row.name=FALSE,quote=FALSE,sep=sep)
+    #     zz <- file(result.file)
+    #     close(zz)
   } 
 }
