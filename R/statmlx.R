@@ -1,6 +1,6 @@
 #' Summary of data
 #'
-#' Compute some statistical summary (mean, quantile, variance, survival rate,...)
+#' Compute statistical summaries (mean, quantile, variance, survival rate,...)
 #' 
 #' See http://simulx.webpopix.org/stamlx for more details.      
 #' @param r a data frame

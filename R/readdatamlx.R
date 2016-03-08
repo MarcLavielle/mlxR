@@ -1,8 +1,8 @@
 #' Read formatted data file
 #' 
-#' Read data in a NONMEM/Monolix format
+#' Read data in a Monolix/NONMEM format
 #' 
-#' See http://simulx.webpopix.org/mlxr/readDatamlx/ for more details.
+#' See http://simulx.webpopix.org/mlxr/readdatamlx/ for more details.
 #' @param project a Monolix project
 #' @param datafile a formatted data file 
 #' @param header a vector of strings (mandatory if \code{datafile} is used) 
