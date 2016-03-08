@@ -43,10 +43,9 @@ mlxplore <- function(model,parameter=NULL,output=NULL,group=NULL,treatment=NULL)
   
   
   Sys.setenv(LIXOFT_HOME=session)
-  
-  tmproject <- "temp_mlxplore.txt"
-  tmpmodel  <- "temp_model.txt"
-  
+  model <- tools::file_path_as_absolute(model)
+  tmproject <- paste0(dirname(model),"/temp_mlxplore.txt")  
+  tmpmodel  <- "temp_model.txt"  
   model_ext <- file_ext(model)
   if(model_ext=="xml"){
     model = pharmml2mlxtran(model)
@@ -152,7 +151,7 @@ mlxplore <- function(model,parameter=NULL,output=NULL,group=NULL,treatment=NULL)
   
   #--------------------------------------------------------
   
-  str=paste0('"',session,'/lib/mlxPlore" --multiple-windows=true --project=temp_mlxplore.txt')  
+  str=paste0('"',session,'/lib/mlxPlore" --multiple-windows=true --project=',tmproject)  
    system(str, wait=F, invisible=F)
 #   system(str, wait=F)
   
