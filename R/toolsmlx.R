@@ -155,10 +155,11 @@ resample.data  <- function(data,idOri,N,replacement=F)
     K <- floor(N/n)
     new.id <- c(rep(1:n,K),sort(sample(1:n,N-K*n,replace=FALSE)))
   }
-  
+  new.idOri=idOri[new.id]
   data$N <- NULL
   data$idOri <- NULL  
   data$id <- NULL
+  uN <- as.factor(1:N)
   for  (j in (1:length(data)))
   {
     dataj <- data[[j]]

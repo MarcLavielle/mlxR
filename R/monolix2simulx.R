@@ -145,28 +145,22 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
     if(length(output)==1)
     {
       out1 <- output[[1]]
-      out1.name <- names(out1) 
-      out1.name <- out1.name[which(!(out1.name %in% c("id", "time")))]
+      out1.name <- out1$name 
       cat(paste0("name<-\"",out1.name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       cat(paste0("time<-read.table(\"output.txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       cat(paste0("out<-list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      #       out2 <-matrix(output[[1]]$value,nrow=nrow(output[[1]]$value),ncol=ncol(output[[1]]$value))
-      #       colnames(out2)<-output[[1]]$colNames
       outfile = file.path(Rproject,"/output.txt")
-      write.table(out1,file=outfile,row.names=FALSE,quote=FALSE) 
-      #       write.table(out2,file=outfile,row.names=FALSE,quote=FALSE) 
-      #cat("out<-list(out)\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      write.table(out1$time,file=outfile,row.names=FALSE,quote=FALSE) 
     } else {    # many types of output could exist
       for(i in seq(1:length(output))) {
         outi <- output[[i]]
-        outi.name <- names(outi)
-        outi.name <- outi.name[which(!(outi.name %in% c("id", "time")))]
+        outi.name <- outi$name
         cat(paste0("name<-\"",outi.name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-        if(is.data.frame(output[[i]])) {
+        if(is.data.frame(outi$time)) {
           cat(paste0("time<-read.table(\"output",i,".txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
           cat(paste0("out",i,"<-list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
           outfile = paste0(file.path(Rproject,paste0("/output",i)),".txt")
-          write.table(outi,file=outfile,row.names=FALSE,quote=FALSE) 
+          write.table(outi$time,file=outfile,row.names=FALSE,quote=FALSE) 
         } else {
           cat(paste0("out",i,"<-list(name=name) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         }

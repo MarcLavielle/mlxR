@@ -154,7 +154,7 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
   #       dd$parameter = df
   #   }
   # if (length(df)>1){
-  if (!is.null(df))
+  if (!is.null(df)  && nrow(df)>0)
   {
     attr(df,"type") <- "parameter"
     dd$parameter = df

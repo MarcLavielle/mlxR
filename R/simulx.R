@@ -538,7 +538,7 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL)
   }
   
   trt <- dataIn$trt
-  dataIn$trt <- NULL
+  # dataIn$trt <- NULL
   if (length(s)==0){
     argList <- list(DATA=dataIn) 
   } else {
