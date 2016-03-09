@@ -7,6 +7,7 @@
 #' @param datafile a formatted data file 
 #' @param header a vector of strings (mandatory if \code{datafile} is used) 
 #' @param infoProject an xmlfile 
+#' @param addl.ss number of additional doses to use for steady-state  (default=10) 
 #' @examples
 #' \dontrun{
 #' 
@@ -252,7 +253,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     }
     u <- rbind(u,u.addl)
     u <- rbind(u,u.ss)
-    u <- u[order(u$id,u$time),]
+    # u <- u[order(u$id,u$time),]
     datas   = list(treatment = u)
   }
   
@@ -346,9 +347,17 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     datas$covariate = cdf
   }
   
-  
+  for (k in (1:length(datas)))
+  {
+    dk <- datas[[k]]
+    ik <- match(dk$id,iduf)
+    if (!is.null(dk$time))
+      datas[[k]] <- dk[order(ik,dk$time),]
+    else
+      datas[[k]] <- dk[order(ik),]
+  }
   datas$N <- N
-  datas$idOri <- iduf  
+  datas$id <- iduf  
   return(datas)
 }
 
