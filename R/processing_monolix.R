@@ -57,7 +57,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
     }
     #   data$id <- data.frame(NewId=seq(1:N),OriId=new.id)
     
-    datas$id <- data.frame(newId=seq(1:datas$N),oriId=datas$idOri)
+    datas$id <- data.frame(newId=seq(1:datas$N),oriId=datas$id)
     ##*********************************************************************
     #       treatment (TREATMENT)
     #**********************************************************************
