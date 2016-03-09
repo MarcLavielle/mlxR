@@ -57,18 +57,19 @@ hformat  <-  function(list.input)
         {
           if (is.null(group[[k]]$level))
           {
-            group[[k]]$level <- model.info$level
-            if (length(model.info$level)>1)
-            {
-              minfo <- paste(model.info$level,collapse=", ")
-              gsize <- paste(group[[k]]$size,collapse=", ")
-              msg <- paste0("levels of randomization have not been defined in group",k,
-                            '. Levels associated with size = (',gsize,') are:\n"',
-                            minfo,'"\n\n')
-              w1 <- warning(msg,call.=FALSE)
-              if (length(group[[k]]$size)!=length(group[[k]]$level))
-                stop("'level' and 'size' defined in 'group' have different lengths.", call.=FALSE)      
-            }
+            if (length(group[[k]]$size)>1)
+              stop("levels of randomization associated to the sizes have not been defined in 'group'", call.=FALSE)      
+            if ("population" %in% model.info$level)
+              group[[k]]$level <- "population"
+            else if ("covariate" %in% model.info$level)
+              group[[k]]$level <- "covariate"
+            else if ("individual" %in% model.info$level)
+              group[[k]]$level <- "individual"
+            else
+              group[[k]]$level <- "longitudinal"
+            warning(paste0("level of randomization has not been defined in group ", k,": '", 
+                          group[[k]]$level, "' is used"), call.=FALSE)      
+            
           }
           else
           {
