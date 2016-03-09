@@ -88,7 +88,7 @@ mklist <- function(x)
       {
         dsk <- data.frame(sk$value)
         names(dsk) <- sk$colNames
-        if (!is.null(sk$name))
+        if (!is.null(sk$name) && "time" %in% sk$colNames)
           s[[k]] <- list(name=sk$name, time=dsk)
         else
           s[[k]] <- dsk
