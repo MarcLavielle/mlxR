@@ -59,7 +59,7 @@
 #' @param fim a string with the Fisher Information Matrix to be used 
 #' @param result.folder the name of the folder where the outputs of simulx should be stored
 #' @param result.file the name of the single file where the outputs of simulx should be saved
-#' @param stat.f a R function for computing some summary (mean, quantiles, survival,...) of the simulated data. Default = "statmlx"}.
+#' @param stat.f a R function for computing some summary (mean, quantiles, survival,...) of the simulated data. Default = "statmlx".
 #' @param settings a list of optional settings
 #' \itemize{
 #'   \item \code{seed} : initialization of the random number generator (integer),
