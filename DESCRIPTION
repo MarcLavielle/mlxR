@@ -1,6 +1,6 @@
 Package: mlxR
 Type: Package
-Version: 2.2.0
+Version: 3.1.0
 Title: Simulation of Longitudinal Data
 Description: Simulation and visualization of complex
     models for longitudinal data. The models are encoded using the model coding
@@ -19,7 +19,7 @@ URL: http://simulx.webpopix.org
 BugReports: https://github.com/MarcLavielle/mlxR/issues
 Depends:
     R (>= 3.0.1),
-    ggplot2    
+    ggplot2
 Suggests:
     reshape2,
     gridExtra,
@@ -28,7 +28,7 @@ Imports:
     XML,
     Rcpp (>= 0.11.3),
     tools,
-    tcltk  
+    tcltk
 License: BSD_2_clause + file LICENSE
 Copyright: Inria
-
+RoxygenNote: 5.0.1
