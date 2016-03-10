@@ -108,7 +108,7 @@ hformat  <-  function(list.input)
       for (j in seq(1,length(lvk))) 
       {
         lvkj <- lvk[[j]]
-        dkj <- dim(lvkj)
+        # dkj <- dim(lvkj)
         #     if (!is.null(dkj)){
         #   N=c(N,dkj[1])
         if (isfield(lvkj,"id"))

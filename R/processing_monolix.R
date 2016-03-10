@@ -58,6 +58,17 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
     #   data$id <- data.frame(NewId=seq(1:N),OriId=new.id)
     
     datas$id <- data.frame(newId=seq(1:datas$N),oriId=datas$id)
+    if  (!is.null(param)) 
+    {
+      for (k in (1:length(param)))
+      {
+        if (isfield(param[[k]],"id"))
+        {
+          did <- unique(param[[k]]$id)
+          datas$id <- data.frame(newId=did,oriId=did)
+        }
+      }
+    }
     ##*********************************************************************
     #       treatment (TREATMENT)
     #**********************************************************************
@@ -192,7 +203,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
           regi <- regModelNamesTable[i]
           if(!identical(regi,"")&&!length(grep("=",regi,fixed=TRUE,value=TRUE))
              &&!length(grep("regressor",regi,fixed=TRUE,value=TRUE))
-                       &&!length(grep("use",regi,fixed=TRUE,value=TRUE))
+             &&!length(grep("use",regi,fixed=TRUE,value=TRUE))
           ){
             regModelNames<-c(regModelNames,regi)
             nbModelreg = nbModelreg +1

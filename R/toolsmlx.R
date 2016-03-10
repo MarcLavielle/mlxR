@@ -176,8 +176,9 @@ resample.data  <- function(data,idOri,N,replacement=F)
           dkv=NULL
           for (i in 1:N)
           {
-            # ji <- which(idk==new.id[i])
-            ji <- which(idk==idOri[new.id][i])
+            id1 <- as.numeric(as.character(idk))
+            id2 <- as.numeric(as.character(idOri[new.id][i]))
+            ji <- which(id1==id2)
             if (length(ji)>0)
             {
               dkji <- datak[ji,]
@@ -203,7 +204,9 @@ resample.data  <- function(data,idOri,N,replacement=F)
             for (i in 1:N)
             {
               # ji <- which(idk==new.id[i])
-              ji <- which(idk==idOri[new.id][i])
+              id1 <- as.numeric(as.character(idk))
+              id2 <- as.numeric(as.character(idOri[new.id][i]))
+              ji <- which(id1==id2)
               dkji <- datam[ji,]
               dkji[,ik] <- i
               dkv <- rbind(dkv,dkji,deparse.level=0)
