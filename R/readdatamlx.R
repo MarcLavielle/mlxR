@@ -37,7 +37,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   ixdose = NULL
   datas=NULL
   
-  header=unlist(strsplit(header, ","))  
+  header=unlist(strsplit(header, ",")) 
+  header <- toupper(header)
   nlabel = length(header)
   
   icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
@@ -123,13 +124,12 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   }
   
   #---remove rows containing NA-------
-  narowsData<-NULL  
-  for(i in (1: nrow(data)))
-    if(is.na(data[i,iid]))
-      narowsData =c(narowsData,i)
-  if(!is.null(narowsData))
-    data <- data[-narowsData,]
-  
+  if (!is.null(iid)) 
+  {
+    narowsData <- which(is.na(data[i,iid]))
+    if(length(narowsData)>0)
+      data <- data[-narowsData,]
+  }
   #-------------------------------
   
   S       = data
@@ -137,21 +137,29 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   i.new <- c(icov,icat,ix,iocc)
   newHeader[i.new] = S0[i.new]
   
-  ans    = funique(S[[iid]])
-  iduf   = ans$arg1  
-  iuf    = ans$arg2
-  idnumf = ans$arg3
-  ans = fsort(iuf)
-  ia  = ans$arg1
-  ib  = ans$arg2
+  if (!is.null(iid)){
+    ans    = funique(S[[iid]])
+    iduf   = ans$arg1  
+    iuf    = ans$arg2
+    idnumf = ans$arg3
+    ans = fsort(iuf)
+    ia  = ans$arg1
+    ib  = ans$arg2
+    
+    ans = fsort(ib)
+    ic  = ans$arg2
+    ids = iduf[ib]
+    
+    iu    = ia
+    # idnum = as.factor(ic[idnumf])
+    idnum = as.factor(S[[iid]])
+  }
+  else
+  {
+    iduf <- 1
+    idnum <- as.factor(1)
+  }
   
-  ans = fsort(ib)
-  ic  = ans$arg2
-  ids = iduf[ib]
-  
-  iu    = ia
-  # idnum = as.factor(ic[idnumf])
-  idnum = as.factor(S[[iid]])
   iduf = as.factor(iduf)
   N     = length(iduf)
   
@@ -208,8 +216,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     u.ss <- NULL
     if (!is.null(iaddl))
     {
-      addl <- S[i1,iaddl]
-      ii <- S[i1,iii]
+      addl <- as.numeric(as.character(S[i1,iaddl]))
+      ii <- as.numeric(as.character(S[i1,iii]))
       j.addl <- which(addl>0)
       if (length(j.addl)>0)
       {
@@ -238,7 +246,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     if (!is.null(iss))
     {
       ss <- S[i1,iss]
-      ii <- S[i1,iii]
+      ii <- as.numeric(as.character(S[i1,iii]))
       j.ss <- which(ss==1)
       if (length(j.ss)>0)
       {
@@ -355,9 +363,14 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
       datas[[k]] <- dk[order(ik,dk$time),]
     else
       datas[[k]] <- dk[order(ik),]
+    if (is.null(iid))
+      datas[[k]]$id <- NULL
   }
-  datas$N <- N
-  datas$id <- iduf  
+  if (!is.null(iid))
+  {
+    datas$id <- iduf  
+    datas$N <- N
+  }
   return(datas)
 }
 
