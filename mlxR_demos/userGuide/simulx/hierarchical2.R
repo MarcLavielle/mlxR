@@ -19,8 +19,7 @@ plot(ggplotmlx() +
   geom_point(data=res1$y, aes(x=time, y=y), colour="red"))
 
 #-------------------------------------
-g <- list( size  = 5,
-           level = 'covariate')
+g <- list( size = 5, level = 'covariate')
 
 res2 <- simulx(model     = 'model/hierarchical2.txt', 
                parameter = p, 
@@ -34,8 +33,7 @@ plot(ggplotmlx() + geom_line(data=res2$f, aes(x=time, y=f, colour=id), size=0.75
        geom_point(data=res2$y, aes(x=time, y=y, colour=id), size=2))
 
 #-------------------------------------
-g <- list( size  = c(2,3),
-           level = c('covariate','individual'))
+g <- list( size  = c(2,3), level = c('covariate','individual'))
 
 res3 <- simulx(model     = 'model/hierarchical2.txt', 
                parameter = p, 
@@ -46,8 +44,7 @@ res3 <- simulx(model     = 'model/hierarchical2.txt',
 print(res3$parameter)
 
 #-------------------------------------
-g <- list( size  = c(2,2,2),
-           level = c('covariate','individual','longitudinal'))
+g <- list( size  = c(2,2,2), level = c('covariate','individual','longitudinal'))
 
 res4 <- simulx(model     = 'model/hierarchical2.txt', 
                parameter = p, 

@@ -15,8 +15,6 @@ res1 <- simulx( model       = "model/iovI2.txt",
                 settings    = list(seed = 123456))
 
 print(res1$varlevel)
-print(res1$V)
-print(res1$Cl)
 print(res1$parameter)
 print(ggplotmlx(data=res1$C) + geom_line(aes(x=time, y=C)))
 

@@ -57,7 +57,7 @@ y <- list(name="y", time=seq(18, 80, by=6))
 C <- list(name="C", time=seq(0,100, by=0.5))
 V <- list(name="V")
 p <- c(V_pop=10, omega_V=0.3, w=50, k=0.2, a=0.2)
-g <- list( size=c(6,1), level=c('individual', 'longitudinal') )
+g <- list( size=6, level='individual')
 
 res5 <- simulx(model    = "model/groupII2.txt", 
               output    = list(C,y,V),
@@ -77,39 +77,25 @@ print(ggplotmlx()  +
 #-------------------------------------
 adm1 <- list(time=seq(0,66,by=6),  amount=50)
 adm2 <- list(time=seq(0,66,by=12), amount=100)
-y <- list(name="y", time=seq(30, 90, by=6))
+y1 <- list(name="y", time=seq(6, 42, by=6))
+y2 <- list(name="y", time=seq(30, 90, by=6))
 C <- list(name="C", time=seq(0,100, by=0.5))
-V <- list(name=c("V","w"))
+V <- list(name="V")
 p1 <- c(V_pop=10, omega_V=0.3, w=50, k=0.2, a=0.2)
 p2 <- c(V_pop=20, omega_V=0.3, w=75, k=0.1, a=0.2)
-g1 <- list(treatment=adm1, parameter=p1, size=c(3,1), level=c('individual', 'longitudinal'))
-g2 <- list(treatment=adm2, parameter=p2, size=c(2,1), level=c('individual', 'longitudinal'))
+
+g1 <- list(treatment=adm1, parameter=p1, output=y1, size=3, level='individual')
+g2 <- list(treatment=adm2, parameter=p2, output=y2, size=2, level='individual')
 
 res6 <- simulx(model    = "model/groupII2.txt", 
-               output   = list(C,y,V),
+               output   = list(C,V),
                group    = list(g1,g2),
-               settings = list(seed=123123))
+               settings = list(seed=123456))
 
 print(res6$parameter)
 
-
-#-------------------------------------
 print(ggplotmlx()  +
         geom_line( data=res6$C, aes(x=time, y=C, colour=id), size=0.5) +
         geom_point(data=res6$y, aes(x=time, y=y, colour=id), size=3) + 
-        facet_grid(. ~ group))
-
-y1 <- list(name="y", time=seq(0, 30, by=6))
-y2 <- list(name="y", time=seq(60, 90, by=6))
-g1 <- list(treatment=adm1, output=y1, parameter=p1, size=c(3,1), level=c('individual', 'longitudinal'))
-g2 <- list(treatment=adm2, output=y2, parameter=p2, size=c(2,1), level=c('individual', 'longitudinal'))
-
-res6b <- simulx(model    = "model/groupII2.txt", 
-               output   = list(C,V),
-               group    = list(g1,g2),
-               settings = list(seed=123123))
-print(ggplotmlx()  +
-        geom_line( data=res6b$C, aes(x=time, y=C, colour=id), size=0.5) +
-        geom_point(data=res6b$y, aes(x=time, y=y, colour=id), size=3) + 
         facet_grid(. ~ group))
 

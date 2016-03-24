@@ -21,11 +21,9 @@ k = (Cl)/(V)
 if ((t)-(tDose))<(Tlag)
 
 C=0
-
 else
 
 C=(((amtDose)*(ka))/((V)*((ka)-(k))))*((exp((-(k))*(((t)-(tDose))-(Tlag))))-(exp((-(ka))*(((t)-(tDose))-(Tlag)))))
-
 end
 
 Cc = C

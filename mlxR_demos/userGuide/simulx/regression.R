@@ -70,8 +70,8 @@ x1 <- list(name='x',
 x2 <- list(name='x',
            time=c(0,4,14,24,34),
            value=c(1,-0.5,1.5,-1,0.2))
-g1  <- list(regressor = x1)
-g2  <- list(regressor = x2)
+g1  <- list(regressor = x1) #, size=3)
+g2  <- list(regressor = x2) #, size=2)
 
 f <- list(name='f',
           time=seq(-5, 50, by=1))

@@ -20,8 +20,7 @@ print(plot1)
 
 
 #-------------------------------------
-g <- list(size=c(2,3),
-          level=c('population','covariate'))
+g <- list(size=c(2,3), level=c('population','covariate'))
 
 res <- simulx(model     = 'model/hierarchical3.txt', 
               parameter = p, 
@@ -37,8 +36,7 @@ plot1 <- ggplotmlx(data=res$f, aes(x=time, y=f, colour=id)) +
 print(plot1)
 
 #-------------------------------------
-g <- list(size=c(2,3),
-          level=c('population','individual'))
+g <- list(size=c(2,3), level=c('population','individual'))
 
 res <- simulx(model     = 'model/hierarchical3.txt', 
               parameter = p, 

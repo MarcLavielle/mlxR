@@ -1,0 +1,9 @@
+[LONGITUDINAL]
+input = {p12, p21}
+
+DEFINITION:
+y = {type       = categorical
+     categories = {1, 2}
+     dependence = Markov
+     P(y=2 |y_p=1)=p12
+     P(y=1 |y_p=2)=p21}

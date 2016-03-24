@@ -3,7 +3,8 @@ input = {k_pop, omega_k, w, trt}
 trt   = {type=categorical, categories={TA,TB,TC}}
 
 EQUATION:
-lw70 = log(w/70)
+;lw70 = log(w/70)
+lw70 = 0
 
 DEFINITION:
 k = { distribution = lognormal,

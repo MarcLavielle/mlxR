@@ -35,7 +35,9 @@ input =  {n,p}
 
 
 DEFINITION:
-  y = {type=count, P(y=k)=factorial(k+n-1)/factorial(k)/factorial(n-1)*((1-p)^k)*(p^n)}
+y = {type   = count, 
+     P(y=k) = factorial(k+n-1)/factorial(k)/factorial(n-1)*((1-p)^k)*(p^n)
+}
 ")
 
 param <- c(n=10,p=0.4)

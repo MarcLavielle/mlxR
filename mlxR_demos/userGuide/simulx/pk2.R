@@ -15,7 +15,8 @@ Cc   <- list(name="Cc", time=seq(0, 60, by=0.1))
 
 res  <- simulx(model     = "model/pk2a.txt",
                parameter = p,
-               output    = Cc,
+               output    = Cc,  
+               group = list(size=2),
                treatment = list(adm1, adm2))
 
 print(ggplotmlx(data=res$Cc) + geom_line(aes(x=time, y=Cc)))

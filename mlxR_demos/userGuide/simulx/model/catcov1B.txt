@@ -2,9 +2,7 @@
 input={p_F}
 
 DEFINITION:
-gender = { type=categorical, 
-           categories={F,M},
-           P(gender=F)=p_F }
+gender = { type=categorical,  categories={F,M},   P(gender=F)=p_F }
 
 ;---------------------------------------
 [INDIVIDUAL]
@@ -12,9 +10,9 @@ input={k_pop, omega_k, gender, beta_F}
 gender={type=categorical,categories={F,M}}
 
 EQUATION:
-if gender==0  ;  equivalent to gender = F
+if gender==F   
   k_pred = k_pop*exp(beta_F)
-else          ;  equivalent to gender = M
+else         
   k_pred = k_pop
 end
 

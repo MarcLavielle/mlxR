@@ -11,7 +11,7 @@ res1 <- simulx(model     = 'model/hierarchical1a.txt',
                output    = list(V, f, y),
                settings  = list(seed = 12345))
 
-print(res1$V)
+print(res1$parameter)
 
 print(ggplotmlx() + 
         geom_line(data=res1$f, aes(x=time, y=f), size=1) + 
@@ -27,7 +27,7 @@ res2 <- simulx(model     = 'model/hierarchical1a.txt',
                group     = g,
                settings  = list(seed = 12345))
 
-print(res2$V)
+print(res2$parameter)
 
 print(ggplotmlx() + 
         geom_line(data=res2$f, aes(x=time, y=f, colour=id),size=1) +  
@@ -44,7 +44,7 @@ res3 <- simulx(model     = 'model/hierarchical1a.txt',
                group     = g,
                settings  = list(seed = 12345))
 
-print(res3$V)
+print(res3$parameter)
 
 print(ggplotmlx() + 
         geom_line(data=res3$f, aes(x=time, y=f), colour="grey", size=1) +  
@@ -60,7 +60,7 @@ res4 <- simulx(model     = 'model/hierarchical1a.txt',
                group     = g,
                settings  = list(seed = 12345))
 
-print(res4$V)
+print(res4$parameter)
 
 print(ggplotmlx() + 
         geom_line(data=res4$f, aes(x=time, y=f, colour=id), size=1) +  
@@ -82,7 +82,7 @@ res5 <- simulx(model     = 'model/hierarchical1b.txt',
                group     = g,
                settings  = list(seed = 12345))
 
-print(res5$V)
+print(res5$parameter)
 
 print(ggplotmlx() + 
         geom_line(data=res5$f, aes(x=time, y=f, colour=id), size=1) + 

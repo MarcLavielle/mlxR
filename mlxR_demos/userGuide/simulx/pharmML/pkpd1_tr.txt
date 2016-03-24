@@ -19,10 +19,6 @@ IC50 = { distribution = normal, transformation = log, reference = pop_IC50, sd={
 [LONGITUDINAL]
 input={V,Rin,b1,kout,a1,a2,IC50,Cl,ka,Imax}
 
-PK:
-depot(target=Ad)
-
-
 EQUATION:
 k = (Cl)/(V)
 Ad_0 = 0
