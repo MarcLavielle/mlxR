@@ -10,16 +10,62 @@
 #' @param surv.time a scalar or a vector of times. Only used when "event" has been defined in \code{type} 
 #' 
 #' @return A data frame. 
+#' \dontrun{
+#' modelPK <- inlineModel("
+#' [LONGITUDINAL] 
+#' input={V,Cl,alpha, beta,b}
 #' 
+#' EQUATION:
+#' C = pkmodel(V, Cl)
+#' h = alpha*exp(beta*C)
+#' g = b*C
+#' 
+#' DEFINITION:
+#' y = {distribution=normal, prediction=C, sd=g}
+#' e = {type=event, maxEventNumber=1, rightCensoringTime=30, hazard=h}
+#' 
+#' [INDIVIDUAL]
+#' input={V_pop,Cl_pop,omega_V,omega_Cl}
+#' 
+#' DEFINITION:
+#' V     = {distribution=lognormal,   prediction=V_pop,    sd=omega_V}
+#' Cl    = {distribution=lognormal,   prediction=Cl_pop,   sd=omega_Cl}
+#' ")
+#' 
+#' adm  <- list(amount=100, time=0)
+#' p <- c(V_pop=10, Cl_pop=1, omega_V=0.2, omega_Cl=0.2, alpha=0.02, beta=0.1, b=0.1)
+#' out.y <- list(name=c('y'), time=seq(0,to=25,by=5))
+#' out.e <- list(name=c('e'), time=0)
+#' out.p <- c("V", "Cl")
+#' out   <- list(out.y, out.e, out.p)
+#' g <- list(size=100, level='individual')
+#' res1 <- simulx(model=modelPK, treatment=adm, parameter=p, output=out, group=g, settings=s)
+#' 
+#' statmlx(res1$parameter, FUN = "mean", probs = c(0.05, 0.5, 0.95))
+#' statmlx(res1$parameter, FUN = "quantile", probs = c(0.05, 0.5, 0.95))
+#' statmlx(res1$parameter, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
+#' statmlx(res1$y, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
+#' statmlx(res1$e, type="event", surv.time=c(10,20))
+#' 
+#' res2 <- simulx(model=modelPK, treatment=adm, parameter=p, output=out, group=g, nrep=3)
+#' statmlx(res2$parameter, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
+#' statmlx(res2$y, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
+#' statmlx(res2$e, type="event", surv.time=c(10,20,30))
+#' }
 #' @export
 
 
-statmlx <- function(r, type="continuous", FUN="mean", probs=c(0.05, 0.5, 0.95), surv.time=NULL)
+statmlx <- function(r, FUN="mean", probs=c(0.05, 0.5, 0.95), surv.time=NULL)
 {
+  if (!is.null(surv.time))
+    type="event"
+  else
+    type="continuous"
+  
   if (any(!(FUN %in% c("mean","sd","median","var","quantile"))))
     stop("\n\n possible values for 'FUN' are {'mean','sd','median','var','quantile'} ")
-  if (any(!(type %in% c('continuous','event'))))
-    stop("\n\n possible values for 'type' are {'continuous','event'} ")
+  # if (any(!(type %in% c('continuous','event'))))
+  # stop("\n\n possible values for 'type' are {'continuous','event'} ")
   # if (any(type=="survival") && is.null(time)) 
   #   stop("\n\n a time value, or a vector of times, should be provided when 'survival' is defined as 'FUN'")
   
@@ -33,7 +79,6 @@ statmlx <- function(r, type="continuous", FUN="mean", probs=c(0.05, 0.5, 0.95), 
     uid <-  cumsum(!duplicated(ig)) 
     y <- cbind(uid,r)
     
-    surv.time <- c(100,200)
     rrr <- list(uid)
     ev.nb <- aggregate(r[ie], by=rrr, "sum")
     names(ev.nb)[2] <- "nbEv"
@@ -74,14 +119,14 @@ statmlx <- function(r, type="continuous", FUN="mean", probs=c(0.05, 0.5, 0.95), 
     rrr[[length(rrr)+1]] <- r$rep 
     nr <- c(nr, "rep")
   }
-  if (!is.null(r$time)){
-    rrr[[length(rrr)+1]] <- r$time 
-    nr <- c(nr, "time")
-  }
   if (!is.null(r$group)){
     rrr[[length(rrr)+1]] <- r$group 
     nr <- c(nr, "group")
   }  
+  if (!is.null(r$time)){
+    rrr[[length(rrr)+1]] <- r$time 
+    nr <- c(nr, "time")
+  }
   r$pop <- r$rep <- r$group <- r$time <- r$id <- NULL
   
   sr <- NULL
@@ -102,7 +147,7 @@ statmlx <- function(r, type="continuous", FUN="mean", probs=c(0.05, 0.5, 0.95), 
           X <- cbind(X, aX[[k]])
         X <- as.data.frame(X)
       } else {
-        aX <- sapply(r,statj, probs=pr)
+        aX <- sapply(r,statj, probs=probs)
         X <- as.data.frame(t(as.vector(aX)))
       }
       aa <- apply(expand.grid(names(r),paste0("p",probs*100)), 1, paste, collapse=".")  
@@ -113,6 +158,29 @@ statmlx <- function(r, type="continuous", FUN="mean", probs=c(0.05, 0.5, 0.95), 
       sr <- X
     else 
       sr <- merge(sr, X)
+  }
+  lo <- NULL
+  if (!is.null(sr$pop)) 
+  {
+    lo <- c(lo, "pop")
+    sr$pop <- as.factor(sr$pop)
+  }
+  if (!is.null(sr$rep))
+  {
+    lo <- c(lo, "rep")
+    sr$rep <- as.factor(sr$rep)
+  }
+  if (!is.null(sr$group)) 
+  {
+    lo <- c(lo, "group")
+    sr$group <- as.factor(sr$group)
+  }
+  if (!is.null(sr$time)) 
+    lo <- c(lo, "time")
+  if (!is.null(lo))
+  {
+    lo <- paste(lo,collapse=",")
+    eval(parse(text=paste0("sr <- sr[with(sr, order(",lo,")), ]")))
   }
   return(sr)
 }
