@@ -1,0 +1,35 @@
+******************************************************************
+*      admin2_project.mlxtran
+*      December 30, 2015 at 19:25:12
+*      Monolix version: 4.3.3
+******************************************************************
+
+Estimation of the population parameters
+
+            parameter 
+F2_pop    :     0.387 
+F3_pop    :         1 
+F4_pop    :     0.322 
+ka2_pop   :  1.5e+003 
+ka3_pop   :       250 
+ka4_pop   :     0.141 
+V_pop     :       198 
+CL_pop    :      59.8 
+
+omega_F2  :     0.108 
+omega_F3  :      4.56 
+omega_F4  :         0 
+omega_ka2 :      3.79 
+omega_ka3 :      1.24 
+omega_ka4 :         0 
+omega_V   :     0.476 
+omega_CL  :     0.534 
+
+a         :      6.45 
+b         :     0.212 
+
+
+Population parameters estimation...
+
+Elapsed time is 89.8 seconds. 
+CPU time is 110 seconds. 

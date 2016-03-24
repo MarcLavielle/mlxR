@@ -1,8 +1,9 @@
-# setwd(dirname(parent.frame(2)$ofile))
+setwd(dirname(parent.frame(2)$ofile))
 
 #-------  Get required libraries
 library(gridExtra)
 library(plyr)
+library(reshape2)
 # library(mlxR)
 
 
@@ -34,18 +35,51 @@ print(ggplotmlx(data=sim.res1$y1) +
 #  Covariate WEIGHT is taken from data set
 #  Dosage regimen and observation times are taken from data set
 #    - and switch off the residual error by setting b = 0
-#
 
-sim.param <- c(b=0)
-out  <- list(name = 'Cc', time = seq(0, 25, by=0.1))
-sim.res2  <- simulx(project   = project.file,
-                    output    = out,
+
+sim.param <- c(b=0.0)
+out1  <- list(name = 'Cc', time = seq(0, 25, by=0.1))
+outp <- c("ka","V", "Cl","WEIGHT")
+sim.res2a  <- simulx(project   = project.file,
+                    output    = list(out1,outp),
                     parameter = sim.param)
+names(sim.res2a)
+head(sim.res2a$parameter)
 
 print(ggplotmlx() + 
-        geom_point(data=sim.res2$y1, aes(x=time, y=y1, colour=id)) +
-        geom_line(data=sim.res2$Cc, aes(x=time, y=Cc, colour=id)) +
+        geom_point(data=sim.res2a$y1, aes(x=time, y=y1, colour=id)) +
+        geom_line(data=sim.res2a$Cc, aes(x=time, y=Cc, colour=id)) +
         scale_x_continuous("Time") + scale_y_continuous("Concentration"))
+
+#--  define the observation times
+out2  <- list(name = 'y1', time = seq(1, 25, by=2))
+sim.res2b  <- simulx(project   = project.file,
+                     output    = list(out1, out2),
+                     parameter = sim.param)
+
+print(ggplotmlx() + 
+        geom_point(data=sim.res2b$y1, aes(x=time, y=y1, colour=id)) +
+        geom_line(data=sim.res2b$Cc, aes(x=time, y=Cc, colour=id)) +
+        scale_x_continuous("Time") + scale_y_continuous("Concentration"))
+
+#-- remove the simulated concentrations from the outputs
+out0 <- list(name='y1', time='none')
+sim.res2c  <- simulx(project   = project.file,
+                     output    = list(out1,out0))
+names(sim.res2c)
+
+#-- Use the estimated individual parameters (mode = EBE)
+sim.param <- "mode"
+sim.res2d  <- simulx(project   = project.file,
+                     output    = out1,
+                     parameter = sim.param)
+
+#-- Use the estimated individual parameters and set b=0
+sim.param <- list("mode",c(b=0))
+sim.res2e  <- simulx(project   = project.file,
+                     output    = out1,
+                     parameter = sim.param)
+
 
 ##########################################################
 #      EXAMPLE 3
@@ -123,14 +157,37 @@ print(ggplotmlx() +
 
 adm   <- list(time = c(0,6), amount = c(320, 320))
 
-sim.res6  <- simulx(project   = project.file,
+sim.res6a  <- simulx(project   = project.file,
                     treatment = adm,
                     output    = list(out1, out2))
 
+print(ggplotmlx() + 
+        geom_point(data=sim.res6a$y1,aes(x=time, y=y1, colour=id)) +
+        geom_line(data=sim.res6a$Cc,aes(x=time, y=Cc, colour=id)) +
+        scale_x_continuous("Time") + scale_y_continuous("Concentration"))
+
+#-- simulate a trial with N individuals 
+sim.res6b  <- simulx(project   = project.file,
+                     group = list(size=N),
+                     treatment = adm,
+                     output    = list(out1, out2))
 
 print(ggplotmlx() + 
-        geom_point(data=sim.res6$y1,aes(x=time, y=y1, colour=id)) +
-        geom_line(data=sim.res6$Cc,aes(x=time, y=Cc, colour=id)) +
+        geom_point(data=sim.res6b$y1,aes(x=time, y=y1, colour=id)) +
+        geom_line(data=sim.res6b$Cc,aes(x=time, y=Cc, colour=id)) +
+        scale_x_continuous("Time") + scale_y_continuous("Concentration") +  
+        theme(legend.position="none"))
+
+#--  define 2 arms with different treatments
+g1 <- list(size=10, treatment=list(time=0, amount=200))
+g2 <- list(size=5,  treatment=list(time=6, amount=300))
+sim.res6c  <- simulx(project = project.file,
+                     group   = list(g1, g2),
+                     output  = list(out1, out2))
+
+print(ggplotmlx() + 
+        geom_point(data=sim.res6c$y1,aes(x=time, y=y1, colour=group)) +
+        geom_line(data=sim.res6c$Cc,aes(x=time, y=Cc, by=id,colour=group)) +
         scale_x_continuous("Time") + scale_y_continuous("Concentration"))
 
 
@@ -146,26 +203,21 @@ print(ggplotmlx() +
 #      to 100.
 
 N 		<- 100
-weight <- list( name = 'WEIGHT', 
-                colNames = c('id', 'WEIGHT'),
-                value  = cbind(c(1:N),c(rep(50, N/2), rep(90, N/2))))
-# weight <- list( name = 'WEIGHT', 
-#                 value  = c(rep(50, N/2), rep(90, N/2)))
-#psex <- list( name = 'SEX',    value  = c(rep('F',N/2), rep('M',N/2)))
-
+weight <- data.frame(id = (1:N), WEIGHT = c(rep(50, N/2), rep(90, N/2)))
+outw  <- "WEIGHT"
 adm   <- list(time = 0, amount = 500)
 
 sim.res7 <- simulx(project = project.file, 
-                   output = list(out1, out2),
+                   output = list(out0, out2, outw),
                    treatment = adm,
                    parameter = weight)
 
-sim.res7$Cc$weight <- 50
-sim.res7$Cc$weight[as.numeric(sim.res7$Cc$id)>N/2] <-90
-sim.res7$Cc$weight <- as.factor(sim.res7$Cc$weight)
+names(sim.res7)
+r <- merge(sim.res7$Cc, sim.res7$parameter)
+r$weight <- as.factor(r$WEIGHT)
 
-print(ggplotmlx() + 
-        geom_line(data=sim.res7$Cc,aes(x=time, y=Cc, by=id, colour=weight)) +
+print(ggplotmlx(data=r) + 
+        geom_line(aes(x=time, y=Cc, by=id, colour=weight)) +
         scale_x_continuous("Time") + scale_y_continuous("Concentration"))
 
 ##########################################################
@@ -188,12 +240,11 @@ print(ggplotmlx() +
 N <- 100
 
 #-- Generate individual weights by sampling a lognormal distribution
-sim.weight <- list( name = 'WEIGHT', 
-                    colNames = c('id', 'WEIGHT'),
-                    value  = cbind(c(1:N),rlnorm(N, log(70), 0.2)))
+sim.weight <- data.frame( id=cbind(c(1:N), WEIGHT=rlnorm(N, log(70), 0.2)) )
 
-outy  <- list(name = c('y1'), time = seq(0, 140, by=6))
-outi  <- c('WEIGHT', 'ka', 'V', 'Cl')
+#-- Define the output to compute: quantiles 5%, 50%, 95%
+outy  <- list(name = c('y1'), time = 120, 
+              FUN = "quantile",probs = c(0.05, 0.5, 0.95))
 
 Dose.amount <- c(50, 100, 250, 500, 1000)
 Dose.times  <- seq(from = 0, to = 120, by = 12)
@@ -204,35 +255,24 @@ s  <- list(seed = 123456)
 #-- run simulx with each dose level
 sim.data <- NULL
 for(n.c in 1:length(Dose.amount)){
-	adm   <- list(time = Dose.times, amount = Dose.amount[n.c])
-
-	tmp <- simulx(project   = project.file,
-	              output    = list(outy, outi),
-	              treatment = adm,
-	              parameter = sim.weight,
-	              settings  = s)
-	
-	tmp2 			<- tmp$y1
-	tmp2['Dose'] 	<- Dose.amount[n.c]
-	sim.data <- rbind(sim.data, tmp2)
+  adm   <- list(time = Dose.times, amount = Dose.amount[n.c])
+  
+  tmp <- simulx(project   = project.file,
+                output    = outy,
+                treatment = adm,
+                parameter = sim.weight,
+                settings  = s)
+  
+  tmp2 			<- tmp$y1
+  tmp2['Dose'] 	<- Dose.amount[n.c]
+  sim.data <- rbind(sim.data, tmp2)
 }
 
-#-- Compute statistics
-
-sim.data.stat <- ddply(sim.data, .(time, Dose), summarize,
-	median = median(y1),
-	p05  = quantile(y1, 0.05),
-	p95  = quantile(y1, 0.95),
-	Dose = Dose[1]
-)
-
-sim.data.stat.ss <- sim.data.stat[sim.data.stat$time == 120, ] 
-
-print(ggplotmlx(data=sim.data.stat.ss) +
-  geom_line(aes(x=Dose, y=median)) +
-  geom_point(aes(x=Dose, y=median)) +
-  geom_ribbon(aes(x=Dose, ymin=p05, ymax=p95), alpha = 0.3) +
-  scale_x_continuous("Dose") + scale_y_continuous("Concentration"))
+print(ggplotmlx(data=sim.data) +
+        geom_line(aes(x=Dose, y=y1.p50)) +
+        geom_point(aes(x=Dose, y=y1.p50)) +
+        geom_ribbon(aes(x=Dose, ymin=y1.p5, ymax=y1.p95), alpha = 0.3) +
+        scale_x_continuous("Dose") + scale_y_continuous("Concentration"))
 
 
 ##########################################################
@@ -241,74 +281,48 @@ print(ggplotmlx(data=sim.data.stat.ss) +
 #  Run simulations to test how the sample size affects the 
 #  prediction of the mean PK
 #  For each sample size we run multiple trial simulation,
-#  each with a new seed, and calulate the median
+#  each with a new seed, and calculate several percentiles 
 # 
 #  To increase simulation speed the simulation design will
 #  be pre-created and pre-loaded
 
-out  <- list(name = 'y1', time = seq(0, 120, by=12))
+#-- Define the treatment
+adm   <- list(time = seq(from = 0, to = 120, by = 12), amount = 300)
 
-Dose.amount <- 300
-Dose.times  <- seq(from = 0, to = 120, by = 12)
-
-#-- Define number of trial simulations
-N.trial <- 200
-
-#-- Generate seeds for each trial simulation
-seed = 123456 + seq(from=1, to=N.trial)
+#-- Define the number of trial simulations
+N.trial <- 100
 
 #-- Define the number of patients to simulate
-N <- c(10, 30, 50, 100)
+N <- c(20, 50, 100)
+
+#-- Define the output to compute: quantiles 5%, 50%, 95%
+outy  <- list(name = c('y1'), time = 120, 
+              FUN = "quantile",probs = c(0.05, 0.5, 0.95))
 
 sim.data <- NULL
 for(n.p in 1:length(N)){
-	#-- Generate individual weights
-	sim.weight <- list( name     = 'WEIGHT', 
-	                    colNames = c('id', 'WEIGHT'),
-	                    value    = cbind(c(1:N[n.p]),rlnorm(N[n.p], log(70), 0.2)))
-	
-	for(n.c in 1:length(Dose.amount)){	
-		cat("N = ",N[n.p],"  ;  Dose = ",Dose.amount[n.c],"\n")
-		adm   <- list(time = Dose.times, amount = Dose.amount[n.c])
-
-		#-- Here we create and pre-load the design to run the simulations faster
-		s <- list(data.in=TRUE, load.design=TRUE)
-
-		dataIn <- simulx(project   = project.file,
-			      	       output    = out,
-			     		       treatment = adm,
-					           parameter = sim.weight,
-					           settings  = s)
-
-		for(n.t in 1:N.trial){
-		  s <- list(seed=seed[n.t], load.design=FALSE)
-		  
-		  #-- Run simulation with created and loaded design
-		  tmp1 <- simulx(data = dataIn, setting=s)
-		  tmp2 <- tmp1$y1
-		  tmp2['Dose'] 	<- Dose.amount[n.c]
-		  tmp2['Trial.rep'] <- n.t
-		  tmp2['N.patients']<- N[n.p]
-		  
-		  sim.data <- rbind(sim.data, tmp2)
-		}
-	}
+  cat("N = ",N[n.p],"\n")
+  #-- Generate individual weights
+  sim.weight <- data.frame(id=(1:N[n.p]),WEIGHT=rlnorm(N[n.p], log(70), 0.2))
+  
+  tmp1 <- simulx(project   = project.file,
+                 output    = outy,
+                 treatment = adm,
+                 parameter = sim.weight,
+                 nrep      = N.trial)
+  
+  tmp2 <- tmp1$y1
+  tmp2$N.patients<- N[n.p]
+  tmp2$rep=tmp2$time=NULL
+  sim.data <- rbind(sim.data, tmp2)
 }
 
-#--- Compute statistics
-#
-sim.data.stat <- ddply(sim.data, .(time, Dose, Trial.rep, N.patients), summarize,
-	median = median(y1),
-	p05 = quantile(y1, 0.05),
-	p95 = quantile(y1, 0.95),
-	Dose = Dose.amount[1]
-)
+#-- plot the median
+print(ggplotmlx(data=sim.data) + geom_point(aes(x=N.patients, y=y1.p50)))
 
-sim.data.stat.ss <- sim.data.stat[sim.data.stat$time == 120, ] 
-
-print(ggplotmlx(data=sim.data.stat.ss) +
-	geom_point(aes(x=N.patients, y=median)))
-
+#-- plot the median and the quantiles 
+d <- melt(data=sim.data, id="N.patients", variable.name="percentile")
+print(ggplotmlx(data=d) +  geom_point(aes(x=N.patients, y=value, colour=percentile)))
 
 
 

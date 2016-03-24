@@ -1,64 +1,76 @@
 ; this script is generated automatically
 
-DESCRIPTION: 
-pkcat_project.mlxtran
+<DATAFILE>
 
-DATA: 
-    path = "%MLXPROJECT%/",
-    file  ="pkcat_data.txt",
-    headers = {ID,TIME,AMT,IGNORE,YTYPE,COV,IGNORE,IGNORE,Y},
-    columnDelimiter = "\t"
+[FILEINFO]
+file = 'pkcat_data.txt'
+delimiter = tab
+header = {id, time, amt, dv_ori, dvid, wt, age, sex, dv}
 
-VARIABLES: 
-    twt = log(wt/70) [use=cov],
-    wt
+[CONTENT]
+id = {use=identifier}
+time = {use=time}
+amt = {use=amount}
+dvid = {use=observationType}
+wt = {use=covariate, type=continuous}
+dv = {use=observation, name={conc, level}, ytype={1, 2}, type={continuous, discrete}}
 
-INDIVIDUAL: 
-    Cl = {distribution=logNormal, covariate=twt, iiv=yes},
-    Tlag = {distribution=logNormal, iiv=yes},
-    V = {distribution=logNormal, covariate=twt, iiv=yes},
-    ka = {distribution=logNormal, iiv=yes},
-    ke0 = {distribution=logNormal, iiv=yes},
-    th1 = {distribution=Normal, iiv=yes},
-    th2 = {distribution=logNormal, iiv=no},
-    th3 = {distribution=logNormal, iiv=no}
+<MODEL>
 
-STRUCTURAL_MODEL: 
-    file = "mlxt:pkcat_mlxt",
-    path = "%MLXPROJECT%",
-    output = {Cc,level}
+[COVARIATE]
+input = wt
 
+EQUATION:
+twt = log(wt/70)
 
-OBSERVATIONS: 
-    conc = {type=continuous, prediction=Cc, error=combined1},
-    level = {type=discrete}
+[INDIVIDUAL]
+input = {Tlag_pop, omega_Tlag, ka_pop, omega_ka, V_pop, beta_V_twt, twt, omega_V, Cl_pop, beta_Cl_twt, omega_Cl, ke0_pop, omega_ke0, th1_pop, omega_th1, th2_pop, th3_pop}
 
-TASKS: 
-    ; settings
-    globalSettings={
-        withVariance=no,
-        settingsAlgorithms="%MLXPROJECT%/pkcat_project_algorithms.xmlx",
-        resultFolder="%MLXPROJECT%/pkcat_project"},
-    ; workflow
-    estimatePopulationParameters(
-        initialValues={
-            pop_Cl = 0.1,
-            beta_{Cl,twt} = 0 ,
-            pop_Tlag = 1,
-            pop_V = 10,
-            beta_{V,twt} = 0 ,
-            pop_ka = 1,
-            pop_ke0 = 0.1,
-            pop_th1 = 10,
-            pop_th2 = 1,
-            pop_th3 = 0.111,
-            a_conc = 1,
-            b_conc = 0.3,
-            omega_Cl = 1,
-            omega_Tlag = 1,
-            omega_V = 1,
-            omega_ka = 1,
-            omega_ke0 = 1,
-            omega_th1 = 1
-            } ),
+DEFINITION:
+Tlag = {distribution=lognormal, typical=Tlag_pop, sd=omega_Tlag}
+ka = {distribution=lognormal, typical=ka_pop, sd=omega_ka}
+V = {distribution=lognormal, typical=V_pop, covariate=twt, coefficient=beta_V_twt, sd=omega_V}
+Cl = {distribution=lognormal, typical=Cl_pop, covariate=twt, coefficient=beta_Cl_twt, sd=omega_Cl}
+ke0 = {distribution=lognormal, typical=ke0_pop, sd=omega_ke0}
+th1 = {distribution=normal, typical=th1_pop, sd=omega_th1}
+th2 = {distribution=lognormal, typical=th2_pop, no-variability}
+th3 = {distribution=lognormal, typical=th3_pop, no-variability}
+
+[LONGITUDINAL]
+file = './pkcat_mlxt.txt'
+
+<FIT>
+data = {conc, level}
+model = {conc, level}
+
+<PARAMETER>
+Tlag_pop = {value=1, method=MLE}
+omega_Tlag = {value=1, method=MLE}
+ka_pop = {value=1, method=MLE}
+omega_ka = {value=1, method=MLE}
+V_pop = {value=10, method=MLE}
+beta_V_twt = {value=0, method=MLE}
+omega_V = {value=1, method=MLE}
+Cl_pop = {value=0.1, method=MLE}
+beta_Cl_twt = {value=0, method=MLE}
+omega_Cl = {value=1, method=MLE}
+ke0_pop = {value=0.1, method=MLE}
+omega_ke0 = {value=1, method=MLE}
+th1_pop = {value=10, method=MLE}
+omega_th1 = {value=1, method=MLE}
+th2_pop = {value=1, method=MLE}
+th3_pop = {value=0.111, method=MLE}
+a = {value=1, method=MLE}
+b = {value=0.3, method=MLE}
+
+<MONOLIX>
+
+[TASKS]
+populationParameters()
+
+[SETTINGS]
+GLOBAL:
+exportpath = 'pkcat_project'
+nbchains = 2
+autochains = no
 

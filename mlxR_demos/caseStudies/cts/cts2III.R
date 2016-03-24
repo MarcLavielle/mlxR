@@ -1,4 +1,4 @@
-library(mlxR)
+# library(mlxR)
 library(gridExtra)
 
 #-------------------------------------
@@ -33,9 +33,11 @@ R <- array(dim=c(M,adm.n,size.n,surv.n))
 ptm <- proc.time()
 for (l in seq(1,size.n)){
   N <- vN[l]
-  cat(paste0("\nN = ",N,"\n")) 
+  #   cat(paste0("\nN = ",N,"\n")) 
   g <- list(size=N, level='individual'); 
   for (k in seq(1,adm.n)){
+    #     ptm <- proc.time()
+    cat(paste0("\nN = ",N,"  ;  amount = ",adm.amount[k], "\n")) 
     adm$amount <- adm.amount[k]
     for (m in seq(1,M)){
       s <- 1000*l+100*k+10*m
@@ -57,7 +59,7 @@ print(proc.time() - ptm)
 xl   <- rep(NA,adm.n)
 for (k in seq(1,adm.n))
   xl[k] <- paste0(adm.amount[k]," mg")
-  
+
 for (j in seq(1,surv.n)){
   par(mfrow = c(2,2), oma=c(0,0,2,0), mar=c(3,3,2,2) )
   for (l in seq(1,size.n)){
@@ -88,9 +90,11 @@ print(P.res)
 ptm <- proc.time()
 for (l in seq(1,size.n)){
   N <- vN[l]
-  cat(paste0("\nN = ",N,"\n")) 
+  #   cat(paste0("\nN = ",N,"\n")) 
   g <- list(size=N, level='individual'); 
   for (k in seq(1,adm.n)){
+    ptm <- proc.time()
+    cat(paste0("\nN = ",N,"  ;  amount = ",adm.amount[k], "\n")) 
     adm$amount <- adm.amount[k]
     
     dataIn <- simulx(model     = "model/cts2III.txt",
@@ -98,8 +102,7 @@ for (l in seq(1,size.n)){
                      treatment = adm,
                      output    = e, 
                      group     = g,
-                     settings  = list(data.in=TRUE))
-     
+                     settings  = list(load.design=TRUE, data.in=TRUE))
     for (m in seq(1,M)){
       s <- 1000*l+100*k+10*m
       res <- simulx(data = dataIn, settings = list(load.design=FALSE,seed=s))   
@@ -107,6 +110,32 @@ for (l in seq(1,size.n)){
       for (j in seq(1,surv.n))  
         R[m,k,l,j] <- mean(te>=surv.t[j]) 
     }
+    print(proc.time() - ptm)
+  }
+} 
+print(proc.time() - ptm)
+
+
+ptm <- proc.time()
+for (l in seq(1,size.n)){
+  N <- vN[l]
+  #   cat(paste0("\nN = ",N,"\n")) 
+  g <- list(size=N, level='individual'); 
+  for (k in seq(1,adm.n)){
+    cat(paste0("\nN = ",N,"  ;  amount = ",adm.amount[k], "\n")) 
+    adm$amount <- adm.amount[k]
+    s <- 1000*l+100*k
+    res <- simulx(model     = "model/cts2III.txt",
+                  parameter = pop.param,
+                  treatment = adm,
+                  output    = e, 
+                  group     = g,
+                  nrep      = M,
+                  result.folder = "cts2III",
+                  settings  = list(seed = s))
+#       te <- res$e$time[seq(2,2*N,by=2)]
+#       for (j in seq(1,surv.n))  
+#         R[m,k,l,j] <- mean(te>=surv.t[j]) 
   }
 } 
 print(proc.time() - ptm)

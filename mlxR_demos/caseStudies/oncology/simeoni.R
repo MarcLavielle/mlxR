@@ -1,5 +1,6 @@
 #------------------------------------------------------
 model.pharmml <- "pharmML/Simeoni_2004_oncology_TGI_v2.xml"
+model.mlxtran <- "Mlxtran/simeoni.txt"
 #------------------------------------------------------
 
 d = read.csv('data/simeoni2004_data.csv',skip=1,na='.')
@@ -19,9 +20,9 @@ y1 <- list( name = 'y', time = d$TIME[d$EVID!=1&d$ID==1])
 y2 <- list( name = 'y', time = d$TIME[d$EVID!=1&d$ID==2])
 
 g1 <- list( output = list(y1, f1))
-g2 <- list( treatment = adm2, output = list(y2, f2))
+g2 <- list( treatment = adm2, output = list(y2,f2))
 
-res <- simulx( model     = model.pharmml,
+res <- simulx( model     = model.mlxtran,
                parameter = p,
                group     = list(g1,g2),
                settings  = list(seed=12345) )
