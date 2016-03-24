@@ -12,7 +12,21 @@
 #' @param digit (default = 5) 
 #' @examples
 #' \dontrun{
-#' 
+#' modelPK <- inlineModel("
+#' [LONGITUDINAL]
+#' input = {V, Cl, a1}
+#' EQUATION:
+#' Cc = pkmodel(V, Cl)
+#' DEFINITION:
+#' y1 ={distribution=lognormal, prediction=Cc, sd=a1}
+#' ")
+#' adm  <- list(amount=100, time=seq(0,50,by=12))
+#' p <- c(V=10, Cl=1, a1=0.1)
+#' y1 <- list(name=c('y1'), time=seq(5,to=50,by=5))
+#' res <- simulx(model=modelPK, treatment=adm, parameter=p, output=y1)
+#' writeDatamlx(res, result.file="res.csv")
+#' writeDatamlx(res, result.file="res.txt", sep="\t")
+#' writeDatamlx(res, result.folder="res")
 #' }
 #' @export
 writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,digits=5, app.file=F, app.dir=F) 
@@ -115,6 +129,7 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
     if (!is.null(M$rep)) lo <- c(lo, "rep")
     if (!is.null(M$id)) lo <- c(lo, "id")
     if (!is.null(M$time)) lo <- c(lo, "time")
+    if (!is.null(M$ytype)) lo <- c(lo, "ytype")
     lo <- paste(lo,collapse=",")
     eval(parse(text=paste0("M <- M[with(M, order(",lo,")), ]")))
     

@@ -10,10 +10,19 @@
 #' @param addl.ss number of additional doses to use for steady-state  (default=10) 
 #' @examples
 #' \dontrun{
+#' d <- readDatamlx(project='monolixRuns/warfarin_project.mlxtran')
+#' names(d)
+#' head(d$treatment)
+#' head(d$covariate)
+#' head(d$y1)
 #' 
+#' #-- reserved key-words for the header:
+#' #   ID,TIME,AMT,ADM,RATE,TINF,Y,YTYPE,X,COV,CAT,OCC,MDV,EVID,ADDL,SS,II,IGNORE
+#' d <- readDatamlx(datafile='monolixRuns/warfarin_data.txt', 
+#'                  header=c('id','time','amt','y','ytype','cov','cov','cat'))
 #' }
 #' @export
-readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=NULL, addl.ss=10){
+readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=NULL, addl.ss=10, parameter=NULL, fim=NULL){
   # READDATAMLX
   #
   # READDATAMLX reads a datafile and create a list.
