@@ -67,8 +67,10 @@ hformat  <-  function(list.input)
               group[[k]]$level <- "individual"
             else
               group[[k]]$level <- "longitudinal"
-            warning(paste0("level of randomization has not been defined in group ", k,": '", 
-                          group[[k]]$level, "' is used"), call.=FALSE)      
+            
+            if (group[[k]]$level != "longitudinal")
+              warning(paste0("level of randomization has not been defined in group ", k,": '", 
+                             group[[k]]$level, "' is used"), call.=FALSE)      
             
           }
           else
