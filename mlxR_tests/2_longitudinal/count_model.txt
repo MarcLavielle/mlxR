@@ -1,8 +1,0 @@
-[LONGITUDINAL]
-input =  {a,b}
-
-EQUATION:
-lambda=a +b*t
-
-DEFINITION:
-y = {type=count, P(y=k)=exp(-lambda)*(lambda^k)/factorial(k)}

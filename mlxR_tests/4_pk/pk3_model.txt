@@ -1,4 +1,0 @@
-[LONGITUDINAL]
-input = {F, Tlag, Tk0, V, Cl}
-EQUATION:
-Cc = pkmodel(p=F, Tlag, Tk0, V, Cl)

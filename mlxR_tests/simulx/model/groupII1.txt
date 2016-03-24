@@ -1,6 +1,0 @@
-[LONGITUDINAL]
-input = {V, k, a}
-EQUATION:
-C = pkmodel(V,k)
-DEFINITION:
-y = {distribution=lognormal, prediction=C, sd=a}

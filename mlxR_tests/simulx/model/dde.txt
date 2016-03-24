@@ -1,9 +1,0 @@
-[LONGITUDINAL]
-input = {a, b, tau1, tau2}
-
-EQUATION:
-t0 = 0
-f1_0 = 10+t
-f2_0 = 3
-ddt_f1 = a*delay(f2,tau2) - b*delay(f1,tau1)
-ddt_f2 = b*delay(f1,tau1) - a*delay(f2,tau2)

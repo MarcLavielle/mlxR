@@ -1,7 +1,0 @@
-[LONGITUDINAL]
-input = {parameter = {k, f0}, 
-         regressor = {x} }
-EQUATION:
-t0  = 0
-f_0 = f0
-ddt_f = -k*f + x

@@ -1,7 +1,0 @@
-[LONGITUDINAL]
-input = {ka, V, k}
-
-EQUATION:
-ddt_Ad = -ka*Ad
-ddt_Ac =  ka*Ad - k*Ac
-Cc = Ac/V

@@ -1,4 +1,0 @@
-[LONGITUDINAL]
-input = {k12, k21, V, Vm, Km, ke0}
-EQUATION:
-{Cc, Ce} = pkmodel(k12, k21, V, Vm, Km, ke0)

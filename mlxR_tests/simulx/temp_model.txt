@@ -1,8 +1,0 @@
-
-[LONGITUDINAL]
-input =  {a, b, s}
-EQUATION:
-f = a + b*t
-DEFINITION:
-y = {distribution=normal, prediction=f, sd=s}
-

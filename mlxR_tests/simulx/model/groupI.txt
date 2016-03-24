@@ -1,4 +1,0 @@
-[LONGITUDINAL]
-input = {V, k}
-EQUATION:
-C = pkmodel(V,k)

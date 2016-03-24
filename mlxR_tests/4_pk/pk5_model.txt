@@ -1,8 +1,0 @@
-[LONGITUDINAL]
-input = {F0, Tk0, ka, V, Cl}
-PK:
-compartment(cmt=1, amount=Ac)
-oral(cmt=1, Tk0, p=F0)
-oral(cmt=1, ka, Tlag=Tk0, p=1-F0)
-elimination(cmt=1, Cl)
-Cc = Ac/V
