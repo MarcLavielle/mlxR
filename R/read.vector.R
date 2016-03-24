@@ -4,7 +4,7 @@
 #' @param sep : the separator
 #' @param quote : the quote character
 #' @return  the vector
-#'  @export
+#' @export
 #' 
 read.vector <- function(f, header=FALSE, sep="", quote = "\"'") 
 {

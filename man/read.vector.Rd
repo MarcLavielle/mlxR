@@ -17,7 +17,6 @@ read.vector(f, header = FALSE, sep = "", quote = "\\"'")
 }
 \value{
 the vector
- @export
 }
 \description{
 Reads  a table into a vector
