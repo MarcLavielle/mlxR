@@ -38,11 +38,6 @@
 #'   \item \code{time} : a vector of times,
 #'   \item \code{value} : a vector of values.
 #' }
-#' @param varlevel a list, or a list of lists, with fields
-#' \itemize{
-#'   \item \code{name} : a vector of names of variability levels,
-#'   \item \code{time} : a vector of times that define the occasions.
-#' }
 #' @param group a list, or a list of lists, with fields: 
 #' \itemize{
 #'   \item \code{size} : size of the group (default=1),
@@ -118,9 +113,16 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   #
   #  simulx.R was developed by Marc Lavielle and the Inria popix team for the DDMoRe project. 
   #--------------------------------------------------
+  
   myOldENVPATH = Sys.getenv('PATH');
   initMlxLibrary()
   session=Sys.getenv("session.simulx")
+  if (!is.null(varlevel) && grepl('MonolixSuite2016R1',session))
+  # if (!is.null(varlevel) && grepl('mlxsuite-release',session))
+  {
+    cat("\nvarlevel is not supported with this version of mlxLibrary\n")
+    return()
+  }
   Sys.setenv(LIXOFT_HOME=session)
   
   if (is.null(settings$seed))
@@ -246,36 +248,36 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   else
   {
     test.project <- F
-  #--------------------------------------
-  
-  l.input <- c('parameter', 'treatment', 'regressor', 'varlevel', 'output')
-  popid <- list()
-  N <- NULL
-  id <- NULL
-  test.N <- F
-  test.pop <- F
-  for (k in (1:length(l.input)))
-  {
-    lk <- l.input[k]
-    eval(parse(text=paste0('pk <- ',lk))) 
-    pk<- dpopid(pk,lk)
-    if (!is.null(pk$N))
+    #--------------------------------------
+    
+    l.input <- c('parameter', 'treatment', 'regressor', 'varlevel', 'output')
+    popid <- list()
+    N <- NULL
+    id <- NULL
+    test.N <- F
+    test.pop <- F
+    for (k in (1:length(l.input)))
     {
-      test.N <- T
-      if (!is.null(pk$id)) 
-        id <- unique(c(id, pk$id))
+      lk <- l.input[k]
+      eval(parse(text=paste0('pk <- ',lk))) 
+      pk<- dpopid(pk,lk)
+      if (!is.null(pk$N))
+      {
+        test.N <- T
+        if (!is.null(pk$id)) 
+          id <- unique(c(id, pk$id))
+      }
+      if (!is.null(pk$npop))
+      {
+        test.pop <- T
+        npop <- unique(c(npop,pk$npop))
+        if (length(npop)>1)
+          stop('\n\nDifferent numbers of populations are defined in different inputs')
+      }
+      popid[[k]] <- pk
     }
-    if (!is.null(pk$npop))
-    {
-      test.pop <- T
-      npop <- unique(c(npop,pk$npop))
-      if (length(npop)>1)
-        stop('\n\nDifferent numbers of populations are defined in different inputs')
-    }
-    popid[[k]] <- pk
-  }
-  if (test.N==T)
-    id <- as.factor(id)
+    if (test.N==T)
+      id <- as.factor(id)
     N <- length(id)
   }
   #--------------------------------------------------
