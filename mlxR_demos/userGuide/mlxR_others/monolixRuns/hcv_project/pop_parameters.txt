@@ -1,0 +1,52 @@
+******************************************************************
+*      hcv_project.mlxtran
+*      January 04, 2016 at 20:08:24
+*      Monolix version: 4.3.3
+******************************************************************
+
+Estimation of the population parameters
+
+                            parameter 
+s_pop                     : 4.13e+003 
+d_pop                     :     0.461 
+beta_pop                  : 7.49e-006 
+delta_pop                 :    0.0413 
+p_pop                     :        16 
+c_pop                     :       3.4 
+eta_pop                   :     0.848 
+beta_eta_t_GENOTYPEG2     :      2.06 
+epsilon_pop               :     0.291 
+beta_epsilon_t_GENOTYPEG2 :      2.23 
+
+omega_s                   :     0.828 
+omega_d                   :     0.535 
+omega_beta                :      0.51 
+omega_delta               :     0.314 
+omega_p                   :         0 
+omega_c                   :     0.548 
+omega_eta                 :      6.23 
+omega_epsilon             :      2.85 
+
+a                         :     0.617 
+
+_______________
+Estimation of the population parameters by groups
+
+                           parameter 
+eta_(t_GENOTYPE=G1*)     :   0.848   
+eta_(t_GENOTYPE=G2 )     :   0.978   
+epsilon_(t_GENOTYPE=G1*) :   0.291   
+epsilon_(t_GENOTYPE=G2 ) :   0.792   
+
+Categorical covariates
+	t_GENOTYPE
+ 		Reference group: G1 
+		Other groups:  G2
+		G1=  "1"  
+		G2=  ["2", "3","4" ]  
+
+
+Population parameters estimation...
+
+Elapsed time is 175 seconds. 
+CPU time is 801 seconds. 

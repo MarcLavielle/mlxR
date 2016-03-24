@@ -1,0 +1,27 @@
+<monolix>
+	<project name="monolixRuns/theophyllineV2_project.mlxtran">
+		<data headers="" uri="/"/>
+		<covariateDefinitionList/>
+		<models>
+			<statisticalModels>
+				<parameterList/>
+				<correlationModelList/>
+				<observationModelList/>
+			</statisticalModels>
+			<structuralModelList/>
+		</models>
+		<settings>
+			<tasks>
+				<scenario computeResults="false" estimateFisherInformationMatrix="false" estimateIndividualParameters="false" estimateLogLikelihood="false" estimatePopulationParameters="false"/>
+				<individualParameterAlgorithms conditionalDistribution="false" conditionalMode="true"/>
+				<logLikelihoodAlgorithms importantSampling="false" linearization="true"/>
+				<fisherInformationMatrixAlgorithms linearization="true"/>
+			</tasks>
+			<options>
+				<resultFolder uri="%MLXPROJECT%/theophyllineV2_project" value="automatic"/>
+				<showStandardErrorsInPercents value="true"/>
+				<estimateVariances value="false"/>
+			</options>
+		</settings>
+	</project>
+</monolix>

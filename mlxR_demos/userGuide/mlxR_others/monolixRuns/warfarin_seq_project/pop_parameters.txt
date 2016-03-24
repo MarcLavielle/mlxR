@@ -1,0 +1,44 @@
+******************************************************************
+*      warfarin_seq_project.mlxtran
+*      June 29, 2015 at 16:02:48
+*      Monolix version: 4.3.3
+******************************************************************
+
+Estimation of the population parameters
+
+             parameter     s.e. (lin)   r.s.e.(%) 
+Imax_pop   :        1      7.9e-005          0    
+C50_pop    :     1.17           0.1          9    
+Rin_pop    :     5.22          0.14          3    
+kout_pop   :   0.0539        0.0013          2    
+
+omega_Imax :     1.53           2.1        138    
+omega_C50  :    0.469         0.062         13    
+omega_Rin  :    0.036         0.025         68    
+omega_kout :    0.032         0.022         69    
+
+a          :     4.36          0.24          6    
+
+______________________________________________
+correlation matrix of the estimates(linearization)
+
+Imax_pop      1          
+C50_pop   -0.03       1       
+Rin_pop   -0.01   -0.03       1    
+kout_pop  -0.02       0     0.9       1 
+
+Eigenvalues (min, max, max/min): 0.098  1.9  19
+
+omega_Imax      1             
+omega_C50      -0       1          
+omega_Rin    0.07       0       1       
+omega_kout  -0.07      -0   -0.81       1    
+a           -0.12   -0.02   -0.07   -0.04       1 
+
+Eigenvalues (min, max, max/min): 0.18  1.8  10
+
+
+Population parameters and Fisher Information Matrix estimation...
+
+Elapsed time is 61.6 seconds. 
+CPU time is 128 seconds. 

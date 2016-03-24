@@ -1,0 +1,50 @@
+; this script is generated automatically
+
+DESCRIPTION: 
+warfarin_seq_project.mlxtran
+
+DATA: 
+    path = "%MLXPROJECT%/",
+    file  ="warfarin_seq_data.txt",
+    headers = {ID,TIME,AMT,Y,YTYPE,MDV,IGNORE,IGNORE,IGNORE,X,X,X,X,IGNORE,IGNORE,IGNORE,IGNORE},
+    columnDelimiter = "\t"
+
+INDIVIDUAL: 
+    C50 = {distribution=logNormal, iiv=yes},
+    Imax = {distribution=logitNormal, iiv=yes},
+    Rin = {distribution=logNormal, iiv=yes},
+    kout = {distribution=logNormal, iiv=yes}
+
+STRUCTURAL_MODEL: 
+    file = "mlxt:turnover_seq_mlxt",
+    path = "%MLXPROJECT%/libraryMLXTRAN",
+    output = {E}
+
+
+OBSERVATIONS: 
+    PCA = {type=continuous, prediction=E, error=constant}
+
+TASKS: 
+    ; settings
+    globalSettings={
+        withVariance=no,
+        settingsGraphics="%MLXPROJECT%/warfarin_seq_project_graphics.xmlx",
+        settingsAlgorithms="%MLXPROJECT%/warfarin_seq_project_algorithms.xmlx",
+        resultFolder="%MLXPROJECT%/warfarin_seq_project"},
+    ; workflow
+    estimatePopulationParameters(
+        initialValues={
+            pop_C50 = 1,
+            pop_Imax = 0.5,
+            pop_Rin = 1,
+            pop_kout = 1,
+            a_PCA = 10,
+            omega_C50 = 1,
+            omega_Imax = 1,
+            omega_Rin = 1,
+            omega_kout = 1
+            } ),
+    estimateFisherInformationMatrix( method={linearization} ),
+    estimateIndividualParameters( method={conditionalMode} ),
+    displayGraphics(),
+

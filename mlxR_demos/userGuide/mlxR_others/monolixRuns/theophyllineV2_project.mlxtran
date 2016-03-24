@@ -1,0 +1,76 @@
+; this script is generated automatically
+
+<DATAFILE>
+
+[FILEINFO]
+file = 'theophylline_data.txt'
+delimiter = tab
+header = {ID, AMT, AMT/KG, TIME, CONC, WEIGHT, SEX}
+
+[CONTENT]
+ID = {use=identifier}
+AMT = {use=amount}
+TIME = {use=time}
+CONC = {use=observation, name=y1, ytype=1, type=continuous}
+WEIGHT = {use=covariate, type=continuous}
+
+<MODEL>
+
+[COVARIATE]
+input = WEIGHT
+
+EQUATION:
+lw70 = log(WEIGHT/70)
+
+[INDIVIDUAL]
+input = {ka_pop, omega_ka, V_pop, beta_V_lw70, lw70, omega_V, Cl_pop, beta_Cl_lw70, omega_Cl}
+
+DEFINITION:
+ka = {distribution=lognormal, typical=ka_pop, sd=omega_ka}
+V = {distribution=lognormal, typical=V_pop, covariate=lw70, coefficient=beta_V_lw70, sd=omega_V}
+Cl = {distribution=lognormal, typical=Cl_pop, covariate=lw70, coefficient=beta_Cl_lw70, sd=omega_Cl}
+
+[LONGITUDINAL]
+input = b
+
+file = './theophylline_mlxt.txt'
+
+DEFINITION:
+y1 = {distribution=normal, prediction=Cc, errorModel=proportional(b)}
+
+<FIT>
+data = y1
+model = y1
+
+<PARAMETER>
+ka_pop = {value=1, method=MLE}
+omega_ka = {value=1, method=MLE}
+V_pop = {value=20, method=MLE}
+beta_V_lw70 = {value=0, method=MLE}
+omega_V = {value=1, method=MLE}
+Cl_pop = {value=1, method=MLE}
+beta_Cl_lw70 = {value=0, method=MLE}
+omega_Cl = {value=1, method=MLE}
+b = {value=0.3, method=MLE}
+
+<MONOLIX>
+
+
+
+[TASKS]
+
+populationParameters()
+individualParameters(method = conditionalMode)
+fim(method = StochasticApproximation)
+
+
+[SETTINGS]
+
+GLOBAL:
+exportpath = 'theophyllineV2_project'
+nbchains = 5
+autochains = no
+
+POPULATION:
+mixturesinitbeta = 1
+

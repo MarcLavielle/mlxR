@@ -1,0 +1,269 @@
+<monolix>
+	<project mlxVersion="4.4.0" name="project.xmlx" version="1">
+		<data columnDelimiter="\t" commentSymbol="%" dosesToAddForSteadyState="5" headers="ID,TIME,Y,X" uri="%MLXPROJECT%/../rtteCount_data.txt"/>
+		<models>
+			<statisticalModels>
+				<observationModelList>
+					<default name="Event" outputId="1" type="discrete"/>
+				</observationModelList>
+				<parameterList>
+					<default name="lambda" transformation="L">
+						<intercept estimationMethod="MLE" initialization="1"/>
+						<variability estimationMethod="MLE" initialization="1" level="1" levelName="IIV"/>
+					</default>
+					<default name="beta" transformation="L">
+						<intercept estimationMethod="MLE" initialization="1"/>
+						<variability estimationMethod="MLE" initialization="1" level="1" levelName="IIV"/>
+					</default>
+				</parameterList>
+			</statisticalModels>
+			<structuralModelList>
+				<default id="1" name="mlxt:rtteWeibullCount_mlxt" output="1" outputName="Event" uri="%MLXPROJECT%"/>
+			</structuralModelList>
+		</models>
+		<settings>
+			<algorithms seed="123456">
+				<commonSettings>
+					<seed value="123456"/>
+				</commonSettings>
+				<fisherInformationMatrix>
+					<L_mcmc value="50"/>
+					<Nsim value="100000"/>
+					<fr_rmcmc value="0.4"/>
+					<nburn_iter value="10"/>
+					<nktest value="1"/>
+					<nu value="2,0,2,2"/>
+					<reldiff value="0.001"/>
+					<retries value="5"/>
+					<rmcmc value="0.3"/>
+					<timeEstimator value="auto"/>
+				</fisherInformationMatrix>
+				<individualParameters>
+					<L_mcmc value="50"/>
+					<fr_rmcmc value="0.4"/>
+					<kdisp value="50"/>
+					<kiter_hmm value="50"/>
+					<mixt_iter value="100"/>
+					<nb_max_simulated_eta value="50"/>
+					<nb_max_simulated_theta value="1000"/>
+					<niter_hmm value="200"/>
+					<nu value="2,0,2,2"/>
+					<r_mcmc value="0.05"/>
+					<rmcmc value="0.3"/>
+					<take_eta_ratio value="0.5"/>
+					<take_prior_iterations value="1"/>
+					<take_prior_ratio value="0.1"/>
+					<tempf_hmm value="10"/>
+					<tempi_hmm value="10"/>
+					<timeEstimator value="auto"/>
+				</individualParameters>
+				<linearization>
+					<Nsim value="100000"/>
+					<mindiff value="1e-010"/>
+					<reldiff value="0.001"/>
+				</linearization>
+				<logLikelihood>
+					<MMindiv value="10"/>
+					<M_is value="10000"/>
+					<Mtest_is value="1000"/>
+					<optimize value="0"/>
+					<tdof value="5"/>
+					<tdof_fixed value="5"/>
+					<tdof_opt value="2,5,10,20"/>
+					<timeEstimator value="auto"/>
+				</logLikelihood>
+				<populationParameters>
+					<DGamma2_phi0_ini value="1"/>
+					<K0 value="5"/>
+					<acceptanceRatio value="0.85"/>
+					<coef_sa value="0.98,0.95"/>
+					<dU value="5"/>
+					<em_niter value="10"/>
+					<fr_rmcmc value="0.4"/>
+					<freq_error_c value="20"/>
+					<iop_Kauto value="1,1"/>
+					<iop_nmc value="false"/>
+					<iop_sa value="1"/>
+					<kde0 value="25"/>
+					<kdisp value="10"/>
+					<lK value="100,50"/>
+					<maxIterForTimes value="200"/>
+					<maxIter_initEta value="50"/>
+					<min_prop value="0.1"/>
+					<nb_indiv value="50"/>
+					<niter_cov value="4"/>
+					<niter_mcmc value="20"/>
+					<nmc value="1"/>
+					<no_autocorr value="50"/>
+					<no_const_error value="5"/>
+					<no_mixture value="100"/>
+					<nu value="2,0,2,2"/>
+					<nu_times value="2"/>
+					<optim_iter value="20"/>
+					<rG value="0.5"/>
+					<rK2 value="0.1"/>
+					<rmcmc value="0.3"/>
+					<sd_alpha value="2"/>
+					<sd_ratio value="4"/>
+					<sign_df value="10"/>
+					<strategy value="1,0"/>
+					<va value="0,1"/>
+					<vna value="500,200"/>
+				</populationParameters>
+				<results>
+					<Knpde value="50"/>
+					<Knpde_ode value="100"/>
+					<Kvpc value="20"/>
+					<Kvpc_ode value="50"/>
+					<max_vectorsize value="Inf"/>
+					<nx value="100"/>
+					<timeEstimator value="auto"/>
+				</results>
+				<simulation>
+					<nbReplicates value="1"/>
+					<option value="1"/>
+					<seed value="123456"/>
+				</simulation>
+			</algorithms>
+			<graphics>
+				<graphicList>
+					<default name="projectSummary" out="1"/>
+					<default name="spaghetti" out="1">
+						<colorCensData value="0"/>
+						<displayCensData value="0"/>
+						<groupColor value="1"/>
+						<groupFilterIndividual value="1"/>
+						<groupFilterObservation value="1"/>
+						<groupSplit value="1"/>
+						<legend value="0"/>
+						<regId value="1"/>
+						<segment value="1"/>
+						<withInfos value="1"/>
+					</default>
+					<default name="individualFits" out="1">
+						<displayInfos value="0"/>
+						<filterObs value="1"/>
+						<firstIndividual value="1"/>
+						<iovSeparated value="1"/>
+						<nbColumnsInGraphic value="4"/>
+						<nbRowsInGraphic value="3"/>
+						<percentile value="3" vector="5,50,95"/>
+						<selectInd value="2"/>
+						<withCens value="1"/>
+						<withInterval value="0"/>
+						<withLegend value="0"/>
+						<withMedian value="0"/>
+						<withObservedData value="1"/>
+						<withPop value="0"/>
+						<xRegNameId value="1"/>
+					</default>
+					<default name="predVsObs" out="1">
+						<beta_reg value="0.75"/>
+						<ind_estimator value="1"/>
+						<iop_blqres value="2"/>
+						<iop_censcalc value="1"/>
+						<iop_colorcens value="0"/>
+						<iop_colorobs value="1"/>
+						<iop_displaycens value="1"/>
+						<iop_displayobs value="1"/>
+						<iop_displayspline value="1"/>
+						<iop_gfind value="1"/>
+						<iop_gfobs value="1"/>
+						<iop_gs value="1"/>
+						<iop_legend value="1"/>
+						<pop_estimator value="1"/>
+						<segments value="0"/>
+					</default>
+					<default name="covariates" out="0">
+						<applyColor value="1"/>
+						<applyFilter value="1"/>
+						<applySplit value="0"/>
+						<currentParamEstimator value="3"/>
+						<displayCorrelation value="0"/>
+						<displayData value="1"/>
+						<displayEta value="0"/>
+						<displayGroupSplit value="1"/>
+						<displayLegend value="0"/>
+						<displayParameters value="1"/>
+						<displayRegression value="1"/>
+						<displaySplines value="0"/>
+						<displayYEqZero value="0"/>
+						<nbColumnsInGraphic value="1"/>
+						<nbRowsInGraphic value="1"/>
+						<splines_beta_reg value="0.4"/>
+					</default>
+					<default name="distPsi" out="0">
+						<filterIndividual value="1"/>
+						<filterSplit value="1"/>
+						<iop_Fb value="0"/>
+						<iop_bar value="0"/>
+						<iop_dk value="0"/>
+						<iop_fk value="1"/>
+						<iop_fm value="0"/>
+						<iop_gr value="0"/>
+						<selectPhi value="2"/>
+						<withInfos value="0"/>
+						<withLegend value="0"/>
+					</default>
+					<default name="boxplot" out="0">
+						<filterIndividual value="1"/>
+						<filterSplit value="1"/>
+						<refLine value="1"/>
+						<selectEta value="2"/>
+						<shrink value="1"/>
+					</default>
+					<default name="jointDist" out="0">
+						<filterColor value="1"/>
+						<filterIndividual value="1"/>
+						<selectEta value="2"/>
+						<withData value="1"/>
+						<withRegression value="1"/>
+						<withSpline value="1"/>
+					</default>
+					<default name="cvSAEM" out="0">
+						<firstIndividual value="1"/>
+						<nbParam value="100"/>
+					</default>
+				</graphicList>
+				<graphicsToPrint>
+					<BLQ value="1"/>
+					<NPC value="1"/>
+					<VPC value="1"/>
+					<bayesian value="1"/>
+					<boxplot value="1"/>
+					<categorizedData value="1"/>
+					<covTable value="0"/>
+					<covariates value="1"/>
+					<cvSAEM value="1"/>
+					<distPsi value="1"/>
+					<fullTimes value="0"/>
+					<indContTable value="0"/>
+					<individualContribution value="1"/>
+					<individualFits value="1"/>
+					<intTimes value="0"/>
+					<jointDist value="1"/>
+					<kaplanMeier value="1"/>
+					<obsTimes value="0"/>
+					<predVsObs value="1"/>
+					<projectSummary value="1"/>
+					<residuals value="1"/>
+					<spaghetti value="1"/>
+					<transProba value="1"/>
+					<vpcPredDist value="1"/>
+				</graphicsToPrint>
+				<version value="420"/>
+			</graphics>
+			<options>
+				<estimateVariances value="false"/>
+				<resultFolder uri="%MLXPROJECT%/project" value="automatic"/>
+				<showStandardErrorsInPercents value="true"/>
+			</options>
+			<tasks>
+				<fisherInformationMatrixAlgorithms stochasticApproximation="true"/>
+				<individualParameterAlgorithms conditionalDistribution="false" conditionalMode="true"/>
+				<logLikelihoodAlgorithms importantSampling="true" linearization="false"/>
+				<scenario computeResults="false" estimateFisherInformationMatrix="true" estimateIndividualParameters="true" estimateLogLikelihood="false" estimatePopulationParameters="true"/>
+			</tasks>
+		</settings>
+	</project>
+</monolix>

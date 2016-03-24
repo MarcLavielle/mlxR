@@ -1,0 +1,20 @@
+******************************************************************
+*      rtteWeibullCount_project.mlxtran
+*      January 04, 2016 at 16:13:50
+*      Monolix version: 4.4.0
+******************************************************************
+
+Estimation of the population parameters
+
+               parameter 
+lambda_pop   :     173   
+beta_pop     :   0.945   
+
+omega_lambda :   0.274   
+omega_beta   :   0.185   
+
+
+Population parameters estimation...
+
+Elapsed time is 17.2 seconds. 
+CPU time is 62.6 seconds. 

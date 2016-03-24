@@ -1,0 +1,9 @@
+Imax_pop 0.99994
+C50_pop 1.17162
+Rin_pop 5.22266
+kout_pop 0.05388
+omega_Imax 1.53109
+omega_C50 0.46938
+omega_Rin 0.03602
+omega_kout 0.03202
+a 4.36455

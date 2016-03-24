@@ -1,0 +1,35 @@
+DESCRIPTION: Neumann-Lam model (Neumann et al., Science, 282, 1998)
+
+INPUT:  
+parameter = {s, d, beta, delta, p, c, eta, epsilon}
+regressor = {T_end}
+
+EQUATION:
+odeType = stiff
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; compute the initial values
+t0 = 0
+TC_0 = delta*c/(beta*p);
+IC_0 = (s-d*TC_0)/delta
+VL_0 = p*IC_0/c
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; inhibition before and after the end of treatment
+
+if t > T_end
+ coeff = 0
+else
+ coeff = 1
+end
+eta_cond = coeff*eta
+eps_cond = coeff*epsilon
+
+ddt_TC = s - d*TC - beta*(1-eta_cond)*TC*VL
+ddt_IC = beta*(1-eta_cond)*TC*VL - delta*IC
+ddt_VL = (1-eps_cond)*p*IC - c*VL
+
+LVL = max(log10(VL), 0)
+
+OUTPUT:
+output = LVL

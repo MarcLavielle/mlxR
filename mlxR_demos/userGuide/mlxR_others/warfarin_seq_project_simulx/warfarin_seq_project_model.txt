@@ -1,0 +1,30 @@
+
+
+[INDIVIDUAL]
+input={C50_pop, omega_C50, Imax_pop, omega_Imax, Rin_pop, omega_Rin, kout_pop, omega_kout}
+
+
+DEFINITION:
+C50 = { 
+	 distribution=logNormal,
+	 reference=C50_pop,
+	 standardDeviation=omega_C50
+	}
+Imax = { 
+	 distribution=logitNormal,
+	 reference=Imax_pop,
+	 standardDeviation=omega_Imax
+	}
+Rin = { 
+	 distribution=logNormal,
+	 reference=Rin_pop,
+	 standardDeviation=omega_Rin
+	}
+kout = { 
+	 distribution=logNormal,
+	 reference=kout_pop,
+	 standardDeviation=omega_kout
+	}
+
+[LONGITUDINAL]
+
