@@ -70,6 +70,7 @@
 #' 
 #' @return A list of data frames. Each data frame is an output of simulx
 #' 
+#' @examples
 #' \dontrun{
 #' myModel <- inlineModel("
 #' [LONGITUDINAL]

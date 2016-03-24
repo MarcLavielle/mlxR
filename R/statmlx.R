@@ -9,6 +9,7 @@
 #' @param surv.time a scalar or a vector of times. Only used when "event" has been defined in \code{type} 
 #' 
 #' @return A data frame. 
+#' @examples
 #' \dontrun{
 #' modelPK <- inlineModel("
 #' [LONGITUDINAL] 

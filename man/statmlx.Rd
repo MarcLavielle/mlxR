@@ -16,7 +16,15 @@ statmlx(r, FUN = "mean", probs = c(0.05, 0.5, 0.95), surv.time = NULL)
 \item{stats}{a string, or a list of strings, with the name of the functions to apply to the result of the simulation}
 }
 \value{
-A data frame. 
+A data frame.
+}
+\description{
+Compute statistical summaries (mean, quantile, variance, survival rate,...)
+}
+\details{
+See http://simulx.webpopix.org/stamlx for more details.
+}
+\examples{
 \dontrun{
 modelPK <- inlineModel("
 [LONGITUDINAL] 
@@ -59,11 +67,5 @@ statmlx(res2$parameter, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95)
 statmlx(res2$y, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
 statmlx(res2$e, type="event", surv.time=c(10,20,30))
 }
-}
-\description{
-Compute statistical summaries (mean, quantile, variance, survival rate,...)
-}
-\details{
-See http://simulx.webpopix.org/stamlx for more details.
 }
 

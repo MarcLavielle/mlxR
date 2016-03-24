@@ -79,7 +79,27 @@ simulx(model = NULL, parameter = NULL, output = NULL, treatment = NULL,
 }
 \value{
 A list of data frames. Each data frame is an output of simulx
+}
+\description{
+Compute predictions and sample data from \code{Mlxtran}, \code{R} and \code{PharmML} models
+}
+\details{
+simulx takes advantage of the modularity of hierarchical models for simulating 
+different components of a model: models for population parameters, individual 
+covariates, individual parameters and longitudinal data.
 
+Furthermore, \code{simulx} allows to draw different types of longitudinal data, 
+including continuous, count, categorical, and time-to-event data.
+
+The models are encoded using either the model coding language \samp{Mlxtran}, \samp{R} or the 
+markup language \samp{PharmML}. \samp{Mlxtran} models are automatically converted into C++ codes, 
+compiled on the fly and linked to R using the \samp{Rcpp} package. 
+That allows one to implement very easily complex models and to take advantage 
+of the numerical sovers used by the C++ \samp{mlxLibrary}.
+
+See http://simulx.webpopix.org for more details.
+}
+\examples{
 \dontrun{
 myModel <- inlineModel("
 [LONGITUDINAL]
@@ -106,24 +126,6 @@ plot(ggplotmlx() + geom_line(data=res$f, aes(x=time, y=f, colour=id)) +
      geom_point(data=res$y, aes(x=time, y=y, colour=id)))
 print(res$parameter)
 }
-}
-\description{
-Compute predictions and sample data from \code{Mlxtran}, \code{R} and \code{PharmML} models
-}
-\details{
-simulx takes advantage of the modularity of hierarchical models for simulating 
-different components of a model: models for population parameters, individual 
-covariates, individual parameters and longitudinal data.
 
-Furthermore, \code{simulx} allows to draw different types of longitudinal data, 
-including continuous, count, categorical, and time-to-event data.
-
-The models are encoded using either the model coding language \samp{Mlxtran}, \samp{R} or the 
-markup language \samp{PharmML}. \samp{Mlxtran} models are automatically converted into C++ codes, 
-compiled on the fly and linked to R using the \samp{Rcpp} package. 
-That allows one to implement very easily complex models and to take advantage 
-of the numerical sovers used by the C++ \samp{mlxLibrary}.
-
-See http://simulx.webpopix.org for more details.
 }
 
