@@ -1,0 +1,19 @@
+setwd(dirname(parent.frame(2)$ofile)) # set working directory to source file location
+
+project.file <- 'monolixRuns/theophylline_project.mlxtran'  #relative path
+monolix2simulx(project=project.file,open=TRUE)
+monolix2simulx(project=project.file, parameter="mode",open=TRUE)
+monolix2simulx(project=project.file, parameter=list("mode",c(b=0)),open=TRUE)
+
+setwd(dirname(parent.frame(2)$ofile))
+project.file <- 'monolixRuns/warfarin_project.mlxtran' 
+monolix2simulx(project=project.file, parameter="mean",open=TRUE)
+
+setwd(dirname(parent.frame(2)$ofile))
+project.file <- 'monolixRuns/pkcat_project.mlxtran' 
+monolix2simulx(project=project.file, open=TRUE)
+
+setwd(dirname(parent.frame(2)$ofile))
+project.file <- 'monolixRuns/pkrtte_project.mlxtran'  
+monolix2simulx(project=project.file, open=TRUE)
+

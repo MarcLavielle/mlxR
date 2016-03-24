@@ -1,4 +1,4 @@
-library(mlxR)
+#library(mlxR)
 
 myModel <- inlineModel("
 [LONGITUDINAL]
@@ -36,10 +36,10 @@ print(p2)
 p3 <- prctilemlx(res$C, band=list(number=1, level=90))
 print(p3)
 
-p4 <- prctilemlx(res$C, band=list(number=75, level=90))
+p4 <- prctilemlx(res$C, band=list(number=75, level=90)) +  theme(legend.position="none")
 print(p4)
 
-p5 <- prctilemlx(res$C, band=list(number=4, level=80), plot=FALSE)
+p5 <- prctilemlx(res$C, band=list(number=4, level=80), plot=FALSE) 
 print(names(p5))
 print(p5$proba)
 print(p5$color)

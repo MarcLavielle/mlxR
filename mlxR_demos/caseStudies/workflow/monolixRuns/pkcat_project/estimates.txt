@@ -1,21 +1,21 @@
            ; parameter
-   Tlag_pop;   0.91940
-     ka_pop;   1.51859
-      V_pop;   8.03515
- beta_V_twt;   0.89982
-     Cl_pop;   0.13380
-beta_Cl_twt;   0.58892
+   Tlag_pop;   0.91954
+     ka_pop;   1.54610
+      V_pop;   8.03777
+ beta_V_twt;   0.89974
+     Cl_pop;   0.13370
+beta_Cl_twt;   0.58919
     ke0_pop;   0.01771
-    th1_pop;   8.23760
-    th2_pop;   2.42034
-    th3_pop;   3.37499
- omega_Tlag;   0.47800
-   omega_ka;   0.98912
-    omega_V;   0.12584
-   omega_Cl;   0.25733
-  omega_ke0;   0.07240
-  omega_th1;   1.04460
+    th1_pop;   8.24836
+    th2_pop;   2.42221
+    th3_pop;   3.37875
+ omega_Tlag;   0.47526
+   omega_ka;   0.98761
+    omega_V;   0.12571
+   omega_Cl;   0.25709
+  omega_ke0;   0.07229
+  omega_th1;   1.05400
   omega_th2;   0.00000
   omega_th3;   0.00000
-        a_1;   0.22644
-        b_1;   0.06495
+          a;   0.22670
+          b;   0.06503

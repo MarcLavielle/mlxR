@@ -1,0 +1,78 @@
+
+[COVARIATE]
+input={wt}
+
+EQUATION:
+twt = log(wt/70)
+
+
+[INDIVIDUAL]
+input={Cl_pop, omega_Cl, twt, beta_Cl_twt, Tlag_pop, omega_Tlag, V_pop, omega_V, twt, beta_V_twt, ka_pop, omega_ka, ke0_pop, omega_ke0, th1_pop, omega_th1, th2_pop, omega_th2, th3_pop, omega_th3}
+
+
+DEFINITION:
+Cl = { 
+	 distribution=logNormal,
+	 reference=Cl_pop,
+	 standardDeviation=omega_Cl,
+	 covariate={ twt },
+	 coefficient={ beta_Cl_twt}
+	}
+Tlag = { 
+	 distribution=logNormal,
+	 reference=Tlag_pop,
+	 standardDeviation=omega_Tlag
+	}
+V = { 
+	 distribution=logNormal,
+	 reference=V_pop,
+	 standardDeviation=omega_V,
+	 covariate={ twt },
+	 coefficient={ beta_V_twt}
+	}
+ka = { 
+	 distribution=logNormal,
+	 reference=ka_pop,
+	 standardDeviation=omega_ka
+	}
+ke0 = { 
+	 distribution=logNormal,
+	 reference=ke0_pop,
+	 standardDeviation=omega_ke0
+	}
+th1 = { 
+	 distribution=Normal,
+	 reference=th1_pop,
+	 standardDeviation=omega_th1
+	}
+th2 = { 
+	 distribution=logNormal,
+	 reference=th2_pop,
+	 standardDeviation=omega_th2
+	}
+th3 = { 
+	 distribution=logNormal,
+	 reference=th3_pop,
+	 standardDeviation=omega_th3
+	}
+
+[LONGITUDINAL]
+input = { parameter = {a_1, b_1,Tlag, ka, V, Cl, ke0, th1, th2, th3}}
+
+
+EQUATION:
+{Cc,Ce}= pkmodel(Tlag,ka,V,Cl,ke0)
+
+DEFINITION:
+conc = { distribution=normal, prediction=Cc, errorModel=combined1(a_1, b_1) }
+
+
+level = {
+	type=categorical
+	categories={1,2,3}
+	logit(P(level<=1)) = -th1 + th2*Ce
+	logit(P(level<=2)) = -th1 + th2*Ce + th3
+}
+
+
+

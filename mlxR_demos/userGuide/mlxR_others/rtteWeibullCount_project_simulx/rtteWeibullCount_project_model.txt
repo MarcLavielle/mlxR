@@ -1,0 +1,40 @@
+
+
+[INDIVIDUAL]
+input={beta_pop, omega_beta, lambda_pop, omega_lambda}
+
+
+DEFINITION:
+beta = { 
+	 distribution=logNormal,
+	 reference=beta_pop,
+	 standardDeviation=omega_beta
+	}
+lambda = { 
+	 distribution=logNormal,
+	 reference=lambda_pop,
+	 standardDeviation=omega_lambda
+	}
+
+[LONGITUDINAL]
+}
+
+
+input = { parameter = {lambda, beta}  
+regressor = tpe
+
+DEFINITION:
+
+Event = {type=count, 
+HAZ=(t/lambda)^beta - (tpe/lambda)^beta
+if k>0
+  haz=(beta/lambda)*(t/lambda)^(beta-1)
+  lpk = log(haz) - HAZ
+else
+  lpk = - HAZ
+end
+log(P(Event=k)) = lpk
+}
+
+
+

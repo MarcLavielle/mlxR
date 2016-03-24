@@ -1,11 +1,22 @@
 <monolix>
-	<project mlxVersion="4.3.3" name="project.xmlx">
+	<project mlxVersion="4.4.0" name="project.xmlx" version="1">
 		<covariateDefinitionList>
 			<covariateDefinition columnName="wt" name="twt" transformation="log(cov/70)" type="continuous"/>
 		</covariateDefinitionList>
-		<data columnDelimiter="\t" headers="ID,TIME,AMT,IGNORE,YTYPE,COV,IGNORE,IGNORE,Y" uri="C:/Users/Marc/mlxtoolbox/doc/caseStudies/workflow/monolixRuns/pkcat_data.txt"/>
+		<data columnDelimiter="\t" commentSymbol="%" dosesToAddForSteadyState="5" headers="ID,TIME,AMT,IGNORE,YTYPE,COV,IGNORE,IGNORE,Y" uri="%MLXPROJECT%/../pkcat_data.txt"/>
 		<models>
 			<statisticalModels>
+				<observationModelList>
+					<observationModel name="conc" outputId="1" pred="Cc" type="continuous">
+						<error alias="comb1">
+							<parameterList>
+								<parameter estimationMethod="MLE" initialization="1" name="a"/>
+								<parameter estimationMethod="MLE" initialization="0.3" name="b"/>
+							</parameterList>
+						</error>
+					</observationModel>
+					<observationModel name="level" outputId="2" type="discrete"/>
+				</observationModelList>
 				<parameterList>
 					<parameter name="Tlag" transformation="L">
 						<intercept estimationMethod="MLE" initialization="1"/>
@@ -16,17 +27,17 @@
 						<variability estimationMethod="MLE" initialization="1" level="1" levelName="IIV"/>
 					</parameter>
 					<parameter name="V" transformation="L">
-						<intercept estimationMethod="MLE" initialization="10"/>
 						<betaList>
 							<beta covariate="twt" estimationMethod="MLE" initialization="0"/>
 						</betaList>
+						<intercept estimationMethod="MLE" initialization="10"/>
 						<variability estimationMethod="MLE" initialization="1" level="1" levelName="IIV"/>
 					</parameter>
 					<parameter name="Cl" transformation="L">
-						<intercept estimationMethod="MLE" initialization="0.1"/>
 						<betaList>
 							<beta covariate="twt" estimationMethod="MLE" initialization="0"/>
 						</betaList>
+						<intercept estimationMethod="MLE" initialization="0.1"/>
 						<variability estimationMethod="MLE" initialization="1" level="1" levelName="IIV"/>
 					</parameter>
 					<parameter name="ke0" transformation="L">
@@ -44,152 +55,119 @@
 						<intercept estimationMethod="MLE" initialization="0.111"/>
 					</parameter>
 				</parameterList>
-				<observationModelList>
-					<observationModel name="conc" outputId="1" pred="Cc" type="continuous">
-						<error alias="comb1">
-							<parameterList>
-								<parameter estimationMethod="MLE" initialization="1" name="a"/>
-								<parameter estimationMethod="MLE" initialization="0.3" name="b"/>
-							</parameterList>
-						</error>
-					</observationModel>
-					<observationModel name="level" outputId="2" type="discrete"/>
-				</observationModelList>
 			</statisticalModels>
 			<structuralModelList>
 				<structuralModel id="1" name="mlxt:pkcat_mlxt" output="1,2" outputName="conc,level" uri="%MLXPROJECT%"/>
 			</structuralModelList>
 		</models>
 		<settings>
-			<tasks>
-				<scenario computeResults="false" estimateFisherInformationMatrix="false" estimateIndividualParameters="false" estimateLogLikelihood="false" estimatePopulationParameters="true"/>
-				<individualParameterAlgorithms conditionalDistribution="false" conditionalMode="true"/>
-				<logLikelihoodAlgorithms importantSampling="true" linearization="false"/>
-				<fisherInformationMatrixAlgorithms stochasticApproximation="true"/>
-			</tasks>
-			<options>
-				<estimateVariances value="false"/>
-				<showStandardErrorsInPercents value="true"/>
-				<resultFolder uri="%MLXPROJECT%/project" value="automatic"/>
-			</options>
 			<algorithms seed="123456">
+				<commonSettings>
+					<seed value="123456"/>
+				</commonSettings>
+				<fisherInformationMatrix>
+					<L_mcmc value="50"/>
+					<Nsim value="100000"/>
+					<fr_rmcmc value="0.4"/>
+					<nburn_iter value="10"/>
+					<nktest value="1"/>
+					<nu value="2,0,2,2"/>
+					<reldiff value="0.001"/>
+					<retries value="5"/>
+					<rmcmc value="0.3"/>
+					<timeEstimator value="auto"/>
+				</fisherInformationMatrix>
+				<individualParameters>
+					<L_mcmc value="50"/>
+					<fr_rmcmc value="0.4"/>
+					<kdisp value="50"/>
+					<kiter_hmm value="50"/>
+					<mixt_iter value="100"/>
+					<nb_max_simulated_eta value="50"/>
+					<nb_max_simulated_theta value="1000"/>
+					<niter_hmm value="200"/>
+					<nu value="2,0,2,2"/>
+					<r_mcmc value="0.05"/>
+					<rmcmc value="0.3"/>
+					<take_eta_ratio value="0.5"/>
+					<take_prior_iterations value="1"/>
+					<take_prior_ratio value="0.1"/>
+					<tempf_hmm value="10"/>
+					<tempi_hmm value="10"/>
+					<timeEstimator value="auto"/>
+				</individualParameters>
+				<linearization>
+					<Nsim value="100000"/>
+					<mindiff value="1e-010"/>
+					<reldiff value="0.001"/>
+				</linearization>
 				<logLikelihood>
+					<MMindiv value="10"/>
 					<M_is value="20000"/>
-					<optimize value="0"/>
 					<Mtest_is value="2000"/>
+					<optimize value="0"/>
+					<tdof value="5"/>
 					<tdof_fixed value="5"/>
 					<tdof_opt value="1,2,5,10,15"/>
-					<tdof value="5"/>
-					<MMindiv value="10"/>
 					<timeEstimator value="auto"/>
 				</logLikelihood>
 				<populationParameters>
-					<kdisp value="50"/>
-					<K0 value="5"/>
-					<iop_sa value="1"/>
-					<coef_sa value="0.95,0.95"/>
-					<rK2 value="0.1"/>
-					<nu value="2,0,2,2"/>
-					<rmcmc value="0.3"/>
-					<fr_rmcmc value="0.4"/>
-					<vna value="500,200"/>
-					<va value="0,1"/>
-					<niter_mcmc value="20"/>
-					<iop_Kauto value="1,1"/>
-					<lK value="100,50"/>
-					<dU value="5"/>
-					<nmc value="2"/>
-					<iop_nmc value="1"/>
-					<nb_indiv value="50"/>
-					<kde0 value="25"/>
-					<maxIter_initEta value="50"/>
-					<no_const_error value="5"/>
-					<no_autocorr value="50"/>
-					<optim_iter value="20"/>
-					<freq_error_c value="20"/>
-					<rG value="0.5"/>
 					<DGamma2_phi0_ini value="1"/>
-					<sign_df value="10"/>
-					<strategy value="2"/>
-					<niter_cov value="4"/>
-					<no_mixture value="100"/>
+					<K0 value="5"/>
+					<acceptanceRatio value="0.85"/>
+					<coef_sa value="0.95,0.95"/>
+					<dU value="5"/>
 					<em_niter value="10"/>
+					<fr_rmcmc value="0.4"/>
+					<freq_error_c value="20"/>
+					<iop_Kauto value="1,1"/>
+					<iop_nmc value="false"/>
+					<iop_sa value="1"/>
+					<kde0 value="25"/>
+					<kdisp value="50"/>
+					<lK value="100,50"/>
+					<maxIterForTimes value="200"/>
+					<maxIter_initEta value="50"/>
+					<min_prop value="0.1"/>
+					<nb_indiv value="50"/>
+					<niter_cov value="4"/>
+					<niter_mcmc value="20"/>
+					<nmc value="2"/>
+					<no_autocorr value="50"/>
+					<no_const_error value="5"/>
+					<no_mixture value="100"/>
+					<nu value="2,0,2,2"/>
+					<nu_times value="2"/>
+					<optim_iter value="20"/>
+					<rG value="0.5"/>
+					<rK2 value="0.1"/>
+					<rmcmc value="0.3"/>
 					<sd_alpha value="2"/>
 					<sd_ratio value="4"/>
-					<min_prop value="0.1"/>
-					<acceptanceRatio value="0.85"/>
-					<nu_times value="2"/>
-					<maxIterForTimes value="200"/>
+					<sign_df value="10"/>
+					<strategy value="2"/>
+					<va value="0,1"/>
+					<vna value="500,200"/>
 				</populationParameters>
-				<individualParameters>
-					<kdisp value="50"/>
-					<nu value="2,0,2,2"/>
-					<fr_rmcmc value="0.4"/>
-					<rmcmc value="0.3"/>
-					<L_mcmc value="50"/>
-					<r_mcmc value="0.05"/>
-					<mixt_iter value="100"/>
-					<take_eta_ratio value="0.5"/>
-					<nb_max_simulated_eta value="50"/>
-					<take_prior_iterations value="1"/>
-					<take_prior_ratio value="0.1"/>
-					<nb_max_simulated_theta value="1000"/>
-					<timeEstimator value="auto"/>
-					<tempi_hmm value="10"/>
-					<tempf_hmm value="10"/>
-					<kiter_hmm value="50"/>
-					<niter_hmm value="200"/>
-				</individualParameters>
-				<fisherInformationMatrix>
-					<timeEstimator value="auto"/>
-					<nu value="2,0,2,2"/>
-					<fr_rmcmc value="0.4"/>
-					<rmcmc value="0.3"/>
-					<nburn_iter value="10"/>
-					<L_mcmc value="50"/>
-					<retries value="5"/>
-					<nktest value="1"/>
-					<Nsim value="100000"/>
-					<reldiff value="0.001"/>
-				</fisherInformationMatrix>
-				<linearization>
-					<Nsim value="100000"/>
-					<reldiff value="0.001"/>
-					<mindiff value="1e-010"/>
-				</linearization>
-				<simulation>
-					<nbReplicates value="1"/>
-					<seed value="123456"/>
-					<option value="1"/>
-				</simulation>
 				<results>
-					<timeEstimator value="auto"/>
-					<max_vectorsize value="Inf"/>
 					<Knpde value="500"/>
 					<Knpde_ode value="100"/>
 					<Kvpc value="100"/>
 					<Kvpc_ode value="50"/>
+					<max_vectorsize value="Inf"/>
 					<nx value="100"/>
+					<timeEstimator value="auto"/>
 				</results>
+				<simulation>
+					<nbReplicates value="1"/>
+					<option value="1"/>
+					<seed value="123456"/>
+				</simulation>
 			</algorithms>
 			<graphics>
-				<version value="420"/>
 				<graphicList>
 					<graphic name="projectSummary" out="1"/>
-					<graphic name="projectSummary" out="2"/>
 					<graphic name="spaghetti" out="1">
-						<colorCensData value="0"/>
-						<displayCensData value="0"/>
-						<groupColor value="1"/>
-						<groupFilterIndividual value="1"/>
-						<groupFilterObservation value="1"/>
-						<groupSplit value="1"/>
-						<legend value="0"/>
-						<regId value="1"/>
-						<segment value="1"/>
-						<withInfos value="1"/>
-					</graphic>
-					<graphic name="spaghetti" out="2">
 						<colorCensData value="0"/>
 						<displayCensData value="0"/>
 						<groupColor value="1"/>
@@ -218,41 +196,7 @@
 						<withPop value="0"/>
 						<xRegNameId value="1"/>
 					</graphic>
-					<graphic name="individualFits" out="2">
-						<displayInfos value="0"/>
-						<filterObs value="1"/>
-						<firstIndividual value="1"/>
-						<iovSeparated value="1"/>
-						<nbColumnsInGraphic value="4"/>
-						<nbRowsInGraphic value="3"/>
-						<percentile value="3" vector="5,50,95"/>
-						<selectInd value="2"/>
-						<withCens value="1"/>
-						<withInterval value="0"/>
-						<withLegend value="0"/>
-						<withMedian value="0"/>
-						<withObservedData value="1"/>
-						<withPop value="0"/>
-						<xRegNameId value="1"/>
-					</graphic>
 					<graphic name="predVsObs" out="1">
-						<beta_reg value="0.75"/>
-						<ind_estimator value="1"/>
-						<iop_blqres value="2"/>
-						<iop_censcalc value="1"/>
-						<iop_colorcens value="0"/>
-						<iop_colorobs value="1"/>
-						<iop_displaycens value="1"/>
-						<iop_displayobs value="1"/>
-						<iop_displayspline value="1"/>
-						<iop_gfind value="1"/>
-						<iop_gfobs value="1"/>
-						<iop_gs value="1"/>
-						<iop_legend value="1"/>
-						<pop_estimator value="1"/>
-						<segments value="0"/>
-					</graphic>
-					<graphic name="predVsObs" out="2">
 						<beta_reg value="0.75"/>
 						<ind_estimator value="1"/>
 						<iop_blqres value="2"/>
@@ -321,32 +265,44 @@
 					</graphic>
 				</graphicList>
 				<graphicsToPrint>
-					<projectSummary value="1"/>
-					<spaghetti value="1"/>
-					<individualFits value="1"/>
-					<predVsObs value="1"/>
-					<residuals value="1"/>
-					<covariates value="1"/>
-					<VPC value="1"/>
-					<NPC value="1"/>
-					<BLQ value="1"/>
-					<categorizedData value="1"/>
-					<vpcPredDist value="1"/>
-					<distPsi value="1"/>
-					<boxplot value="1"/>
-					<jointDist value="1"/>
-					<kaplanMeier value="1"/>
-					<transProba value="1"/>
-					<bayesian value="1"/>
-					<individualContribution value="1"/>
-					<cvSAEM value="1"/>
-					<obsTimes value="0"/>
-					<intTimes value="0"/>
+					<BLQ value="0"/>
+					<NPC value="0"/>
+					<VPC value="0"/>
+					<bayesian value="0"/>
+					<boxplot value="0"/>
+					<categorizedData value="0"/>
+					<covTable value="0"/>
+					<covariates value="0"/>
+					<cvSAEM value="0"/>
+					<distPsi value="0"/>
 					<fullTimes value="0"/>
 					<indContTable value="0"/>
-					<covTable value="0"/>
+					<individualContribution value="0"/>
+					<individualFits value="0"/>
+					<intTimes value="0"/>
+					<jointDist value="0"/>
+					<kaplanMeier value="0"/>
+					<obsTimes value="0"/>
+					<predVsObs value="0"/>
+					<projectSummary value="0"/>
+					<residuals value="0"/>
+					<spaghetti value="0"/>
+					<transProba value="0"/>
+					<vpcPredDist value="0"/>
 				</graphicsToPrint>
+				<version value="420"/>
 			</graphics>
+			<options>
+				<estimateVariances value="false"/>
+				<resultFolder uri="%MLXPROJECT%/project" value="automatic"/>
+				<showStandardErrorsInPercents value="true"/>
+			</options>
+			<tasks>
+				<fisherInformationMatrixAlgorithms stochasticApproximation="true"/>
+				<individualParameterAlgorithms conditionalDistribution="false" conditionalMode="true"/>
+				<logLikelihoodAlgorithms importantSampling="true" linearization="false"/>
+				<scenario computeResults="false" estimateFisherInformationMatrix="false" estimateIndividualParameters="false" estimateLogLikelihood="false" estimatePopulationParameters="true"/>
+			</tasks>
 		</settings>
 	</project>
 </monolix>

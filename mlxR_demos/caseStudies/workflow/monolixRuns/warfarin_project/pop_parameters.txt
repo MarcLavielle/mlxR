@@ -1,7 +1,7 @@
 ******************************************************************
 *      warfarin_project.mlxtran
-*      January 13, 2015 at 18:34:03
-*      Monolix version: 4.3.3
+*      February 22, 2016 at 17:16:06
+*      Monolix version: 4.4.0
 ******************************************************************
 
 Estimation of the population parameters
@@ -27,9 +27,9 @@ omega_IC50   :    0.482        0.066          14
 omega_kin    :   0.0243         0.04         163               
 omega_kout   :   0.0416         0.02          49               
 
-a_1          :    0.266        0.045          17               
-b_1          :   0.0583       0.0091          16               
-a_2          :     4.16         0.25           6               
+a1           :    0.266        0.045          17               
+b1           :   0.0583       0.0091          16               
+a2           :     4.16         0.25           6               
 
 ______________________________________________
 correlation matrix of the estimates(linearization)
@@ -55,9 +55,9 @@ omega_Imax     -0      -0      -0      -0       1
 omega_IC50      0       0       0      -0   -0.09       1                
 omega_kin    0.01       0       0      -0     0.1   -0.01       1             
 omega_kout  -0.01      -0      -0       0   -0.11    0.01   -0.84       1          
-a_1             0    0.01    0.01   -0.01   -0.03      -0   -0.01    0.01       1       
-b_1         -0.01   -0.02   -0.06       0    0.01       0       0      -0   -0.79       1    
-a_2         -0.01   -0.01      -0      -0   -0.24      -0   -0.12    0.01   -0.01       0       1 
+a1              0    0.01    0.01   -0.01   -0.03      -0   -0.01    0.01       1       
+b1          -0.01   -0.02   -0.06       0    0.01       0       0      -0   -0.79       1    
+a2          -0.01   -0.01      -0      -0   -0.24      -0   -0.12    0.01   -0.01       0       1 
 
 Eigenvalues (min, max, max/min): 0.15  1.9  12
 
@@ -67,5 +67,5 @@ Numerical covariates
 
 Population parameters and Fisher Information Matrix estimation...
 
-Elapsed time is 67.7 seconds. 
-CPU time is 101 seconds. 
+Elapsed time is 57.6 seconds. 
+CPU time is 130 seconds. 

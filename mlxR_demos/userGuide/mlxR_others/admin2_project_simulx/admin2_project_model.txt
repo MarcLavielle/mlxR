@@ -1,0 +1,65 @@
+
+
+[INDIVIDUAL]
+input={CL_pop, omega_CL, F2_pop, omega_F2, F3_pop, omega_F3, F4_pop, omega_F4, V_pop, omega_V, ka2_pop, omega_ka2, ka3_pop, omega_ka3, ka4_pop, omega_ka4}
+
+
+DEFINITION:
+CL = { 
+	 distribution=logNormal,
+	 reference=CL_pop,
+	 standardDeviation=omega_CL
+	}
+F2 = { 
+	 distribution=logitNormal,
+	 reference=F2_pop,
+	 standardDeviation=omega_F2
+	}
+F3 = { 
+	 distribution=logitNormal,
+	 reference=F3_pop,
+	 standardDeviation=omega_F3
+	}
+F4 = { 
+	 distribution=logitNormal,
+	 reference=F4_pop,
+	 standardDeviation=omega_F4
+	}
+V = { 
+	 distribution=logNormal,
+	 reference=V_pop,
+	 standardDeviation=omega_V
+	}
+ka2 = { 
+	 distribution=logNormal,
+	 reference=ka2_pop,
+	 standardDeviation=omega_ka2
+	}
+ka3 = { 
+	 distribution=logNormal,
+	 reference=ka3_pop,
+	 standardDeviation=omega_ka3
+	}
+ka4 = { 
+	 distribution=logNormal,
+	 reference=ka4_pop,
+	 standardDeviation=omega_ka4
+	}
+
+[LONGITUDINAL]
+input = { parameter = {a, b,F2, F3, F4, ka2, ka3, ka4, V, CL}}
+
+
+PK:
+compartment(amount=Ac)
+iv(adm=1)
+absorption(adm=2, ka=ka2, p=F2)
+absorption(adm=3, ka=ka3, p=F3)
+absorption(adm=4, ka=ka4, p=F4)
+elimination(k=CL/V) 
+Cc=Ac/V
+
+DEFINITION:
+y1 = { distribution=normal, prediction=Cc, errorModel=combined1(a, b) }
+
+

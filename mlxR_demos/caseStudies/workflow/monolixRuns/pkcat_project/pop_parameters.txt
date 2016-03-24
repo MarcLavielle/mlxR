@@ -1,34 +1,34 @@
 ******************************************************************
 *      pkcat_project.mlxtran
-*      January 13, 2015 at 18:20:50
-*      Monolix version: 4.3.3
+*      March 10, 2016 at 00:58:46
+*      Monolix version: 4.4.0
 ******************************************************************
 
 Estimation of the population parameters
 
               parameter 
-Tlag_pop    :    0.919  
-ka_pop      :     1.52  
+Tlag_pop    :     0.92  
+ka_pop      :     1.55  
 V_pop       :     8.04  
 beta_V_twt  :      0.9  
 Cl_pop      :    0.134  
 beta_Cl_twt :    0.589  
 ke0_pop     :   0.0177  
-th1_pop     :     8.24  
+th1_pop     :     8.25  
 th2_pop     :     2.42  
-th3_pop     :     3.37  
+th3_pop     :     3.38  
 
-omega_Tlag  :    0.478  
-omega_ka    :    0.989  
+omega_Tlag  :    0.475  
+omega_ka    :    0.988  
 omega_V     :    0.126  
 omega_Cl    :    0.257  
-omega_ke0   :   0.0724  
-omega_th1   :     1.04  
+omega_ke0   :   0.0723  
+omega_th1   :     1.05  
 omega_th2   :        0  
 omega_th3   :        0  
 
-a_1         :    0.226  
-b_1         :   0.0649  
+a           :    0.227  
+b           :    0.065  
 
 Numerical covariates
 	twt = log(wt/70)		
@@ -36,5 +36,5 @@ Numerical covariates
 
 Population parameters estimation...
 
-Elapsed time is 76.5 seconds. 
-CPU time is 96.9 seconds. 
+Elapsed time is 121 seconds. 
+CPU time is 185 seconds. 

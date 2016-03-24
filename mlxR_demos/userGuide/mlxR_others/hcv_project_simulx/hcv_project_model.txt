@@ -1,0 +1,89 @@
+
+
+[INDIVIDUAL]
+input={beta_pop, omega_beta, c_pop, omega_c, d_pop, omega_d, delta_pop, omega_delta, epsilon_pop, omega_epsilon, t_GENOTYPE, beta_epsilon_t_GENOTYPE, eta_pop, omega_eta, t_GENOTYPE, beta_eta_t_GENOTYPE, p_pop, omega_p, s_pop, omega_s}
+
+
+DEFINITION:
+beta = { 
+	 distribution=logNormal,
+	 reference=beta_pop,
+	 standardDeviation=omega_beta
+	}
+c = { 
+	 distribution=logNormal,
+	 reference=c_pop,
+	 standardDeviation=omega_c
+	}
+d = { 
+	 distribution=logNormal,
+	 reference=d_pop,
+	 standardDeviation=omega_d
+	}
+delta = { 
+	 distribution=logNormal,
+	 reference=delta_pop,
+	 standardDeviation=omega_delta
+	}
+epsilon = { 
+	 distribution=logitNormal,
+	 reference=epsilon_pop,
+	 standardDeviation=omega_epsilon,
+	 covariate={ t_GENOTYPE },
+	 coefficient={ beta_epsilon_t_GENOTYPE}
+	}
+eta = { 
+	 distribution=logitNormal,
+	 reference=eta_pop,
+	 standardDeviation=omega_eta,
+	 covariate={ t_GENOTYPE },
+	 coefficient={ beta_eta_t_GENOTYPE}
+	}
+p = { 
+	 distribution=logNormal,
+	 reference=p_pop,
+	 standardDeviation=omega_p
+	}
+s = { 
+	 distribution=logNormal,
+	 reference=s_pop,
+	 standardDeviation=omega_s
+	}
+
+[LONGITUDINAL]
+  
+input = { parameter = {a,s, d, beta, delta, p, c, eta, epsilon}
+regressor = {T_end}}
+
+
+EQUATION:
+odeType = stiff
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; compute the initial values
+t0 = 0
+TC_0 = delta*c/(beta*p);
+IC_0 = (s-d*TC_0)/delta
+VL_0 = p*IC_0/c
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; inhibition before and after the end of treatment
+
+if t > T_end
+ coeff = 0
+else
+ coeff = 1
+end
+eta_cond = coeff*eta
+eps_cond = coeff*epsilon
+
+ddt_TC = s - d*TC - beta*(1-eta_cond)*TC*VL
+ddt_IC = beta*(1-eta_cond)*TC*VL - delta*IC
+ddt_VL = (1-eps_cond)*p*IC - c*VL
+
+LVL = max(log10(VL), 0)
+
+DEFINITION:
+y1 = { distribution=normal, prediction=LVL, errorModel=constant(a) }
+
+

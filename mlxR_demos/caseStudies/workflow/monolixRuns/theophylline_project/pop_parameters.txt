@@ -1,7 +1,7 @@
 ******************************************************************
 *      theophylline_project.mlxtran
-*      January 14, 2015 at 07:25:57
-*      Monolix version: 4.3.3
+*      March 09, 2016 at 17:41:12
+*      Monolix version: 4.4.0
 ******************************************************************
 
 Estimation of the population parameters
@@ -43,5 +43,5 @@ Numerical covariates
 
 Population parameters and Fisher Information Matrix estimation...
 
-Elapsed time is 18 seconds. 
-CPU time is 20.2 seconds. 
+Elapsed time is 16.7 seconds. 
+CPU time is 18 seconds. 
