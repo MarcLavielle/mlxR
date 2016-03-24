@@ -4,13 +4,10 @@
 \alias{statmlx}
 \title{Summary of data}
 \usage{
-statmlx(r, type = "continuous", FUN = "mean", probs = c(0.05, 0.5, 0.95),
-  surv.time = NULL)
+statmlx(r, FUN = "mean", probs = c(0.05, 0.5, 0.95), surv.time = NULL)
 }
 \arguments{
 \item{r}{a data frame}
-
-\item{type}{a string, type = {"continuous", "event"}. Default = "continuous"}
 
 \item{probs}{a vector of quantiles  between 0 and 1. Only used when "quantile" has been defined in \code{FUN}}
 
@@ -19,7 +16,49 @@ statmlx(r, type = "continuous", FUN = "mean", probs = c(0.05, 0.5, 0.95),
 \item{stats}{a string, or a list of strings, with the name of the functions to apply to the result of the simulation}
 }
 \value{
-A data frame.
+A data frame. 
+\dontrun{
+modelPK <- inlineModel("
+[LONGITUDINAL] 
+input={V,Cl,alpha, beta,b}
+
+EQUATION:
+C = pkmodel(V, Cl)
+h = alpha*exp(beta*C)
+g = b*C
+
+DEFINITION:
+y = {distribution=normal, prediction=C, sd=g}
+e = {type=event, maxEventNumber=1, rightCensoringTime=30, hazard=h}
+
+[INDIVIDUAL]
+input={V_pop,Cl_pop,omega_V,omega_Cl}
+
+DEFINITION:
+V     = {distribution=lognormal,   prediction=V_pop,    sd=omega_V}
+Cl    = {distribution=lognormal,   prediction=Cl_pop,   sd=omega_Cl}
+")
+
+adm  <- list(amount=100, time=0)
+p <- c(V_pop=10, Cl_pop=1, omega_V=0.2, omega_Cl=0.2, alpha=0.02, beta=0.1, b=0.1)
+out.y <- list(name=c('y'), time=seq(0,to=25,by=5))
+out.e <- list(name=c('e'), time=0)
+out.p <- c("V", "Cl")
+out   <- list(out.y, out.e, out.p)
+g <- list(size=100, level='individual')
+res1 <- simulx(model=modelPK, treatment=adm, parameter=p, output=out, group=g, settings=s)
+
+statmlx(res1$parameter, FUN = "mean", probs = c(0.05, 0.5, 0.95))
+statmlx(res1$parameter, FUN = "quantile", probs = c(0.05, 0.5, 0.95))
+statmlx(res1$parameter, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
+statmlx(res1$y, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
+statmlx(res1$e, type="event", surv.time=c(10,20))
+
+res2 <- simulx(model=modelPK, treatment=adm, parameter=p, output=out, group=g, nrep=3)
+statmlx(res2$parameter, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
+statmlx(res2$y, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
+statmlx(res2$e, type="event", surv.time=c(10,20,30))
+}
 }
 \description{
 Compute statistical summaries (mean, quantile, variance, survival rate,...)

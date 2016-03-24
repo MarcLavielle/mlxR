@@ -38,12 +38,6 @@ simulx(model = NULL, parameter = NULL, output = NULL, treatment = NULL,
   \item \code{value} : a vector of values.
 }}
 
-\item{varlevel}{a list, or a list of lists, with fields
-\itemize{
-  \item \code{name} : a vector of names of variability levels,
-  \item \code{time} : a vector of times that define the occasions.
-}}
-
 \item{group}{a list, or a list of lists, with fields: 
 \itemize{
   \item \code{size} : size of the group (default=1),
@@ -85,6 +79,33 @@ simulx(model = NULL, parameter = NULL, output = NULL, treatment = NULL,
 }
 \value{
 A list of data frames. Each data frame is an output of simulx
+
+\dontrun{
+myModel <- inlineModel("
+[LONGITUDINAL]
+input = {A, k, c, a}
+EQUATION:
+t0    = 0 
+f_0   = A
+ddt_f = -k*f/(c+f)
+DEFINITION:
+y = {distribution=normal, prediction=f, sd=a}
+[INDIVIDUAL]
+input = {k_pop, omega}
+DEFINITION:
+k = {distribution=lognormal, prediction=k_pop, sd=omega}
+")
+f <- list(name='f', time=seq(0, 30, by=0.1))
+y <- list(name='y', time=seq(0, 30, by=2))
+res <- simulx(model     = 'model/home.txt', 
+              parameter = c(A=100, k_pop=6, omega=0.3, c=10, a=2), 
+              output    = list(f,y,"k"),
+              group     = list(size=4, level='individual'))
+
+plot(ggplotmlx() + geom_line(data=res$f, aes(x=time, y=f, colour=id)) +
+     geom_point(data=res$y, aes(x=time, y=y, colour=id)))
+print(res$parameter)
+}
 }
 \description{
 Compute predictions and sample data from \code{Mlxtran}, \code{R} and \code{PharmML} models

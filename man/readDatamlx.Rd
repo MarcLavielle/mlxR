@@ -5,7 +5,7 @@
 \title{Read formatted data file}
 \usage{
 readDatamlx(project = NULL, datafile = NULL, header = NULL,
-  infoProject = NULL, addl.ss = 10)
+  infoProject = NULL, addl.ss = 10, parameter = NULL, fim = NULL)
 }
 \arguments{
 \item{project}{a Monolix project}
@@ -26,7 +26,16 @@ See http://simulx.webpopix.org/mlxr/readdatamlx/ for more details.
 }
 \examples{
 \dontrun{
+d <- readDatamlx(project='monolixRuns/warfarin_project.mlxtran')
+names(d)
+head(d$treatment)
+head(d$covariate)
+head(d$y1)
 
+#-- reserved key-words for the header:
+#   ID,TIME,AMT,ADM,RATE,TINF,Y,YTYPE,X,COV,CAT,OCC,MDV,EVID,ADDL,SS,II,IGNORE
+d <- readDatamlx(datafile='monolixRuns/warfarin_data.txt', 
+                 header=c('id','time','amt','y','ytype','cov','cov','cat'))
 }
 }
 

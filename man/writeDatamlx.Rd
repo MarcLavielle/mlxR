@@ -29,7 +29,21 @@ See http://simulx.webpopix.org/mlxr/writedatamlx/ for more details.
 }
 \examples{
 \dontrun{
-
+modelPK <- inlineModel("
+[LONGITUDINAL]
+input = {V, Cl, a1}
+EQUATION:
+Cc = pkmodel(V, Cl)
+DEFINITION:
+y1 ={distribution=lognormal, prediction=Cc, sd=a1}
+")
+adm  <- list(amount=100, time=seq(0,50,by=12))
+p <- c(V=10, Cl=1, a1=0.1)
+y1 <- list(name=c('y1'), time=seq(5,to=50,by=5))
+res <- simulx(model=modelPK, treatment=adm, parameter=p, output=y1)
+writeDatamlx(res, result.file="res.csv")
+writeDatamlx(res, result.file="res.txt", sep="\\t")
+writeDatamlx(res, result.folder="res")
 }
 }
 
