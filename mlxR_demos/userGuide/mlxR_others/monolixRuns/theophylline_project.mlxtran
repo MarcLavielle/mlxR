@@ -1,51 +1,62 @@
 ; this script is generated automatically
 
-DESCRIPTION: 
-theophylline_project.mlxtran
+<DATAFILE>
 
-DATA: 
-    path = "%MLXPROJECT%/",
-    file  ="theophylline_data.txt",
-    headers = {ID,AMT,IGNORE,TIME,Y,COV,IGNORE},
-    columnDelimiter = "\t"
+[FILEINFO]
+file = 'data/theophylline_data.txt'
+delimiter = tab
+header = {ID, AMT, TIME, CONC, WEIGHT, SEX}
 
-VARIABLES: 
-    WEIGHT,
-    lw70 = log(WEIGHT/70) [use=cov]
+[CONTENT]
+ID = {use=identifier}
+AMT = {use=amount}
+TIME = {use=time}
+CONC = {use=observation, name=concentration, ytype=1, type=continuous}
 
-INDIVIDUAL: 
-    Cl = {distribution=logNormal, covariate=lw70, iiv=yes},
-    V = {distribution=logNormal, covariate=lw70, iiv=yes},
-    ka = {distribution=logNormal, iiv=yes}
+<MODEL>
 
-STRUCTURAL_MODEL: 
-    file = "mlxt:theophylline_mlxt",
-    path = "%MLXPROJECT%",
-    output = {Cc}
+[INDIVIDUAL]
+input = {ka_pop, omega_ka, V_pop, omega_V, Cl_pop, omega_Cl}
 
+DEFINITION:
+ka = {distribution=lognormal, typical=ka_pop, sd=omega_ka}
+V = {distribution=lognormal, typical=V_pop, sd=omega_V}
+Cl = {distribution=lognormal, typical=Cl_pop, sd=omega_Cl}
 
-OBSERVATIONS: 
-    y1 = {type=continuous, prediction=Cc, error=proportional}
+[LONGITUDINAL]
+input = a
 
-TASKS: 
-    ; settings
-    globalSettings={
-        withVariance=no,
-        settingsAlgorithms="%MLXPROJECT%/theophylline_project_algorithms.xmlx",
-        resultFolder="%MLXPROJECT%/theophylline_project"},
-    ; workflow
-    estimatePopulationParameters(
-        initialValues={
-            pop_Cl = 1,
-            beta_{Cl,lw70} = 0 ,
-            pop_V = 20,
-            beta_{V,lw70} = 0 ,
-            pop_ka = 1,
-            b_y1 = 0.3,
-            omega_Cl = 1,
-            omega_V = 1,
-            omega_ka = 1
-            } ),
-    estimateFisherInformationMatrix( method={stochasticApproximation} ),
-    estimateIndividualParameters( method={conditionalMode} ),
+file = 'lib:oral1_1cpt_kaVCl.txt'
+
+DEFINITION:
+concentration = {distribution=normal, prediction=Cc, errorModel=constant(a)}
+
+<FIT>
+data = concentration
+model = concentration
+
+<PARAMETER>
+ka_pop = {value=1, method=MLE}
+omega_ka = {value=1, method=MLE}
+V_pop = {value=1, method=MLE}
+omega_V = {value=1, method=MLE}
+Cl_pop = {value=0.05, method=MLE}
+omega_Cl = {value=1, method=MLE}
+a = {value=1, method=MLE}
+
+<MONOLIX>
+
+[TASKS]
+populationParameters()
+individualParameters(method = All)
+fim(method = Linearization)
+
+[SETTINGS]
+GLOBAL:
+exportpath = 'theophylline_project'
+nbchains = 5
+autochains = no
+
+REPORTING:
+knpde = 1000
 

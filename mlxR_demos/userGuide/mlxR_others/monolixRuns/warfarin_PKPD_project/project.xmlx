@@ -1,34 +1,78 @@
 <monolix>
 	<project mlxVersion="4.4.0" name="project.xmlx" version="2">
-		<data columnDelimiter="\t" commentSymbol="%" dosesToAddForSteadyState="5" headers="ID,AMT,TIME,Y,IGNORE,IGNORE" uri="%MLXPROJECT%/../data/theophylline_data.txt"/>
+		<covariateDefinitionList>
+			<covariateDefinition columnName="wt" name="lw70" transformation="log(cov/70)" type="continuous"/>
+		</covariateDefinitionList>
+		<data columnDelimiter="\t" commentSymbol="%" dosesToAddForSteadyState="5" headers="ID,TIME,AMT,Y,YTYPE,COV,IGNORE,IGNORE" uri="%MLXPROJECT%/../data/warfarin_data.txt"/>
 		<models>
 			<statisticalModels>
+				<correlationModelList>
+					<correlationModel level="1" levelName="IIV">
+						<blockList>
+							<block parameters="V,Cl"/>
+						</blockList>
+					</correlationModel>
+				</correlationModelList>
 				<observationModelList>
-					<observationModel name="concentration" outputId="1" pred="Cc" type="continuous">
+					<observationModel name="y1" outputId="1" pred="Cc" type="continuous">
+						<error alias="comb1">
+							<parameterList>
+								<parameter estimationMethod="MLE" initialization="10" name="a"/>
+								<parameter estimationMethod="MLE" initialization="0.5" name="b"/>
+							</parameterList>
+						</error>
+					</observationModel>
+					<observationModel name="y2" outputId="2" pred="E" type="continuous">
 						<error alias="const">
 							<parameterList>
-								<parameter estimationMethod="MLE" initialization="1" name="a"/>
+								<parameter estimationMethod="MLE" initialization="10" name="a"/>
 							</parameterList>
 						</error>
 					</observationModel>
 				</observationModelList>
 				<parameterList>
+					<parameter name="Tlag" transformation="L">
+						<intercept estimationMethod="MLE" initialization="1"/>
+						<variability estimationMethod="MLE" initialization="1" level="1" levelName="IIV"/>
+					</parameter>
 					<parameter name="ka" transformation="L">
 						<intercept estimationMethod="MLE" initialization="1"/>
 						<variability estimationMethod="MLE" initialization="1" level="1" levelName="IIV"/>
 					</parameter>
 					<parameter name="V" transformation="L">
+						<betaList>
+							<beta covariate="lw70" estimationMethod="MLE" initialization="1"/>
+						</betaList>
+						<intercept estimationMethod="MLE" initialization="10"/>
+						<variability estimationMethod="MLE" initialization="0.316228" level="1" levelName="IIV"/>
+					</parameter>
+					<parameter name="Cl" transformation="L">
+						<betaList>
+							<beta covariate="lw70" estimationMethod="MLE" initialization="0"/>
+						</betaList>
 						<intercept estimationMethod="MLE" initialization="1"/>
 						<variability estimationMethod="MLE" initialization="1" level="1" levelName="IIV"/>
 					</parameter>
-					<parameter name="Cl" transformation="L">
-						<intercept estimationMethod="MLE" initialization="0.05"/>
+					<parameter name="Imax" transformation="G">
+						<intercept estimationMethod="MLE" initialization="0.5"/>
+						<variability estimationMethod="MLE" initialization="0.5" level="1" levelName="IIV"/>
+					</parameter>
+					<parameter name="IC50" transformation="L">
+						<intercept estimationMethod="MLE" initialization="1"/>
+						<variability estimationMethod="MLE" initialization="1" level="1" levelName="IIV"/>
+					</parameter>
+					<parameter name="Rin" transformation="L">
+						<intercept estimationMethod="MLE" initialization="1"/>
+						<variability estimationMethod="MLE" initialization="1" level="1" levelName="IIV"/>
+					</parameter>
+					<parameter name="kout" transformation="L">
+						<intercept estimationMethod="MLE" initialization="1"/>
 						<variability estimationMethod="MLE" initialization="1" level="1" levelName="IIV"/>
 					</parameter>
 				</parameterList>
 			</statisticalModels>
 			<structuralModelList>
-				<structuralModel id="1" name="mlxt:oral1_1cpt_kaVCl" output="1" outputName="Cc" uri="%MLXPROJECT%"/>
+				<structuralModel id="1" name="mlxt:turnover1_mlxt" output="1,2" outputName="Cc,E" uri="%MLXPROJECT%"/>
 			</structuralModelList>
 		</models>
 		<settings>
@@ -103,7 +147,7 @@
 					<nb_indiv value="50"/>
 					<niter_cov value="4"/>
 					<niter_mcmc value="20"/>
-					<nmc value="5"/>
+					<nmc value="1"/>
 					<no_autocorr value="50"/>
 					<no_const_error value="5"/>
 					<no_mixture value="100"/>
@@ -121,7 +165,7 @@
 					<vna value="500,200"/>
 				</populationParameters>
 				<results>
-					<Knpde value="1000"/>
+					<Knpde value="500"/>
 					<Knpde_ode value="100"/>
 					<Kvpc value="100"/>
 					<Kvpc_ode value="50"/>
@@ -137,7 +181,20 @@
 			</algorithms>
 			<graphics>
 				<graphicList>
+					<graphic name="projectSummary" out="2"/>
 					<graphic name="projectSummary" out="1"/>
+					<graphic name="spaghetti" out="2">
+						<colorCensData value="0"/>
+						<displayCensData value="0"/>
+						<groupColor value="1"/>
+						<groupFilterIndividual value="1"/>
+						<groupFilterObservation value="1"/>
+						<groupSplit value="1"/>
+						<legend value="0"/>
+						<regId value="1"/>
+						<segment value="1"/>
+						<withInfos value="1"/>
+					</graphic>
 					<graphic name="spaghetti" out="1">
 						<colorCensData value="0"/>
 						<displayCensData value="0"/>
@@ -150,7 +207,7 @@
 						<segment value="1"/>
 						<withInfos value="1"/>
 					</graphic>
-					<graphic name="individualFits" out="1">
+					<graphic name="individualFits" out="2">
 						<displayInfos value="0"/>
 						<filterObs value="1"/>
 						<firstIndividual value="1"/>
@@ -158,7 +215,7 @@
 						<nbColumnsInGraphic value="4"/>
 						<nbRowsInGraphic value="3"/>
 						<percentile value="3" vector="5,50,95"/>
-						<selectInd value="2"/>
+						<selectInd value="1"/>
 						<withCens value="0"/>
 						<withInterval value="0"/>
 						<withLegend value="0"/>
@@ -167,9 +224,26 @@
 						<withPop value="0"/>
 						<xRegNameId value="1"/>
 					</graphic>
-					<graphic name="predVsObs" out="1">
+					<graphic name="individualFits" out="1">
+						<displayInfos value="0"/>
+						<filterObs value="1"/>
+						<firstIndividual value="1"/>
+						<iovSeparated value="0"/>
+						<nbColumnsInGraphic value="4"/>
+						<nbRowsInGraphic value="3"/>
+						<percentile value="3" vector="5,50,95"/>
+						<selectInd value="1"/>
+						<withCens value="0"/>
+						<withInterval value="0"/>
+						<withLegend value="0"/>
+						<withMedian value="0"/>
+						<withObservedData value="1"/>
+						<withPop value="0"/>
+						<xRegNameId value="1"/>
+					</graphic>
+					<graphic name="predVsObs" out="2">
 						<beta_reg value="0.75"/>
-						<ind_estimator value="1"/>
+						<ind_estimator value="3"/>
 						<iop_blqres value="1"/>
 						<iop_censcalc value="1"/>
 						<iop_colorcens value="0"/>
@@ -183,6 +257,61 @@
 						<iop_legend value="1"/>
 						<pop_estimator value="1"/>
 						<segments value="0"/>
+					</graphic>
+					<graphic name="predVsObs" out="1">
+						<beta_reg value="0.75"/>
+						<ind_estimator value="3"/>
+						<iop_blqres value="1"/>
+						<iop_censcalc value="1"/>
+						<iop_colorcens value="0"/>
+						<iop_colorobs value="1"/>
+						<iop_displaycens value="0"/>
+						<iop_displayobs value="1"/>
+						<iop_displayspline value="1"/>
+						<iop_gfind value="1"/>
+						<iop_gfobs value="1"/>
+						<iop_gs value="1"/>
+						<iop_legend value="1"/>
+						<pop_estimator value="1"/>
+						<segments value="0"/>
+					</graphic>
+					<graphic name="residuals" out="2">
+						<K value="10"/>
+						<Kmax value="30"/>
+						<Kmin value="5"/>
+						<alpha value="0.0005"/>
+						<beta value="0.4"/>
+						<beta_reg value="0.75"/>
+						<continous value="1"/>
+						<gamma value="0"/>
+						<iop_blqres value="1"/>
+						<iop_censcalc value="0"/>
+						<iop_colorcens value="0"/>
+						<iop_colorobs value="1"/>
+						<iop_displaybins value="0"/>
+						<iop_displaycens value="1"/>
+						<iop_displayciout value="0"/>
+						<iop_displayciprct value="0"/>
+						<iop_displayemdens value="1"/>
+						<iop_displayemprct value="0"/>
+						<iop_displayhisto value="0"/>
+						<iop_displayobs value="1"/>
+						<iop_displayoutprct value="0"/>
+						<iop_displayspline value="0"/>
+						<iop_displaythdens value="1"/>
+						<iop_displaythprct value="0"/>
+						<iop_gfind value="1"/>
+						<iop_gfobs value="1"/>
+						<iop_gs value="1"/>
+						<iop_legend value="0"/>
+						<level value="90"/>
+						<lmin value="10"/>
+						<nmax value="200"/>
+						<obin value="3"/>
+						<prctile value="3" vector="10,50,90"/>
+						<selectK value="1"/>
+						<select_graphics value="4" vector="1,1,1,0"/>
+						<select_residual value="6" vector="0,0,0,1,1,0"/>
 					</graphic>
 					<graphic name="residuals" out="1">
 						<K value="10"/>
@@ -219,8 +348,8 @@
 						<obin value="3"/>
 						<prctile value="3" vector="10,50,90"/>
 						<selectK value="1"/>
-						<select_graphics value="4" vector="1,1,1,0"/>
-						<select_residual value="6" vector="0,1,0,0,1,0"/>
+						<select_graphics value="4" vector="1,1,1,1"/>
+						<select_residual value="6" vector="1,0,0,0,1,0"/>
 					</graphic>
 					<graphic name="covariates" out="0">
 						<applyColor value="1"/>
@@ -236,9 +365,57 @@
 						<displayRegression value="1"/>
 						<displaySplines value="0"/>
 						<displayYEqZero value="0"/>
-						<nbColumnsInGraphic value="2"/>
-						<nbRowsInGraphic value="3"/>
+						<nbColumnsInGraphic value="1"/>
+						<nbRowsInGraphic value="4"/>
 						<splines_beta_reg value="0.4"/>
+					</graphic>
+					<graphic name="VPC" out="2">
+						<BLQ_displayCI value="1"/>
+						<BLQ_displayData value="1"/>
+						<BLQ_displayLegend value="1"/>
+						<BLQ_displayMedian value="1"/>
+						<BLQ_displayOutliers value="1"/>
+						<BLQ_lengthGrid value="10"/>
+						<BLQ_percentile value="5"/>
+						<K value="10"/>
+						<Kmax value="30"/>
+						<Kmin value="5"/>
+						<NPC_displayCI value="1"/>
+						<NPC_displayData value="1"/>
+						<NPC_displayLegend value="1"/>
+						<NPC_displayMedian value="0"/>
+						<NPC_displayOutliers value="1"/>
+						<NPC_iop_blqres value="1"/>
+						<NPC_iop_censcalc value="1"/>
+						<NPC_lengthGrid value="100"/>
+						<NPC_percentile value="5"/>
+						<alpha value="0.0005"/>
+						<beta value="0.4"/>
+						<continous value="1"/>
+						<gamma value="0"/>
+						<iop_blqres value="1"/>
+						<iop_censcalc value="1"/>
+						<iop_colorcens value="0"/>
+						<iop_colorobs value="1"/>
+						<iop_displaybins value="0"/>
+						<iop_displaycens value="0"/>
+						<iop_displayciout value="1"/>
+						<iop_displayciprct value="1"/>
+						<iop_displayemprct value="1"/>
+						<iop_displayobs value="0"/>
+						<iop_displayoutprct value="1"/>
+						<iop_displaythprct value="0"/>
+						<iop_gfind value="1"/>
+						<iop_gfobs value="1"/>
+						<iop_gs value="1"/>
+						<iop_legend value="1"/>
+						<iop_predcor value="0"/>
+						<level value="90"/>
+						<lmin value="10"/>
+						<nmax value="200"/>
+						<obin value="3"/>
+						<prctile value="3" vector="10,50,90"/>
+						<selectK value="1"/>
 					</graphic>
 					<graphic name="VPC" out="1">
 						<BLQ_displayCI value="1"/>
@@ -287,6 +464,32 @@
 						<obin value="3"/>
 						<prctile value="3" vector="10,50,90"/>
 						<selectK value="1"/>
+					</graphic>
+					<graphic name="vpcPredDist" out="2">
+						<K value="10"/>
+						<Kmax value="30"/>
+						<Kmin value="5"/>
+						<alpha value="0.0005"/>
+						<beta value="0.4"/>
+						<continous value="1"/>
+						<filterIndividual value="1"/>
+						<filterSplit value="1"/>
+						<gamma value="0"/>
+						<level value="80"/>
+						<lmin value="10"/>
+						<nbDiscretePercentile value="9"/>
+						<nmax value="200"/>
+						<obin value="3"/>
+						<percentileType value="2"/>
+						<prctile value="3" vector="10,50,90"/>
+						<selectK value="1"/>
+						<withBins value="0"/>
+						<withLegend value="1"/>
+						<withMedian value="1"/>
+						<withObservedData value="0"/>
+						<withPercentile value="0"/>
+						<withPercentileFill value="1"/>
+						<withText value="0"/>
 					</graphic>
 					<graphic name="vpcPredDist" out="1">
 						<K value="10"/>
@@ -344,10 +547,8 @@
 					</graphic>
 					<graphic name="cvSAEM" out="0">
 						<firstIndividual value="1"/>
-						<nbParam value="9"/>
+						<nbParam value="13"/>
 					</graphic>
-					<graphic name="obsTimes" out="1"/>
-					<graphic name="intTimes" out="1"/>
 				</graphicList>
 				<graphicsToPrint>
 					<BLQ value="0"/>

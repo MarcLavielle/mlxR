@@ -1,0 +1,14 @@
+[LONGITUDINAL]  
+input = {a}
+
+EQUATION:
+t0 = 0
+f_0 = 0
+ddt_f = a
+
+;--------------------------------------------
+[INDIVIDUAL]  ; variability levels = {id, occ}
+input = {a_pop, oa0, oa1}
+
+DEFINITION:
+a = {distribution=normal, reference=a_pop, varlevel={id,id*occ}, sd= {oa0, oa1}}

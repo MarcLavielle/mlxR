@@ -1,4 +1,0 @@
-lambda_pop 173.00249
-beta_pop 0.94543
-omega_lambda 0.27413
-omega_beta 0.18539
