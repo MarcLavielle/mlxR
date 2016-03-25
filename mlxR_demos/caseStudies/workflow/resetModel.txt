@@ -1,6 +1,0 @@
-
-[LONGITUDINAL]
-input = {ka, V, k, a}
-EQUATION:
-f = ka/(V*(ka-k))*(exp(-k*t) - exp(-ka*t))
-

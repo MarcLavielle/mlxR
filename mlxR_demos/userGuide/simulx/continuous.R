@@ -1,7 +1,7 @@
 setwd(dirname(parent.frame(2)$ofile))
 library(mlxR)
 # source("../../../initMlxR220.R")
-library(reshape)
+library(reshape2)
 library(gridExtra)
 
 #-------------------------------------

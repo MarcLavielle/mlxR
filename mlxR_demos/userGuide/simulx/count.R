@@ -1,6 +1,6 @@
 library(mlxR)
 library(plyr)
-library(reshape)
+library(reshape2)
 
 #---- POISSON  model ----------------
 

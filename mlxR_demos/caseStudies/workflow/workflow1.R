@@ -80,7 +80,8 @@ sim.res2e  <- simulx(project   = project.file,
                      output    = out1,
                      parameter = sim.param)
 
-
+sim.res2f  <- simulx(project   = project.file,
+                     settings  = list(out.trt=F))
 ##########################################################
 #      EXAMPLE 3
 #

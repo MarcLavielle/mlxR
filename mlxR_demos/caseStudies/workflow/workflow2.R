@@ -22,8 +22,6 @@ res <- simulx( project   = project.file,
                output    = out2, 
                parameter = 'mode')
 
-print(res$parameter)
-
 plot1 <- ggplotmlx() + 
   geom_point(data=res$y1, aes(x=time, y=y1, colour=id)) +
   geom_line( data=res$y1, aes(x=time, y=y1, colour=id)) +

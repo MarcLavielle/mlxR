@@ -1,4 +1,4 @@
-library(reshape)
+library(reshape2)
 #-------------------------------------
 adm <- list(time=c(2,14,20), amount=40)
 p   <- c(V=8, Cl=0.5,k12=0.3, k21=0.2)
@@ -44,7 +44,7 @@ t <- seq(0, 50, by=0.1)
 
 res <- pkmodel(t,adm,p)
 
-r <- melt(res, id='time', variable_name='c')
+r <- melt(res, id='time', variable.name='c')
 print(ggplotmlx(r, aes(time,value)) + geom_line(aes(colour = c),size=1) +
         ylab('concentration') + guides(colour=guide_legend(title=NULL)) +
         theme(legend.position=c(.9, .8)))

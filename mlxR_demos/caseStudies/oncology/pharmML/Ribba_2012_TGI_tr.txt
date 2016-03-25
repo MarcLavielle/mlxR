@@ -14,10 +14,6 @@ DELTAQP = { distribution = normal, transformation = log, reference = pop_DELTAQP
 [LONGITUDINAL]
 input={DELTAQP,LAMBDAP,GAMMA,KQPP,K,KDE,KPQ,a}
 
-PK:
-depot(target=C)
-
-
 EQUATION:
 C_0 = 0
 PT_0 = 5

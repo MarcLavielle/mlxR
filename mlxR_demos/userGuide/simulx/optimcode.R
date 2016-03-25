@@ -25,7 +25,7 @@ res <- simulx(model     = myModel,
               group     = g)
 
 #---------------------------------------------
-M=500
+M=100
 
 ptm <- proc.time()
 for(i in seq(1,M)){

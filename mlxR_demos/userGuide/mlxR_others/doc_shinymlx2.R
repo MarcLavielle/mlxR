@@ -1,6 +1,6 @@
 # Set working directory to source file location
 library(mlxR)
-library(reshape)
+library(reshape2)
 
 #---------------------------------------------------
 ####  EXAMPLE 2

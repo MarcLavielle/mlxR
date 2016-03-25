@@ -1,5 +1,5 @@
 setwd(dirname(parent.frame(2)$ofile))
-library(reshape)
+library(reshape2)
 # library(mlxR)
 #-----------------------------------------
 

@@ -1,5 +1,5 @@
 library(mlxR)
-library(reshape)
+library(reshape2)
 
 #---------------------------------------------------
 ####  EXAMPLE 4

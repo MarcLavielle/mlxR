@@ -2,7 +2,7 @@
 library(gridExtra)
 
 #-------------------------------------
-M <- 1000
+M <- 100
 vN <- c(25, 50, 75, 100)
 
 adm.amount <- c(0, 25, 50, 100)
@@ -125,6 +125,7 @@ for (l in seq(1,size.n)){
     cat(paste0("\nN = ",N,"  ;  amount = ",adm.amount[k], "\n")) 
     adm$amount <- adm.amount[k]
     s <- 1000*l+100*k
+    ptm <- proc.time()
     res <- simulx(model     = "model/cts2III.txt",
                   parameter = pop.param,
                   treatment = adm,
@@ -132,8 +133,9 @@ for (l in seq(1,size.n)){
                   group     = g,
                   nrep      = M,
                   result.folder = "cts2III",
-                  settings  = list(seed = s))
-#       te <- res$e$time[seq(2,2*N,by=2)]
+                  settings  = list(seed = s, out.trt = T))
+    print(proc.time() - ptm)
+    #       te <- res$e$time[seq(2,2*N,by=2)]
 #       for (j in seq(1,surv.n))  
 #         R[m,k,l,j] <- mean(te>=surv.t[j]) 
   }

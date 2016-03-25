@@ -1,4 +1,4 @@
-library(reshape)
+library(reshape2)
 library(mlxR)
 
 valveModel <- inlineModel("
@@ -28,7 +28,7 @@ res <- simulx(model     = 'model/hog1_model.txt',
               treatment = list(ton, toff))
 
 r <- merge(res$h,merge(res$s,res$u))
-r <- melt(r, id = 'time', variable_name = 'signal')
+r <- melt(r, id = 'time', variable.name = 'signal')
 print(ggplotmlx(r, aes(time,value)) + geom_line(aes(colour = signal),size=1) +
         ylab('activation')+ theme(legend.position=c(.9, .7)))
 

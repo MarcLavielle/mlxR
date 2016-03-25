@@ -1,3 +1,5 @@
+library(gridExtra)
+
 pk.model <- "Rmodel/modelR_pk1.R"
 # pk.model <- "Rmodel/modelMlxt_pk1.txt"
 
@@ -11,9 +13,9 @@ g1 <- list(treatment=adm1, size=6)
 g2 <- list(treatment=adm2, size=3)
 
 res1 <- simulx(model     = pk.model, 
-              output    = list(C,y,ind),
-              parameter = p,
-              group     = list(g1,g2))
+               output    = list(C,y,ind),
+               parameter = p,
+               group     = list(g1,g2))
 
 print(res1$parameter)
 
@@ -37,9 +39,9 @@ C <- list(name="C", time=seq(0,200, by=0.2))
 p = c(ka=1, V=0.1, Cl=0.01, k12=0.2, k21=0.2, k13=0.3, k31=0.3)
 
 res2 <- simulx(model     = pk.model, 
-              output    = C,
-              treatment = adm,
-              parameter = p)
+               output    = C,
+               treatment = adm,
+               parameter = p)
 
 print(ggplotmlx(data=res2$C)  + geom_line(aes(x=time, y=C), size=0.5))
 
@@ -113,10 +115,10 @@ C = pkmodel(V, k)
 
 ptm <- proc.time()
 res3b <- simulx(model     = modelMlxt, 
-               output    = list(C,ind),
-               parameter = p,
-               treatment = adm,
-               group     = g)
+                output    = list(C,ind),
+                parameter = p,
+                treatment = adm,
+                group     = g)
 print(proc.time() - ptm)
 
 print(prctilemlx(res3b$C)+ylim(c(0,25)))
@@ -127,9 +129,9 @@ reg <- data.frame(time=seq(0,50,by=5),  Cin=exp(-0.1*seq(0,50,by=5)))
 out <- list(name=c('C','E'), time=seq(0,50, by=0.2))
 
 res4 <- simulx( model     = "Rmodel/modelR_reg1.R",
-               parameter = c(Emax=100, EC50=0.3),
-               regressor = reg,
-               output    = out)
+                parameter = c(Emax=100, EC50=0.3),
+                regressor = reg,
+                output    = out)
 
 plot1 <- ggplotmlx(data=res4$C) + geom_line(aes(x=time, y=C))
 plot2 <- ggplotmlx(data=res4$E) + geom_line(aes(x=time, y=E))

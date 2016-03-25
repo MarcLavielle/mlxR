@@ -57,3 +57,5 @@ out.y <- list(name='y', time=seq(0,to=25,by=5), FUN = c("mean", "sd", "quantile"
 out.e <- list(name='e', time=0, type="event", surv.time=c(10,20))
 out   <- list(out.p, out.y, out.e)
 res4 <- simulx(model=modelPK, treatment=adm, parameter=p, output=out, group=g,  settings=s)
+res4$e
+
