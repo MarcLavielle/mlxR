@@ -66,6 +66,7 @@
 #'   \item \code{digits} : number of decimal digits in output files (default = 5) 
 #'   \item \code{disp.iter} : TRUE/FALSE (default = FALSE) display replicate and population numbers
 #'   \item \code{replacement} : TRUE/FALSE (default = FALSE) sample id's with/without replacement
+#'   \item \code{out.trt} : TRUE/FALSE (default = TRUE) output of simulx includes treatment
 #' }       
 #' 
 #' @return A list of data frames. Each data frame is an output of simulx
@@ -119,7 +120,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   initMlxLibrary()
   session=Sys.getenv("session.simulx")
   if (!is.null(varlevel) && grepl('MonolixSuite2016R1',session))
-  # if (!is.null(varlevel) && grepl('mlxsuite-release',session))
+    # if (!is.null(varlevel) && grepl('mlxsuite-release',session))
   {
     cat("\nvarlevel is not supported with this version of mlxLibrary\n")
     return()
@@ -138,7 +139,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   if (is.null(settings$kw.max)) kw.max <- 500
   replacement <- settings$replacement
   if (is.null(settings$replacement)) replacement <- FALSE
-  
+  out.trt <- settings$out.trt
+  if (is.null(settings$out.trt))  out.trt <- T
   
   if (!is.null(data))
   {
@@ -200,6 +202,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       stat.0 <- c(stat.0, outk.n)
     }
   }
+  if (write.simul==T)
+    stat.0 <- c(stat.0, "treatment")
   names(stat.a)=stat.n
   
   #--------------------------------------------------
@@ -391,12 +395,14 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       irw <- irw + 1
       settings$seed <- settings$seed +12345
       
+      
       if (disp.iter==TRUE && nrep>1)  
         cat("replicate: ",irw,"\n")
       
       if (test.rep == T)
       {
-        r <- simulxunit(data = dataIn,settings=settings)
+        r <- simulxunit(data = dataIn,settings=settings, out.trt=out.trt)
+        # r$treatment <- NULL
       } 
       else 
       {
@@ -404,18 +410,21 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           lv <- resample.data(lv,id,sum(g.size),replacement)
         if (test.N==F)  
           lv$group <- group
-        r <- simulxunit(model=model,lv=lv,settings=settings)
+        r <- simulxunit(model=model,lv=lv,settings=settings, out.trt=out.trt)
       }
       
       rs <- r
       rs[stat.0] <- NULL
-      for (k in (1:length(stat.n)))
+      if (length(stat.n) > 0)
       {
-        rnk <- stat.n[k]
-        if (!is.null(rnk))
+        for (k in (1:length(stat.n)))
         {
-          resak <- stat.a[[rnk]]
-          rs[[rnk]] <- do.call(stat.f, c(list(rs[[rnk]]),resak))
+          rnk <- stat.n[k]
+          if (!is.null(rnk))
+          {
+            resak <- stat.a[[rnk]]
+            rs[[rnk]] <- do.call(stat.f, c(list(rs[[rnk]]),resak))
+          }
         }
       }
       
@@ -459,30 +468,36 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
             res[[k]] <- rs[[k]]
       }  
     } # irep
-    for (k in (1:length(res)))
+    if (length(res)>0)
     {
-      Rk <- res[[k]]
-      if (is.data.frame(Rk))
+      for (k in (1:length(res)))
       {
-        if (npop>1)
-          Rk <- cbind(list(pop=as.factor(ipop)),Rk)
-        if (ipop==1)
+        Rk <- res[[k]]
+        if (is.data.frame(Rk))
+        {
+          if (npop>1)
+            Rk <- cbind(list(pop=as.factor(ipop)),Rk)
+          if (ipop==1)
+            R.complete[[k]] <- Rk
+          else
+            R.complete[[k]] <- rbind(R.complete[[k]],Rk)
+        } else
           R.complete[[k]] <- Rk
-        else
-          R.complete[[k]] <- rbind(R.complete[[k]],Rk)
-      } else
-        R.complete[[k]] <- Rk
+      }
     }
     
   } # ipop
   
-  names(R.complete) <- names(res)
-  for (k in (1:length(res)))
+  if (length(res)>0)
   {
-    attrk <- attr(r[[names(res)[k]]],'type')
-    if (!is.null(attrk))
-      attr(R.complete[[k]],"type") <- attrk
-  } 
+    names(R.complete) <- names(res)
+    for (k in (1:length(res)))
+    {
+      attrk <- attr(r[[names(res)[k]]],'type')
+      if (!is.null(attrk))
+        attr(R.complete[[k]],"type") <- attrk
+    } 
+  }
   
   if (test.pop == T)
   {
@@ -509,7 +524,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
 #--------------------------------------------------
 #--------------------------------------------------
 
-simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL)
+simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=T)
 { 
   #--------------------------------------------------
   # Manage settings
@@ -568,7 +583,13 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL)
     dataIn$id.ori <- NULL
   }
   
-  trt <- dataIn$trt
+  
+
+  if (out.trt==T)
+    trt <- dataIn$trt
+  else
+    trt <- NULL
+  
   # dataIn$trt <- NULL
   if (length(s)==0){
     argList <- list(DATA=dataIn) 
