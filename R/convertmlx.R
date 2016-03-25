@@ -249,8 +249,10 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
     }
   }
   
-  if (!is.null(trt)){
-    if (N>1){
+  if (!is.null(trt))
+  {
+    if (N>1)
+    {
       ng <- length(trt)
       id0 <- 0
       treatment <- NULL
