@@ -75,6 +75,7 @@ simulx(model = NULL, parameter = NULL, output = NULL, treatment = NULL,
   \item \code{digits} : number of decimal digits in output files (default = 5) 
   \item \code{disp.iter} : TRUE/FALSE (default = FALSE) display replicate and population numbers
   \item \code{replacement} : TRUE/FALSE (default = FALSE) sample id's with/without replacement
+  \item \code{out.trt} : TRUE/FALSE (default = TRUE) output of simulx includes treatment
 }}
 }
 \value{
