@@ -220,7 +220,8 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   
   Sys.setenv('PATH'=myOldENVPATH);
   if( (Sys.getenv("RSTUDIO")=="1") & (open==TRUE) ) {
-    file.edit(projectExe) 
+    # file.edit(projectExe) 
+    print(projectExe) 
     setwd(mypath)
   }
   return(projectExe)
