@@ -30,7 +30,8 @@ Imports:
     methods,
     graphics,
     grDevices,
-    utils
+    utils,
+    stats
 License: BSD_2_clause + file LICENSE
 Copyright: Inria
 RoxygenNote: 5.0.1

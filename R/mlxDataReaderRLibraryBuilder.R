@@ -1,3 +1,4 @@
+#' @importFrom utils install.packages installed.packages
 mlxDataReaderRLibraryBuilder <- function (lixoftHOME, myCallingPath)
 {
 

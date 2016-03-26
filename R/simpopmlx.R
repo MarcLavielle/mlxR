@@ -15,6 +15,7 @@
 #' project.file <- 'monolixRuns/theophylline_project.mlxtran'  #relative path
 #' pop1 <- simpopmlx(n=3, project=project.file)
 #' }
+#' @importFrom stats dnorm qnorm pnorm rnorm
 #' @export
 simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.max=100) {
   

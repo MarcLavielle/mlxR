@@ -33,11 +33,15 @@ creates a folder projectNameR  containing files :
   \item \code{outputi.txt} : contains the output number i informations (time, id),
   \item \code{$(NameOfTypeOfParameter)s.txt} : contains the specific parameter used.
 }
-
-A list of data frames. Each data frame is an output of simulx the mlxtran model
-the data inputs: treatment, parameters, output of monolix, group...
 }
 \description{
 Convert a Monolix Project  into an executable for the simulator  Simulx
+}
+\examples{
+\dontrun{
+project.file <- 'monolixRuns/theophylline_project.mlxtran'  #relative path
+monolix2simulx(project=project.file,open=TRUE)
+monolix2simulx(project=project.file,parameter=list("mean",c(a=0, b=0)),open=TRUE)
+}
 }
 

@@ -88,7 +88,7 @@
 #' shinymlx(model=PKPDmodel, treatment=adm, parameter=list(p1,p2), output=f, 
 #'          style="navbar1", settings=s)
 #' }
-
+#' @importFrom utils read.csv
 #' @export         
 shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
                      data=NULL,appname="shinymlxApp",style="basic",

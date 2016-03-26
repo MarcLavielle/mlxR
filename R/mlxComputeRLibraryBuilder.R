@@ -1,3 +1,4 @@
+#' @importFrom utils install.packages
 mlxComputeRLibraryBuilder <- function(lixoftHOME){
   myOS <- Sys.info()['sysname']
   

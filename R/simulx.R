@@ -100,6 +100,7 @@
 #' print(res$parameter)
 #' }
 #' 
+#' @importFrom stats runif
 #' @export
 
 simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL, 

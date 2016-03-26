@@ -71,6 +71,7 @@
 #'   print(p4$y[1:5,])
 #'   print(p4$y[1:5,])
 #' }
+#' @importFrom stats quantile
 #' @export         
 prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
 {
@@ -83,7 +84,7 @@ prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
   q1=(1-alpha/100)/2
   q2=1-q1
 
-
+  time=NULL
   if (m%%2!=0){
     m.test <- 0
     q=seq(q1,q2,length.out=(m+1))

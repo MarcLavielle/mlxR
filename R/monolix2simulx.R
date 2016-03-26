@@ -17,10 +17,14 @@
 #'   \item \code{outputi.txt} : contains the output number i informations (time, id),
 #'   \item \code{$(NameOfTypeOfParameter)s.txt} : contains the specific parameter used.
 #' }       
-#'  
-#' @return A list of data frames. Each data frame is an output of simulx the mlxtran model
-#' the data inputs: treatment, parameters, output of monolix, group... 
 #' 
+#' @examples
+#' \dontrun{
+#' project.file <- 'monolixRuns/theophylline_project.mlxtran'  #relative path
+#' monolix2simulx(project=project.file,open=TRUE)
+#' monolix2simulx(project=project.file,parameter=list("mean",c(a=0, b=0)),open=TRUE)
+#' }
+#' @importFrom utils write.table file.edit
 #' @export
 
 monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TRUE,fim=NULL)

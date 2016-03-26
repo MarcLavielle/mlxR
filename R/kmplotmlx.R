@@ -33,6 +33,7 @@
 #'   print(pl2)
 #' }
 #' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab
+#' @importFrom stats qnorm
 #' @export         
 kmplotmlx  <-  function(r, index=1, level=NULL)
 { 

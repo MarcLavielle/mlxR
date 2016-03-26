@@ -30,6 +30,7 @@
 #' writeDatamlx(res, result.file="res.txt", sep="\t")
 #' writeDatamlx(res, result.folder="res")
 #' }
+#' @importFrom utils write.table
 #' @export
 writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,digits=5,app.file=F,app.dir=F) 
 {

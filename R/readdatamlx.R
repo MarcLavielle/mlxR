@@ -21,6 +21,7 @@
 #' d <- readDatamlx(datafile='monolixRuns/warfarin_data.txt', 
 #'                  header=c('id','time','amt','y','ytype','cov','cov','cat'))
 #' }
+#' @importFrom stats time
 #' @export
 readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=NULL, addl.ss=10){
   # READDATAMLX

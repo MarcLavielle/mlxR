@@ -1,4 +1,4 @@
-#' @importFrom methods setRefClass
+#' @importFrom methods setRefClass new
 mlxComputeR.Unload <- function (arg=NULL) {
   dot_call <- .Call 
   if(is.loaded('mlxComputeRUnload', PACKAGE='mlxComputeR'))
