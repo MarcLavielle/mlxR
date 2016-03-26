@@ -65,6 +65,7 @@
 #' \code{step} (time step), \code{auc} (area under the curve), \code{tmax} (time of maximum value), \code{cmax} (maximum value),
 #' \code{tmin} (time of minimum value), \code{cmin} (minimum value).
 #' 
+#' @importFrom utils tail
 #' @export
 exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
                      data=NULL, project=NULL, settings=NULL, regressor=NULL, varlevel=NULL)

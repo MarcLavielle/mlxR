@@ -45,6 +45,8 @@
 #'   }
 #' }
 #' @importFrom ggplot2 ggplot aes geom_polygon xlab ylab ylim ggtitle scale_fill_manual
+#' @importFrom graphics hist
+#' @importFrom grDevices hsv
 #' @export         
 catplotmlx <- function(r, breaks=NULL)
 {
