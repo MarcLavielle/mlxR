@@ -16,8 +16,3 @@ mlxComputeRcleanUp<- setRefClass("mlxComputeRcleanUp",
 .onLoad<-function(libname, pkgname){ 
     mlxComputeRCleaner <-mlxComputeRcleanUp$new()
 }
-
-
-#' mlxComputeRCleaner manages several sessions of mlxComputeR
-#' 
-#' @param arg argument
