@@ -1,3 +1,7 @@
+#' mlxComputeRCleaner manages several sessions of mlxComputeR
+#' 
+#' @param arg argument
+#' @importFrom methods setRefClass
 mlxComputeR.Unload <- function (arg=NULL) {
   dot_call <- .Call 
   if(is.loaded('mlxComputeRUnload', PACKAGE='mlxComputeR'))

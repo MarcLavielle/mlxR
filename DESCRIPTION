@@ -19,7 +19,8 @@ URL: http://simulx.webpopix.org
 BugReports: https://github.com/MarcLavielle/mlxR/issues
 Depends:
     R (>= 3.0.1),
-    ggplot2
+    ggplot2,
+    methods
 Suggests:
     reshape2,
     gridExtra,
