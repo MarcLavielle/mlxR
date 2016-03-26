@@ -38,6 +38,7 @@
 #'   \item \code{time} : a vector of times,
 #'   \item \code{value} : a vector of values.
 #' }
+#' @param varlevel (not supported by mlxLibrary 2016R1)
 #' @param group a list, or a list of lists, with fields: 
 #' \itemize{
 #'   \item \code{size} : size of the group (default=1),

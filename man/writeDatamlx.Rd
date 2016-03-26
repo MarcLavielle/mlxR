@@ -18,7 +18,11 @@ writeDatamlx(r, result.file = NULL, result.folder = NULL, sep = ",",
 
 \item{ext}{a string with the extension of the file names}
 
-\item{digit}{(default = 5)}
+\item{digits}{(default = 5)}
+
+\item{app.file}{TRUE/FALSE (default=FALSE) append to file}
+
+\item{app.dir}{TRUE/FALSE (default=FALSE) append to dir}
 }
 \description{
 Write data contained in a list of dataframes in a single file (NONMEM/Monolix format)

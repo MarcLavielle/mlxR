@@ -383,19 +383,7 @@ readPopEstimate  <-  function(filename, fim=NULL) {
         names(se) <- name
       }
     } else {
-      #       se <- as.numeric(as.character(data[['s.e._sa']]))
-      #       if (length(se)==0){
-      #         se <- as.numeric(as.character(data[['s.e._lin']]))
-      #         if (length(se)==0) {
       se <- NULL
-      #         } else {
-      #           names(se) <- name
-      #           fim <- "lin"
-      #         }
-      #       }else{
-      #         names(se) <- name
-      #         fim <- "sa"
-      #       }
     }
     
     return(list(param,se,fim))
@@ -747,41 +735,6 @@ sectionsModel  <-  function(file_model)
   
 }
 
-#---------------------------------------
-formatp <- function(param)
-{
-  if (!is.null(names(param))){  
-    param=list(param) 
-  }
-  parameter <- vector("list",length(param))
-  for (k in seq(1,length(param))){
-    paramk <- param[[k]]
-    if(isfield(paramk,'header')){
-      warning("deprecated syntax:  use 'colNames' instead of 'header'",immediate.=TRUE)
-      paramk$colNames=paramk$header
-      paramk$header=NULL
-    } 
-    if (!isfield(paramk,'colNames')){
-      if (!is.data.frame(paramk)){
-        if (!is.list(paramk)){
-          paramk <- list(name=names(paramk),value=as.vector(paramk))
-        }else{
-          #         paramk$colNames=c("id",paramk$name)
-          #         paramk$colNames=paramk$name
-          #          N <- length(paramk$value)
-          #           paramk$value <- cbind((1:N),paramk$value) 
-          #         paramk$value <- data.matrix(data.frame(id=(1:N),value=paramk$value))
-          #          paramk$value <- data.matrix(data.frame(value=paramk$value))
-        }
-      }
-    }
-    p.names <- names(paramk)
-    paramk <- data.frame(value)
-    names(paramk) <- p.names
-    parameter[[k]] <- paramk
-  }
-  return(parameter)
-}
 
 #-------------------------------------------
 formato <- function(out)
@@ -794,13 +747,10 @@ formato <- function(out)
     outk <- out[[k]]
     if (!isfield(outk,"name"))
       outk <- list(name=outk)
-    #     if (is.null(outk$time) || length(outk$time)>0 )
     output[[k]] <- outk
   }
-  # return(output[which(!sapply(output,is.null))])
   return(output)
 }
-#----------------------------------
 
 #----------------------------------
 testC  <- function(x)

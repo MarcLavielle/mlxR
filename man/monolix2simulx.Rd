@@ -18,6 +18,8 @@ example: "mode", "mean"...}
 \item{open}{: load the R script created if \code{open=TRUE}}
 
 \item{r.data}{: read the data if \code{r.data=TRUE}}
+
+\item{fim}{: Fisher information matrix}
 }
 \value{
 creates a folder projectNameR  containing files : 

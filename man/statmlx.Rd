@@ -9,11 +9,11 @@ statmlx(r, FUN = "mean", probs = c(0.05, 0.5, 0.95), surv.time = NULL)
 \arguments{
 \item{r}{a data frame}
 
+\item{FUN}{a string, or a vector of strings, with the name of the functions to apply to the result of the simulation}
+
 \item{probs}{a vector of quantiles  between 0 and 1. Only used when "quantile" has been defined in \code{FUN}}
 
 \item{surv.time}{a scalar or a vector of times. Only used when "event" has been defined in \code{type}}
-
-\item{stats}{a string, or a list of strings, with the name of the functions to apply to the result of the simulation}
 }
 \value{
 A data frame.

@@ -15,9 +15,9 @@ simpopmlx(n = 1, project = NULL, fim = "needed", parameter = NULL,
 \item{fim}{the Fisher Information Matrix estimated by Monolix. fim={"sa", "lin"} (default="sa")}
 
 \item{parameter}{a data frame with a column \samp{pop.param} (no default), a column \samp{sd} (no default), 
-and possibly a column \samp{trans} (default ='N').}
+and possibly a column \samp{trans} (default ='N'). Only when project is not used.}
 
-\item{corr}{correlation matrix of the population parameters (default = identity)}
+\item{corr}{correlation matrix of the population parameters (default = identity). Only when project is not used.}
 
 \item{kw.max}{maximum number of trials for generating a positive definite covariance matrix (default = 100)}
 }
@@ -29,7 +29,8 @@ See http://simulx.webpopix.org/mlxr/simpopmlx/ for more details.
 }
 \examples{
 \dontrun{
-
+project.file <- 'monolixRuns/theophylline_project.mlxtran'  #relative path
+pop1 <- simpopmlx(n=3, project=project.file)
 }
 }
 

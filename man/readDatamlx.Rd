@@ -5,7 +5,7 @@
 \title{Read formatted data file}
 \usage{
 readDatamlx(project = NULL, datafile = NULL, header = NULL,
-  infoProject = NULL, addl.ss = 10, parameter = NULL, fim = NULL)
+  infoProject = NULL, addl.ss = 10)
 }
 \arguments{
 \item{project}{a Monolix project}

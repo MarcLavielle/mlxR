@@ -22,11 +22,11 @@
 #'                  header=c('id','time','amt','y','ytype','cov','cov','cat'))
 #' }
 #' @export
-readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=NULL, addl.ss=10, parameter=NULL, fim=NULL){
+readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=NULL, addl.ss=10){
   # READDATAMLX
   #
   # READDATAMLX reads a datafile and create a list.
-  
+  id <- NULL
   observationName <- NULL
   if (!is.null(project))
     infoProject <- getInfoXml(project)

@@ -9,7 +9,9 @@
 #' @param result.folder a string with the name of the folder 
 #' @param sep (default = ",") 
 #' @param ext a string with the extension of the file names 
-#' @param digit (default = 5) 
+#' @param digits (default = 5) 
+#' @param app.file  TRUE/FALSE (default=FALSE) append to file 
+#' @param app.dir  TRUE/FALSE (default=FALSE) append to dir 
 #' @examples
 #' \dontrun{
 #' modelPK <- inlineModel("
@@ -29,7 +31,7 @@
 #' writeDatamlx(res, result.folder="res")
 #' }
 #' @export
-writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,digits=5, app.file=F, app.dir=F) 
+writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,digits=5,app.file=F,app.dir=F) 
 {
   if (!is.null(result.folder)){
     if (app.dir==F){

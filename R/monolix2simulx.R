@@ -5,6 +5,7 @@
 #' @param group : a list with the number of subjects 
 #' @param open : load the R script created if \code{open=TRUE}
 #' @param r.data : read the data if \code{r.data=TRUE}
+#' @param fim : Fisher information matrix
 #' @return  creates a folder projectNameR  containing files : 
 #' \itemize{
 #'   \item \code{projectName.R} :  executable R code for the simulator,

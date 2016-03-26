@@ -69,6 +69,7 @@ simulR <- function(argList)
     }
     Nk <- group[[k]]$size
     dki=data.frame(group=k)
+    ri <- NULL
     if (!is.null(trk)){
       if (!is.null(rk)){
         ttt<- paste0('ri=',model,'(parameter=pk, dose=trk, time=rtk, regressor=rk)')

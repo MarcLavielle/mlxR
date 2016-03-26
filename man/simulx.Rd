@@ -38,6 +38,8 @@ simulx(model = NULL, parameter = NULL, output = NULL, treatment = NULL,
   \item \code{value} : a vector of values.
 }}
 
+\item{varlevel}{(not supported by mlxLibrary 2016R1)}
+
 \item{group}{a list, or a list of lists, with fields: 
 \itemize{
   \item \code{size} : size of the group (default=1),
