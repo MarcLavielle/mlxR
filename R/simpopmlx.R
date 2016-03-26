@@ -57,7 +57,7 @@ simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.
   if (is.null(corr)){
     d <- rep(1,np)
     corr <- diag(d)
-    isd0 <- which(fim$se==0)
+    isd0 <- which(sd==0)
     if (length(isd0)>0){
       corr[isd0,] <- NaN
       corr[,isd0] <- NaN
