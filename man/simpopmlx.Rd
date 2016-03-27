@@ -29,7 +29,7 @@ See http://simulx.webpopix.org/mlxr/simpopmlx/ for more details.
 }
 \examples{
 \dontrun{
-project.file <- 'monolixRuns/theophylline_project.mlxtran'  #relative path
+project.file <- 'monolixRuns/theophylline1_project.mlxtran'  #relative path
 pop1 <- simpopmlx(n=3, project=project.file)
 }
 }

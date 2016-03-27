@@ -20,11 +20,10 @@
 #' 
 #' @examples
 #' \dontrun{
-#' project.file <- 'monolixRuns/theophylline_project.mlxtran'  #relative path
+#' project.file <- 'monolixRuns/theophylline1_project.mlxtran'  #relative path
 #' monolix2simulx(project=project.file,open=TRUE)
 #' monolix2simulx(project=project.file,parameter=list("mean",c(a=0, b=0)),open=TRUE)
 #' }
-#' @importFrom utils write.table file.edit
 #' @export
 
 monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TRUE,fim=NULL)
@@ -220,7 +219,8 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   
   Sys.setenv('PATH'=myOldENVPATH);
   if( (Sys.getenv("RSTUDIO")=="1") & (open==TRUE) ) {
-    file.edit(projectExe) 
+    eval(parse(text='file.edit(projectExe)'))
+    # file.edit(projectExe) 
     setwd(mypath)
   }
   return(projectExe)

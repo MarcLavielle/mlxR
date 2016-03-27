@@ -39,7 +39,7 @@ Convert a Monolix Project  into an executable for the simulator  Simulx
 }
 \examples{
 \dontrun{
-project.file <- 'monolixRuns/theophylline_project.mlxtran'  #relative path
+project.file <- 'monolixRuns/theophylline1_project.mlxtran'  #relative path
 monolix2simulx(project=project.file,open=TRUE)
 monolix2simulx(project=project.file,parameter=list("mean",c(a=0, b=0)),open=TRUE)
 }

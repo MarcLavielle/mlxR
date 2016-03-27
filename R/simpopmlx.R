@@ -12,7 +12,7 @@
 #' @param kw.max maximum number of trials for generating a positive definite covariance matrix (default = 100) 
 #' @examples
 #' \dontrun{
-#' project.file <- 'monolixRuns/theophylline_project.mlxtran'  #relative path
+#' project.file <- 'monolixRuns/theophylline1_project.mlxtran'  #relative path
 #' pop1 <- simpopmlx(n=3, project=project.file)
 #' }
 #' @importFrom stats dnorm qnorm pnorm rnorm
