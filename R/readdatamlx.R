@@ -8,6 +8,8 @@
 #' @param header a vector of strings (mandatory if \code{datafile} is used) 
 #' @param infoProject an xmlfile 
 #' @param addl.ss number of additional doses to use for steady-state  (default=10) 
+#' 
+#' @return A list of data frames 
 #' @examples
 #' \dontrun{
 #' d <- readDatamlx(project='monolixRuns/warfarin_project.mlxtran')
