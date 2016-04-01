@@ -1,0 +1,20 @@
+
+[LONGITUDINAL]
+input = {V, Cl, EC50, a1, a2}
+
+EQUATION:
+Cc = pkmodel(V, Cl)
+E  = 100*Cc/(Cc+EC50)
+
+DEFINITION:
+y1 ={distribution=lognormal, prediction=Cc, sd=a1}
+y2 ={distribution=normal,    prediction=E,  sd=a2}
+
+[INDIVIDUAL]
+input={V_pop,o_V,Cl_pop,o_Cl,EC50_pop,o_EC50}
+
+DEFINITION:
+V   ={distribution=lognormal, prediction=V_pop,   sd=o_V}
+Cl  ={distribution=lognormal, prediction=Cl_pop,  sd=o_Cl}
+EC50={distribution=lognormal, prediction=EC50_pop,sd=o_EC50}
+

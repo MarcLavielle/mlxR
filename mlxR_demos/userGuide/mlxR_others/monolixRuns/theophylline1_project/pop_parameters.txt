@@ -1,0 +1,80 @@
+******************************************************************
+*      theophylline1_project.mlxtran
+*      March 26, 2016 at 18:08:30
+*      Monolix version: 4.4.0
+******************************************************************
+
+Estimation of the population parameters
+
+           parameter     s.e. (lin)   r.s.e.(%) 
+ka_pop   :    1.58          0.32          20    
+V_pop    :   0.457         0.021           5    
+Cl_pop   :    0.04        0.0034           8    
+
+omega_ka :   0.659          0.15          22    
+omega_V  :   0.134         0.038          28    
+omega_Cl :   0.266         0.065          24    
+
+a        :   0.732         0.056           8    
+
+______________________________________________
+correlation matrix of the estimates(linearization)
+
+ka_pop      1       
+V_pop    0.13       1    
+Cl_pop  -0.06   -0.14       1 
+
+Eigenvalues (min, max, max/min): 0.84  1.2  1.4
+
+omega_ka      1          
+omega_V   -0.01       1       
+omega_Cl     -0   -0.01       1    
+a         -0.03   -0.09   -0.05       1 
+
+Eigenvalues (min, max, max/min): 0.89  1.1  1.2
+
+
+Population parameters and Fisher Information Matrix estimation...
+
+Elapsed time is 13.9 seconds. 
+CPU time is 16.5 seconds. 
+******************************************************************
+*      theophylline1_project.mlxtran
+*      March 26, 2016 at 18:09:04
+*      Monolix version: 4.4.0
+******************************************************************
+
+Estimation of the population parameters
+
+           parameter     s.e. (s.a.)   r.s.e.(%) 
+ka_pop   :    1.58           0.32          20    
+V_pop    :   0.457          0.021           5    
+Cl_pop   :    0.04         0.0034           8    
+
+omega_ka :   0.659           0.15          23    
+omega_V  :   0.134          0.036          27    
+omega_Cl :   0.266          0.066          25    
+
+a        :   0.732          0.055           8    
+
+______________________________________________
+correlation matrix of the estimates(Stochastic Approximation)
+
+ka_pop      1       
+V_pop    0.11       1    
+Cl_pop  -0.05   -0.14       1 
+
+Eigenvalues (min, max, max/min): 0.85  1.2  1.4
+
+omega_ka      1          
+omega_V       0       1       
+omega_Cl   0.02   -0.17       1    
+a         -0.03   -0.01   -0.01       1 
+
+Eigenvalues (min, max, max/min): 0.83  1.2  1.4
+
+
+Population parameters and Fisher Information Matrix estimation...
+
+Elapsed time is 17.1 seconds. 
+CPU time is 20.5 seconds. 

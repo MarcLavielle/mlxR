@@ -12,6 +12,9 @@ res <- simulx(model='model/pk1a.txt',
 
 print(ggplotmlx(data=res$Cc, aes(x=time, y=Cc)) + geom_line(size=1))
 
+setwd(dirname(parent.frame(2)$ofile))
+# library(mlxR)
+
 #----------------------------------
 adm <- list(time=c(1, 7, 13), amount=40)
 res <- simulx(model='model/pk1a.txt', parameter=p, output=Cc, treatment=adm)

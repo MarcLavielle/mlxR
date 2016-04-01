@@ -1,0 +1,34 @@
+
+[LONGITUDINAL] 
+input={Tk0,V,Cl,Imax,E0,IC50,kout,alpha,beta,b}
+
+EQUATION:
+C = pkmodel(Tk0, V, Cl)
+
+E_0 = E0 
+kin = E0*kout
+ddt_E = kin*(1-Imax*C/(C+IC50)) - kout*E  
+
+h = (alpha/1000)*exp(beta*E)
+g = b*C
+
+DEFINITION:
+y = {distribution=normal, prediction=C, sd=g}
+e = {type=event, maxEventNumber=10, rightCensoringTime=200, hazard=h}
+
+;-----------------------------------------
+[INDIVIDUAL]
+input={Tk0_pop,V_pop,Cl_pop,Imax_pop,E0_pop,IC50_pop,kout_pop,alpha_pop,beta_pop,
+  omega_Tk0,omega_V,omega_Cl,omega_Imax,omega_E0,omega_IC50,omega_kout,omega_alpha,omega_beta}
+
+DEFINITION:
+Tk0   = {distribution=lognormal,   prediction=Tk0_pop,  sd=omega_Tk0}
+V     = {distribution=lognormal,   prediction=V_pop,    sd=omega_V}
+Cl    = {distribution=lognormal,   prediction=Cl_pop,   sd=omega_Cl}
+E0    = {distribution=lognormal,   prediction=E0_pop,   sd=omega_E0}
+IC50  = {distribution=lognormal,   prediction=IC50_pop, sd=omega_IC50}
+kout  = {distribution=lognormal,   prediction=kout_pop, sd=omega_kout}
+Imax  = {distribution=logitnormal, prediction=Imax_pop, sd=omega_Imax}
+alpha = {distribution=normal,      prediction=alpha_pop,sd=omega_alpha}
+beta  = {distribution=normal,      prediction=beta_pop, sd=omega_beta}
+

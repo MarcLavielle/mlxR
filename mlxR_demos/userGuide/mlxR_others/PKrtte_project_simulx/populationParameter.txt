@@ -1,0 +1,11 @@
+ka_pop 1.00378
+V_pop 7.99897
+Cl_pop 0.12607
+gamma_pop 1.11042
+beta_pop 0.50523
+omega_ka 0.48307
+omega_V 0.19214
+omega_Cl 0.20372
+omega_gamma 0
+omega_beta 0.1562
+b 0.19994

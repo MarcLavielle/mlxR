@@ -1,0 +1,11 @@
+
+[LONGITUDINAL]
+input = {ka, V, k, a}
+
+EQUATION:
+D = 100
+f = D*ka/(V*(ka-k))*(exp(-k*t) - exp(-ka*t))
+
+DEFINITION:
+y = {distribution=normal, prediction=f, sd=a}
+

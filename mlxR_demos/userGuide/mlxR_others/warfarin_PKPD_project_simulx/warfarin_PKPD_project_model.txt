@@ -1,0 +1,35 @@
+[COVARIATE]
+input = wt
+
+EQUATION:
+lw70 = log(wt/70)
+
+[INDIVIDUAL]
+input = {Tlag_pop, omega_Tlag, ka_pop, omega_ka, V_pop, beta_V_lw70, lw70, omega_V, Cl_pop, beta_Cl_lw70, omega_Cl, Imax_pop, omega_Imax, IC50_pop, omega_IC50, Rin_pop, omega_Rin, kout_pop, omega_kout, corr_V_Cl}
+
+DEFINITION:
+Tlag = {distribution=lognormal, typical=Tlag_pop, sd=omega_Tlag}
+ka = {distribution=lognormal, typical=ka_pop, sd=omega_ka}
+V = {distribution=lognormal, typical=V_pop, covariate=lw70, coefficient=beta_V_lw70, sd=omega_V}
+Cl = {distribution=lognormal, typical=Cl_pop, covariate=lw70, coefficient=beta_Cl_lw70, sd=omega_Cl}
+Imax = {distribution=logitnormal, typical=Imax_pop, sd=omega_Imax}
+IC50 = {distribution=lognormal, typical=IC50_pop, sd=omega_IC50}
+Rin = {distribution=lognormal, typical=Rin_pop, sd=omega_Rin}
+kout = {distribution=lognormal, typical=kout_pop, sd=omega_kout}
+correlation = {level=id, r(V,Cl)=corr_V_Cl}
+
+[LONGITUDINAL]
+input = {a1, b1, a2}
+
+input =  {Tlag, ka, V, Cl, Imax, IC50, Rin, kout}
+
+EQUATION:
+Cc = pkmodel(Tlag, ka, V, Cl)
+E_0 = Rin/kout
+ddt_E = Rin*(1-Imax*Cc/(Cc+IC50)) - kout*E
+
+DEFINITION:
+y1 = {distribution=normal, prediction=Cc, errorModel=combined1(a1, b1)}
+
+y2 = {distribution=normal, prediction=E, errorModel=constant(a2)}
+

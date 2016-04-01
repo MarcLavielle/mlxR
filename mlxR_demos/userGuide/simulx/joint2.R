@@ -1,5 +1,22 @@
-setwd(dirname(parent.frame(2)$ofile))
 library(gridExtra)
+
+joint.model2 <- inlineModel("
+[LONGITUDINAL]
+input = {ka, V, Cl, u, v, a1}  
+
+EQUATION:
+C = pkmodel(ka, V, Cl)
+h = u*exp(v*C)
+
+DEFINITION:
+Concentration = {distribution = lognormal, 
+                 prediction   = C, 
+                 sd           = a1}
+
+Hemorrhaging  = {type               = event, 
+                 rightCensoringTime = 100,  
+                 hazard             = h}
+")
 
 p <- c(ka=0.5, V=8, Cl=1.5, u=0.003, v=3, a1=0.05)
 
@@ -9,11 +26,11 @@ f <- list(name = c('C', 'h'),     time = seq(0,100,by=1))
 c <- list(name = 'Concentration', time = seq(4,100,by=12))
 e <- list(name = 'Hemorrhaging',  time = 0)
 
-res1 <- simulx(model     = 'model/joint2.txt',
+res1 <- simulx(model     = joint.model2,
                treatment = a,
                parameter = p,
                output    = list(f, c, e),
-               settings  = list(seed = 121212))
+               settings  = list(seed = 12345))
 
 print(res1$Hemorrhaging)
 
@@ -26,7 +43,7 @@ grid.arrange(plot1, plot2, ncol=2)
 
 #-----------------------------------------------
 N   <- 20
-res2 <- simulx(model     = 'model/joint2.txt',
+res2 <- simulx(model     = joint.model2,
                treatment = a,
                parameter = p,
                output    = list(f, c, e),

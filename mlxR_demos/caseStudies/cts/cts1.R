@@ -4,6 +4,22 @@ source('titration.R')
 
 #-------------------------------------
 
+pk.model <- inlineModel("
+[LONGITUDINAL]
+input = {ka, V, k, a1}
+EQUATION:
+Cc = pkmodel(ka, V, k)
+DEFINITION:
+y1 = {distribution=lognormal, prediction=Cc, sd=a1}
+
+[INDIVIDUAL]
+input={ka_pop, omega_ka, V_pop, omega_V, k_pop, omega_k}
+DEFINITION:
+ka = {distribution=lognormal, prediction=ka_pop, sd=omega_ka}
+V  = {distribution=lognormal, prediction=V_pop,  sd=omega_V}
+k  = {distribution=lognormal, prediction=k_pop,  sd=omega_k}
+")
+
 adm <- list(time=seq(0,to=440,by=12), amount=20)
 
 ppk <- c(ka_pop=0.4,   V_pop=10,    k_pop=0.05,
@@ -16,7 +32,7 @@ y1  <- list(name='y1', time=seq(4,to=440,by=24))
 
 s   <- list(seed=1234)
 
-res1 <- simulx(model     = "model/cts1a.txt",
+res1 <- simulx(model     = pk.model,
                parameter = ppk,
                treatment = adm,
                group     = g,
@@ -38,7 +54,7 @@ r1 <- list(name='y1',
            condition="y1>5", 
            factor=0.75)
 
-res2 <- titration(model     = "model/cts1a.txt",
+res2 <- titration(model     = pk.model,
                   parameter = ppk,
                   treatment = adm,
                   output    = list(Cc, y1),
@@ -61,7 +77,7 @@ r2 <- list(name='y1',
            condition="y1<3", 
            factor=1.5)
 
-res3 <- titration(model     = "model/cts1a.txt",
+res3 <- titration(model     = pk.model,
                   parameter = ppk,
                   treatment = adm,
                   output    = list(Cc, y1),
@@ -79,13 +95,35 @@ plot6 <- ggplotmlx(data=res3$y1, aes(x=time, y=y1, colour=id)) +
 grid.arrange(plot5, plot6, ncol=2)
 
 #--------------------------------------------------------
+
+pkpd.model <- inlineModel("
+[LONGITUDINAL]
+input = {ka, V, k, Emax, EC50, a1, a2}
+EQUATION:
+Cc = pkmodel(ka, V, k)
+E  = Emax*Cc/(EC50+Cc)
+
+DEFINITION:
+y1 = {distribution=lognormal, prediction=Cc, sd=a1}
+y2 = {distribution=normal, prediction=E,  sd=a2}
+
+[INDIVIDUAL]
+input={ka_pop, omega_ka, V_pop, omega_V, k_pop, omega_k,
+       Emax_pop, omega_Emax, EC50_pop, omega_EC50}
+DEFINITION:
+ka   = {distribution=lognormal, prediction=ka_pop,   sd=omega_ka}
+V    = {distribution=lognormal, prediction=V_pop,    sd=omega_V}
+k    = {distribution=lognormal, prediction=k_pop,    sd=omega_k}
+Emax = {distribution=lognormal, prediction=Emax_pop, sd=omega_Emax}
+EC50 = {distribution=lognormal, prediction=EC50_pop, sd=omega_EC50}
+")
 ppd <- c(Emax_pop=100,   EC50_pop=3, 
          omega_Emax=0.1, omega_EC50=0.2, a2=5)
 
 E <-  list(name='E',  time=seq(0,to=440,by=1))
 y2 <- list(name='y2', time=seq(16,to=440,by=36))
 
-res4 <- simulx(model     = "model/cts1b.txt",
+res4 <- simulx(model     = pkpd.model,
                parameter = c(ppk,ppd),
                treatment = adm,
                output    = list(Cc, E, y1, y2),
@@ -109,7 +147,7 @@ r3 <- list(name='y2',
            condition="y2<40", 
            factor=1.5)
 
-res5 <- titration(model     = "model/cts1b.txt",
+res5 <- titration(model     = pkpd.model,
                   parameter = c(ppk,ppd),
                   treatment = adm,
                   output    = list(Cc, E, y1, y2),

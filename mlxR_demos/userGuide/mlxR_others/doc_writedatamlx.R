@@ -20,15 +20,15 @@ res1a <- simulx( model     = model1,
                  output    = y1,
                  settings  = list(seed = 32323))
 
-writeDatamlx(res1a,result.file   = "res1a.csv")
+writeDatamlx(res1a, result.file = "res1a.csv")
 head(read.table("res1a.csv", header=T, sep=","))
 
-writeDatamlx(res1a, result.file  = "res1a.txt", sep="\t")
+writeDatamlx(res1a, result.file = "res1a.txt", sep="\t")
 
-writeDatamlx(res1a,result.folder = "res1a")
+writeDatamlx(res1a, result.folder = "res1a")
 list.files(path="res1a")
 
-writeDatamlx(res1a,result.file   = "res1a.csv",result.folder="res1a")
+writeDatamlx(res1a, result.file = "res1a.csv",result.folder="res1a")
 
 
 res1b <- simulx( model         = model1,
@@ -75,7 +75,7 @@ res2a <- simulx( model     = model2,
                  group     = list(size=5, level="individual"),
                  output    = list(y1,y2))
 
-writeDatamlx(res2a, result.file   = "res2a.csv")
+writeDatamlx(res2a, result.file = "res2a.csv")
 head(read.table("res2a.csv", header=T, sep=","))
 writeDatamlx(res2a, result.folder = "res2a")
 
@@ -88,6 +88,6 @@ res2b <- simulx( model     = model2,
                  nrep      = 10,
                  output    = list(y1,y2))
 
-writeDatamlx(res2b, result.file   = "res2b.csv")
+writeDatamlx(res2b, result.file = "res2b.csv")
 head(read.table("res2b.csv", header=T, sep=","))
 

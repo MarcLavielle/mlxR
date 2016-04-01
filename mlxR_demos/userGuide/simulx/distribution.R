@@ -1,3 +1,5 @@
+# library(mlxR)
+
 update_geom_defaults("bar",   list(fill = "blue"))
 
 N <- 10000
@@ -6,10 +8,10 @@ N <- 10000
 normal.dist = inlineModel("
 [LONGITUDINAL]
 DEFINITION:
-y1 = {distribution=normal, mean=3, sd=2}
-y2 = {distribution=lognormal, mean=5, sd=0.3}
-y3 = {distribution=logitnormal, mean=0.4, sd=0.5}
-y4 = {distribution=probitnormal, mean=0.7, sd=1.5}
+y1 = {distribution=normal, mean=2, sd=0.3}
+y2 = {distribution=lognormal, mean=2, sd=0.3}
+y3 = {distribution=logitnormal, mean=2, sd=0.3}
+y4 = {distribution=probitnormal, mean=2, sd=0.3}
 ")
 
 y <- list(name=c('y1','y2','y3','y4'),time=(1:N))

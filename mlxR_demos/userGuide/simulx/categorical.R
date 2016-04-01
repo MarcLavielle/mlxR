@@ -34,7 +34,7 @@ p1 <- 1/(1+exp(-res$lp1$lp1))-p0
 p2 <- 1-p0-p1
 # create a single data frame with the probabilities  
 pr <- data.frame(time=0:100,p0,p1,p2)
-pr <- melt(pr ,  id = 'time', variable_name = 'proba')
+pr <- melt(pr ,  id = 'time', variable.name = 'proba')
 # pr is a data frame with columns "id", "proba" and "value"
 plot1=ggplotmlx(pr, aes(time,value)) + geom_line(aes(colour = proba),size=1) +
   ylab('probabilities') + theme(legend.position=c(.1, .5))

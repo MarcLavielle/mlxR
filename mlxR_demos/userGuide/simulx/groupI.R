@@ -1,3 +1,11 @@
+#library(mlxR)
+
+pk.model <- inlineModel("
+[LONGITUDINAL]
+input = {V, k}
+EQUATION:
+C = pkmodel(V,k)
+")
 
 #-------------------------------------
 adm1 <- list(time=seq(0,to=66,by=6), amount=50)
@@ -11,7 +19,7 @@ C <- list(name='C', time=seq(0, 100, by=1))
 p <- c(V=10, k=0.2)
 
 
-res1 <- simulx(model     = "model/groupI.txt", 
+res1 <- simulx(model     = pk.model, 
                parameter = p, 
                output    = C, 
                group     = list(g1,g2,g3))
@@ -25,7 +33,7 @@ g1 <- list(parameter=c(V=10, k=0.2))
 g2 <- list(parameter=c(V=15, k=0.1))
 g3 <- list(parameter=c(V=20, k=0.05))
 
-res2 <- simulx(model     = "model/groupI.txt", 
+res2 <- simulx(model     = pk.model, 
                treatment = adm, 
                output    = C, 
                group     = list(g1,g2,g3))
@@ -42,7 +50,7 @@ g1 <- list(output=C1)
 g2 <- list(output=C2)
 g3 <- list(output=C3)
 
-res3 <- simulx(model     = "model/groupI.txt", 
+res3 <- simulx(model     = pk.model, 
                treatment = adm, 
                parameter = p, 
                group     = list(g1,g2,g3))
@@ -63,8 +71,8 @@ g1 <- list(output=C1, treatment=adm1, parameter=p1)
 g2 <- list(output=C2, treatment=adm2, parameter=p2)
 g3 <- list(output=C3, treatment=adm3, parameter=p3)
 
-res4 <- simulx(model     = "model/groupI.txt", 
-               group     = list(g1,g2,g3))
+res4 <- simulx(model = pk.model, 
+               group = list(g1,g2,g3))
 
 print(ggplotmlx(data=res4$C, aes(x=time, y=C, colour=id)) + geom_line(size=1))
 

@@ -1,5 +1,9 @@
+setwd(dirname(parent.frame(2)$ofile))
+# library(mlxR)
 library(gridExtra)
+library(deSolve)
 
+#------------------------------------------------
 pk.model <- "Rmodel/modelR_pk1.R"
 # pk.model <- "Rmodel/modelMlxt_pk1.txt"
 
@@ -26,8 +30,6 @@ print(ggplotmlx()  +
 
 #------------------------------------------------
 
-library(deSolve)
-
 pk.model <- "Rmodel/modelR_pk2.R"
 # pk.model <- "Rmodel/modelMlxt_pk2.txt"
 
@@ -47,26 +49,6 @@ print(ggplotmlx(data=res2$C)  + geom_line(aes(x=time, y=C), size=0.5))
 
 # ---------------------------------------------------------
 
-modelR <- function(parameter,dose,time)
-{
-  with(as.list(parameter),{
-    w <- w_pop + rnorm(1)*omega_w
-    V <- V_pop*(w/w_pop)*exp(rnorm(1)*omega_V)
-    k <- k_pop*exp(rnorm(1)*omega_k)
-    t <- time[[1]]
-    A <- rep(0,length(t))
-    d.time <- dose$time
-    d.amt <- dose$amount
-    nd <- length(d.time)
-    for (m in (1:nd)){
-      jm <- which(t>=d.time[m])
-      A[jm] <- A[jm] + d.amt[m]*exp(-k*(t[jm]-d.time[m]))
-    }
-    r <- list(C=data.frame(time=t, C=A/V), w=w, V=V, k=k)
-    return(r)
-  })
-}
-
 adm <- list(time=seq(0,66,by=12), amount=100)
 C <- list(name="C", time=seq(0,100, by=0.5))
 ind <- list(name=c("w","V","k"))
@@ -74,64 +56,46 @@ p <- c(w_pop=70, omega_w=10, V_pop=10, omega_V=0.3, k_pop=0.1, omega_k=0.2)
 g <- list(size=1000)
 
 ptm <- proc.time()
-res3 <- simulx(model    = "modelR", 
-               output    = list(C,ind),
-               parameter = p,
-               treatment = adm,
-               group     = g)
-print(proc.time() - ptm)
-
-print(prctilemlx(res3$C)+ylim(c(0,25)))
-
-################################
-################################
-
-
-modelMlxt <- inlineModel("
-[COVARIATE]
-input = {w_pop, omega_w}
-
-DEFINITION:
-w = {distribution = normal, prediction = w_pop, sd = omega_w}
-
-;----------------------------------------------
-[INDIVIDUAL]
-input = {V_pop, omega_V, k_pop, omega_k, w, w_pop}
-
-EQUATION:
-V_pred = V_pop*(w/w_pop)
-
-DEFINITION:
-V = {distribution = lognormal, prediction = V_pred, sd = omega_V}
-k = {distribution = lognormal, prediction = k_pop,  sd = omega_k}
-
-;----------------------------------------------
-[LONGITUDINAL]
-input = {V, k}
-
-EQUATION:
-C = pkmodel(V, k)
-")
-
-ptm <- proc.time()
-res3b <- simulx(model     = modelMlxt, 
+res3a <- simulx(model     = "Rmodel/modelR_pk3.R", 
                 output    = list(C,ind),
                 parameter = p,
                 treatment = adm,
                 group     = g)
 print(proc.time() - ptm)
+print(prctilemlx(res3a$C)+ylim(c(0,25)))
 
+ptm <- proc.time()
+res3b <- simulx(model     = "Rmodel/modelMlxt_pk3.txt", 
+                output    = list(C,ind),
+                parameter = p,
+                treatment = adm,
+                group     = g)
+print(proc.time() - ptm)
 print(prctilemlx(res3b$C)+ylim(c(0,25)))
 
-
 # -------------------------------------------------
+modelR_reg1 <- function(parameter,regressor,time)
+{  
+  with(as.list(parameter),{
+    t <- time[[1]]
+    regt <- regressor[[1]]$time
+    regC <- regressor[[1]]$value
+    C <- approx(regt,regC,t)$y
+    E = Emax*C/(C+EC50)
+    r <- list(C=data.frame(time=t, C=C),
+              E=data.frame(time=t, E=E))
+    return(r)
+  })
+}
+
 reg <- data.frame(time=seq(0,50,by=5),  Cin=exp(-0.1*seq(0,50,by=5)))
 out <- list(name=c('C','E'), time=seq(0,50, by=0.2))
 
-res4 <- simulx( model     = "Rmodel/modelR_reg1.R",
+res4 <- simulx( model     = "modelR_reg1",
                 parameter = c(Emax=100, EC50=0.3),
                 regressor = reg,
                 output    = out)
+
 
 plot1 <- ggplotmlx(data=res4$C) + geom_line(aes(x=time, y=C))
 plot2 <- ggplotmlx(data=res4$E) + geom_line(aes(x=time, y=E))

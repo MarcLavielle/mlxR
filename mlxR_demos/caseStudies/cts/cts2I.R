@@ -1,5 +1,22 @@
 library(gridExtra)
 
+ctsModel1 <- inlineModel("
+[LONGITUDINAL] 
+input={Tk0,V,Cl,Imax,E0,IC50,kout,alpha,beta}
+
+EQUATION:
+Cc = pkmodel(Tk0, V, Cl)
+
+E_0 = E0 
+kin = E0*kout
+ddt_E = kin*(1-Imax*Cc/(Cc+IC50)) - kout*E  
+
+h = (alpha/1000)*exp(beta*E)
+H_0 = 0
+ddt_H = h
+S = exp(-H)
+")
+
 adm.time <- seq(0,200,by=12)
 
 g1 <- list(treatment = list(time=adm.time, amount=  0))
@@ -14,7 +31,7 @@ ptte <- c(alpha = 0.5, beta = 0.02)
 f <- list(name = c('Cc','E','S'), 
           time = seq(0,200,by=1))
 
-res <- simulx(model     = "model/cts2I.txt",
+res <- simulx(model     = ctsModel1,
               group     = list(g1,g2,g3,g4),
               parameter = list(ppk, ppd, ptte),
               output    = f )

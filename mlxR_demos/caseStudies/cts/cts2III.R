@@ -1,15 +1,49 @@
 # library(mlxR)
 library(gridExtra)
+library(reshape2)
+
+
+ctsModel3 <- inlineModel("
+[LONGITUDINAL] 
+input={Tk0,V,Cl,Imax,E0,IC50,kout,alpha,beta,b}
+
+EQUATION:
+C = pkmodel(Tk0, V, Cl)
+
+E_0 = E0 
+kin = E0*kout
+ddt_E = kin*(1-Imax*C/(C+IC50)) - kout*E  
+
+h = (alpha/1000)*exp(beta*E)
+g = b*C
+
+DEFINITION:
+y = {distribution=normal, prediction=C, sd=g}
+e = {type=event, maxEventNumber=10, rightCensoringTime=200, hazard=h}
+
+;-----------------------------------------
+[INDIVIDUAL]
+input={Tk0_pop,V_pop,Cl_pop,Imax_pop,E0_pop,IC50_pop,kout_pop,alpha_pop,beta_pop,
+  omega_Tk0,omega_V,omega_Cl,omega_Imax,omega_E0,omega_IC50,omega_kout,omega_alpha,omega_beta}
+
+DEFINITION:
+Tk0   = {distribution=lognormal,   prediction=Tk0_pop,  sd=omega_Tk0}
+V     = {distribution=lognormal,   prediction=V_pop,    sd=omega_V}
+Cl    = {distribution=lognormal,   prediction=Cl_pop,   sd=omega_Cl}
+E0    = {distribution=lognormal,   prediction=E0_pop,   sd=omega_E0}
+IC50  = {distribution=lognormal,   prediction=IC50_pop, sd=omega_IC50}
+kout  = {distribution=lognormal,   prediction=kout_pop, sd=omega_kout}
+Imax  = {distribution=logitnormal, prediction=Imax_pop, sd=omega_Imax}
+alpha = {distribution=normal,      prediction=alpha_pop,sd=omega_alpha}
+beta  = {distribution=normal,      prediction=beta_pop, sd=omega_beta}
+")
 
 #-------------------------------------
 M <- 100
-vN <- c(25, 50, 75, 100)
+vN <- c(25, 50, 100)
 
 adm.amount <- c(0, 25, 50, 100)
 adm.time   <- seq(0,200,by=12)
-
-e <- list(name=c('e'), time=0)
-surv.t <- c(100,200)
 
 pop.param   <- c(
   Tk0_pop   = 3,    omega_Tk0   = 0.2,
@@ -24,153 +58,48 @@ pop.param   <- c(
   b         = 0.1
 )
 
-adm    <- list(time=adm.time, amount=NULL)
-adm.n  <- length(adm.amount)
-size.n <- length(vN)
-surv.n <- length(surv.t)
-R <- array(dim=c(M,adm.n,size.n,surv.n))
-
-ptm <- proc.time()
-for (l in seq(1,size.n)){
-  N <- vN[l]
-  #   cat(paste0("\nN = ",N,"\n")) 
-  g <- list(size=N, level='individual'); 
-  for (k in seq(1,adm.n)){
-    #     ptm <- proc.time()
-    cat(paste0("\nN = ",N,"  ;  amount = ",adm.amount[k], "\n")) 
-    adm$amount <- adm.amount[k]
-    for (m in seq(1,M)){
-      s <- 1000*l+100*k+10*m
-      res <- simulx(model     = "model/cts2III.txt",
-                    parameter = pop.param,
-                    treatment = adm,
-                    output    = e, 
-                    group     = g,
-                    settings  = list(seed=s))   
-      te <- res$e$time[seq(2,2*N,by=2)]
-      for (j in seq(1,surv.n))  
-        R[m,k,l,j] <- mean(te>=surv.t[j]) 
-    }
-  }
-} 
-print(proc.time() - ptm)
-
-#----------------------------------------------
-xl   <- rep(NA,adm.n)
-for (k in seq(1,adm.n))
-  xl[k] <- paste0(adm.amount[k]," mg")
-
-for (j in seq(1,surv.n)){
-  par(mfrow = c(2,2), oma=c(0,0,2,0), mar=c(3,3,2,2) )
-  for (l in seq(1,size.n)){
-    skj <- data.frame(R[,,l,j])
-    names(skj) <- xl
-    boxplot(skj, ylim=c(0.2,1))
-    title(main=paste0("N = ",vN[l]))
-  }
-  title(main=paste0("Survival at t=",surv.t[j]),outer=T,cex.main=2)
-}
-
-S     <- 0.2
-j     <- 2
-P.res <- NULL
-yl    <- rep(NA,size.n)
-
-for (l in seq(1,size.n)){
-  yl[l] <- paste0("N=",vN[l])
-  skj <- data.frame(R[,,l,j])
-  dkj <- skj[,2:adm.n] -skj[,1]
-  P.res <- rbind(P.res,colMeans(dkj>S))
-}
-colnames(P.res) <- xl[2:adm.n]
-rownames(P.res) <- yl
-print(P.res)
+e <- list(name='e', time=0, surv.t=c(100,200))
 
 #---------------------------------------------------
-ptm <- proc.time()
-for (l in seq(1,size.n)){
-  N <- vN[l]
-  #   cat(paste0("\nN = ",N,"\n")) 
-  g <- list(size=N, level='individual'); 
-  for (k in seq(1,adm.n)){
-    ptm <- proc.time()
-    cat(paste0("\nN = ",N,"  ;  amount = ",adm.amount[k], "\n")) 
-    adm$amount <- adm.amount[k]
-    
-    dataIn <- simulx(model     = "model/cts2III.txt",
-                     parameter = pop.param,
-                     treatment = adm,
-                     output    = e, 
-                     group     = g,
-                     settings  = list(load.design=TRUE, data.in=TRUE))
-    for (m in seq(1,M)){
-      s <- 1000*l+100*k+10*m
-      res <- simulx(data = dataIn, settings = list(load.design=FALSE,seed=s))   
-      te <- res$e$time[seq(2,2*N,by=2)]
-      for (j in seq(1,surv.n))  
-        R[m,k,l,j] <- mean(te>=surv.t[j]) 
-    }
-    print(proc.time() - ptm)
-  }
-} 
-print(proc.time() - ptm)
+labels.arm <- c("placebo", "25 mg", "50 mg", "100mg")
+labels.N   <- c("N = 25", "N = 50", "N = 100")
 
-
+R <- NULL
 ptm <- proc.time()
-for (l in seq(1,size.n)){
-  N <- vN[l]
-  #   cat(paste0("\nN = ",N,"\n")) 
-  g <- list(size=N, level='individual'); 
-  for (k in seq(1,adm.n)){
-    cat(paste0("\nN = ",N,"  ;  amount = ",adm.amount[k], "\n")) 
-    adm$amount <- adm.amount[k]
+for (k in seq(1,length(adm.amount))){
+  adm <- list(time=adm.time, amount=adm.amount[k])
+  for (l in seq(1,length(vN))){
+    g <- list(size=vN[l], level='individual'); 
+    cat(paste0("\nN = ",vN[l],"  ;  amount = ",adm.amount[k], "\n")) 
     s <- 1000*l+100*k
-    ptm <- proc.time()
-    res <- simulx(model     = "model/cts2III.txt",
+    res <- simulx(model     = ctsModel3,
                   parameter = pop.param,
                   treatment = adm,
                   output    = e, 
                   group     = g,
                   nrep      = M,
-                  result.folder = "cts2III",
-                  settings  = list(seed = s, out.trt = T))
-    print(proc.time() - ptm)
-    #       te <- res$e$time[seq(2,2*N,by=2)]
-#       for (j in seq(1,surv.n))  
-#         R[m,k,l,j] <- mean(te>=surv.t[j]) 
+                  settings  = list(seed = s, out.trt = F))
+    res$e$nbEv.mean <- NULL
+    R <- rbind(R, cbind(res$e, N=labels.N[l], arm=labels.arm[k]))
   }
 } 
 print(proc.time() - ptm)
 
 #----------------------------------------------
-xl   <- rep(NA,adm.n)
-for (k in seq(1,adm.n))
-  xl[k] <- paste0(adm.amount[k]," mg")
 
-for (j in seq(1,surv.n)){
-  par(mfrow = c(2,2), oma=c(0,0,2,0), mar=c(3,3,2,2) )
-  for (l in seq(1,size.n)){
-    skj <- data.frame(R[,,l,j])
-    names(skj) <- xl
-    boxplot(skj, ylim=c(0.2,1))
-    title(main=paste0("N = ",vN[l]))
-  }
-  title(main=paste0("Survival at t=",surv.t[j]),outer=T,cex.main=2)
-}
+rm <- melt(R,  id = c('N','arm','rep'), value.name="Survival", variable.name="time")
+rm$time <- factor(rm$time, labels = c("T = 100", "T = 200"))
+
+print(ggplotmlx(rm, aes(arm,Survival)) + geom_boxplot(aes(fill = arm)) + 
+        facet_grid(time ~N) + theme(legend.position="none"))
 
 #----------------------------------------------
-S <- 0.2
-j <- 2
-P.res <- NULL
-yl    <- rep(NA,size.n)
+S <- 0.1
 
-for (l in seq(1,size.n)){
-  yl[l] <- paste0("N=",vN[l])
-  skj <- data.frame(R[,,l,j])
-  dkj <- skj[,2:adm.n] -skj[,1]
-  P.res <- rbind(P.res,colMeans(dkj>S))
-}
-colnames(P.res) <- xl[2:adm.n]
-rownames(P.res) <- yl
-print(P.res)
+R.p <- R[R$arm=="placebo","S200.mean"]
+R.t <- R[R$arm!="placebo",]
+R.t$dS <- (R.t$S200.mean-rep(R.p,3) > S)
+R.t$S200.mean <- NULL
+print(acast(R.t,N~arm,mean, value.var="dS"))
+
 

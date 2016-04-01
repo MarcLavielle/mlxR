@@ -1,13 +1,45 @@
 library(gridExtra)
 
+ctsModel2 <- inlineModel("
+[LONGITUDINAL] 
+input={Tk0,V,Cl,Imax,E0,IC50,kout,alpha,beta}
+
+EQUATION:
+C = pkmodel(Tk0, V, Cl)
+
+E_0 = E0 
+kin = E0*kout
+ddt_E = kin*(1-Imax*C/(C+IC50)) - kout*E  
+
+h = (alpha/1000)*exp(beta*E)
+H_0 = 0
+ddt_H = h
+S = exp(-H)
+
+[INDIVIDUAL]
+input={Tk0_pop,V_pop,Cl_pop,Imax_pop,E0_pop,IC50_pop,kout_pop,alpha_pop,beta_pop,
+  omega_Tk0,omega_V,omega_Cl,omega_Imax,omega_E0,omega_IC50,omega_kout,omega_alpha,omega_beta}
+
+DEFINITION:
+Tk0   = {distribution=lognormal,   prediction=Tk0_pop,  sd=omega_Tk0}
+V     = {distribution=lognormal,   prediction=V_pop,    sd=omega_V}
+Cl    = {distribution=lognormal,   prediction=Cl_pop,   sd=omega_Cl}
+E0    = {distribution=lognormal,   prediction=E0_pop,   sd=omega_E0}
+IC50  = {distribution=lognormal,   prediction=IC50_pop, sd=omega_IC50}
+kout  = {distribution=lognormal,   prediction=kout_pop, sd=omega_kout}
+Imax  = {distribution=logitnormal, prediction=Imax_pop, sd=omega_Imax}
+alpha = {distribution=lognormal,   prediction=alpha_pop,sd=omega_alpha}
+beta  = {distribution=lognormal,   prediction=beta_pop, sd=omega_beta}
+")
+
 #-----------------------------------------------
 N=500
 adm.time <- seq(0,200,by=12)
 
-g1 <- list(size=N, level='individual', treatment = list(time=adm.time, amount=  0))
-g2 <- list(size=N, level='individual', treatment = list(time=adm.time, amount= 25))
-g3 <- list(size=N, level='individual', treatment = list(time=adm.time, amount= 50))
-g4 <- list(size=N, level='individual', treatment = list(time=adm.time, amount=100))
+g1 <- list(size=N, level='individual', treatment=list(time=adm.time, amount=  0))
+g2 <- list(size=N, level='individual', treatment=list(time=adm.time, amount= 25))
+g3 <- list(size=N, level='individual', treatment=list(time=adm.time, amount= 50))
+g4 <- list(size=N, level='individual', treatment=list(time=adm.time, amount=100))
 
 pop.param   <- c(
   Tk0_pop   = 3,    omega_Tk0   = 0.2,
@@ -24,7 +56,7 @@ pop.param   <- c(
 f <- list(name=c('C','E','S'), 
           time=seq(0,to=200,by=2))
   
-res <- simulx(model = "model/cts2II.txt",
+res <- simulx(model     = ctsModel2,
               parameter = pop.param,
               group     = list(g1,g2,g3,g4),
               output    = f)

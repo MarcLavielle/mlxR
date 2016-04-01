@@ -1,3 +1,5 @@
+setwd(dirname(parent.frame(2)$ofile))
+# library(mlxR)
 
 #-------------------------------------
 p <- c(V_pop=10, omega_V=0.1, beta=1, w_pop=70, omega_w=12, k=0.15, a=0.5)

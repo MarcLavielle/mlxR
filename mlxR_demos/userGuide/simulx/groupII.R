@@ -1,5 +1,6 @@
+setwd(dirname(parent.frame(2)$ofile))
+# library(mlxR)
 
-#-------------------------------------
 
 adm <- list(time=seq(0,to=66,by=12), amount=100)
 C <- list(name='C', time=seq(0, 100, by=1))

@@ -1,0 +1,32 @@
+[COVARIATE]
+input = WEIGHT
+
+EQUATION:
+lw70 = log(WEIGHT/70)
+
+[INDIVIDUAL]
+input = {ka_pop, omega_ka, V_pop, beta_V_lw70, lw70, omega_V, Cl_pop, beta_Cl_lw70, omega_Cl}
+
+DEFINITION:
+ka = {distribution=lognormal, typical=ka_pop, sd=omega_ka}
+V = {distribution=lognormal, typical=V_pop, covariate=lw70, coefficient=beta_V_lw70, sd=omega_V}
+Cl = {distribution=lognormal, typical=Cl_pop, covariate=lw70, coefficient=beta_Cl_lw70, sd=omega_Cl}
+
+[LONGITUDINAL]
+input = b
+
+DESCRIPTION: 
+PK model, first order absorption with one compartment
+
+INPUT:
+parameter = {ka, V, Cl}
+
+EQUATION:
+Cc=pkmodel(ka, V, Cl)
+
+OUTPUT:
+output = Cc
+
+DEFINITION:
+y1 = {distribution=normal, prediction=Cc, errorModel=proportional(b)}
+

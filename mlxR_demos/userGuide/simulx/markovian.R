@@ -1,4 +1,5 @@
-library(mlxR)
+setwd(dirname(parent.frame(2)$ofile))
+#library(mlxR)
 library(reshape2)
 
 #-------------------------------------
@@ -11,7 +12,7 @@ res1  <- simulx(model     = 'model/markovianA.txt',
                 output    = y,
                 settings  = list(seed=seed))
 
-print(ggplot(data=res1$y) + geom_point(aes(x=time, y=y),size=1))
+print(ggplotmlx(data=res1$y) + geom_point(aes(x=time, y=y),size=1))
 
 
 #-------------------------------------
@@ -22,10 +23,10 @@ res2 <- simulx(model     = 'model/markovianB.txt',
                output    = list(y,f),
                settings  = list(seed=seed))
 
-print(ggplot(res2$y) + geom_point(aes(x=time, y=y),size=1))
+print(ggplotmlx(res2$y) + geom_point(aes(x=time, y=y),size=1))
 
-r <- melt(merge(res2$p12,res2$p21) ,  id = 'time', variable_name = 'f')
-print(ggplot(r, aes(time,value)) + geom_line(aes(colour = f),size=1) +
+r <- melt(merge(res2$p12,res2$p21) ,  id = 'time', variable.name = 'f')
+print(ggplotmlx(r, aes(time,value)) + geom_line(aes(colour = f),size=1) +
         ylab('transition probabilities') + guides(colour=guide_legend(title=NULL)) +
         theme(legend.position=c(.9, .8)))
 
@@ -37,4 +38,4 @@ res3  <- simulx(model     = 'model/markovianC.txt',
                 output    = y,
                 settings  = list(seed=12345))
 
-print(ggplot(data=res3$y) + geom_point(aes(x=time, y=y)))
+print(ggplotmlx(data=res3$y) + geom_point(aes(x=time, y=y)))

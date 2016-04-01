@@ -1,3 +1,5 @@
+setwd(dirname(parent.frame(2)$ofile))
+# library(mlxR)
 
 #-------------------------------------
 adm1 <- list(type   = 1, 
