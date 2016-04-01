@@ -216,11 +216,16 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     
     if (!is.null(npop))
     {
-      ipop <- T
+      iproj.pop <- T
       if (is.null(fim))  fim <- "needed"
     }
     else
-      ipop <- F
+      iproj.pop <- F
+    
+    if (is.list(parameter[[1]]) && !is.null(parameter[[1]]$pop))
+      p.pop <- parameter[[1]]
+    else
+      p.pop <- NULL
     
     ans <- processing_monolix( project=project,
                                treatment=treatment,
@@ -240,13 +245,18 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     infoParam <- ans$infoParam
     id        <- as.factor(ans$id$oriId)
     N         <- nlevels(id)
-    if (ipop==T)
+    if (iproj.pop==T)
     {
       if(is.null(fim))
         stop('The covariance matrix of the population parameters is requested for simulating several replicates 
            of the population parameters')
       else 
         parameter[[1]] <- sim.pop(npop,parameter[[1]],infoParam,fim,kw.max=kw.max)
+    } 
+    else if (!is.null(p.pop))
+    {
+      parameter[[1]] <- p.pop
+      iproj.pop <- T
     }
     test.project <- T
     test.N <- T
@@ -501,11 +511,17 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     } 
   }
   
+  pop <- NULL
   if (test.pop == T)
   {
     pop <- as.data.frame(pop.mat)
     pop <- format(pop, digits = 5, justify = "left")
     pop <- cbind(pop=(1:npop),pop)
+  }
+  if (!(is.null(project))) 
+    pop <- parameter[[1]]
+  if (!is.null(pop))
+  {
     if (write.simul==TRUE)
     {
       r <- list(population=pop)
@@ -586,7 +602,7 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=T)
   }
   
   
-
+  
   if (out.trt==T)
     trt <- dataIn$trt
   else
