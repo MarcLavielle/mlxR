@@ -1,0 +1,27 @@
+[COVARIATE]
+input={p_F}
+
+DEFINITION:
+gender = { type=categorical,  categories={F,M},   P(gender=F)=p_F }
+
+;---------------------------------------
+[INDIVIDUAL]
+input={k_pop, omega_k, gender, beta_F}
+gender={type=categorical,categories={F,M}}
+
+EQUATION:
+if gender==F   
+  k_pred = k_pop*exp(beta_F)
+else         
+  k_pred = k_pop
+end
+
+DEFINITION:
+k = {distribution=logNormal, prediction=k_pred, sd=omega_k}
+
+;---------------------------------------
+[LONGITUDINAL]
+input =  {k}
+
+EQUATION:
+f = exp(-k*t)

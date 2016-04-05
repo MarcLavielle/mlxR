@@ -1,0 +1,22 @@
+[INDIVIDUAL]
+input = {ka_pop, omega_ka, V_pop, Cl_pop, omega_Cl}
+
+DEFINITION:
+ka = {distribution=lognormal, typical=ka_pop, sd=omega_ka}
+V = {distribution=lognormal, typical=V_pop, no-variability}
+Cl = {distribution=lognormal, typical=Cl_pop, sd=omega_Cl}
+
+[LONGITUDINAL]
+input = a
+
+input = {ka, V, Cl}
+
+EQUATION:
+Cc = pkmodel(ka, V, Cl)
+
+OUTPUT:
+output = Cc
+
+DEFINITION:
+concentration = {distribution=normal, prediction=Cc, errorModel=constant(a)}
+

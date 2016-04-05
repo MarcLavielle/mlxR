@@ -1,0 +1,12 @@
+           ; parameter;   s.e._sa;r.s.e._sa;pvalues_sa
+     ka_pop;   1.00378;   0.07417;     7.39;       NaN
+      V_pop;   7.99897;   0.22559;     2.82;       NaN
+     Cl_pop;   0.12607;   0.00398;     3.15;       NaN
+  gamma_pop;   1.11042;   0.05538;     4.99;       NaN
+   beta_pop;   0.50523;   0.03577;     7.08;       NaN
+   omega_ka;   0.48307;   0.06048;    12.52;       NaN
+    omega_V;   0.19214;   0.02189;    11.39;       NaN
+   omega_Cl;   0.20372;   0.02600;    12.76;       NaN
+omega_gamma;   0.00000;   0.00000;     0.00;       NaN
+ omega_beta;   0.15620;   0.06019;    38.53;       NaN
+          b;   0.19994;   0.00524;     2.62;       NaN

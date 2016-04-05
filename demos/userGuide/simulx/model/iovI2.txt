@@ -1,0 +1,13 @@
+[LONGITUDINAL]
+input = {V, Cl}
+
+EQUATION:
+C = pkmodel(V, Cl)
+
+;--------------------------------------------
+[INDIVIDUAL]  ; variability levels = {id, occ}
+input = {V_pop, o_V0, o_V1, Cl_pop, o_Cl0}
+
+DEFINITION:
+V  = {distribution=logNormal, reference=V_pop,  varlevel={id,id*occ}, sd= {o_V0,o_V1}}
+Cl = {distribution=logNormal, reference=Cl_pop, varlevel=id, sd= o_Cl0}

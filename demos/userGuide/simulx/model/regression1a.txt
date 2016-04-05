@@ -1,0 +1,5 @@
+[LONGITUDINAL]
+input = {parameter = {Emax, EC50}, 
+         regressor = {C} }
+EQUATION:
+E = Emax*C/(C+EC50)

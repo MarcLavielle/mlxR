@@ -1,0 +1,20 @@
+[COVARIATE]
+input = {w_pop, o_w, h_pop, o_h, r_wh}
+DEFINITION:
+w = {distribution=normal, mean=w_pop, sd=o_w}
+h = {distribution=normal, mean=h_pop, sd=o_h}
+correlation = {r(w,h)=r_wh}
+
+[INDIVIDUAL]
+input = {w_pop, h_pop, w, h, a_pop, o_a, b_pop, o_b, r_ab}
+EQUATION:
+a_pred = a_pop*(w/w_pop)*(h/h_pop)^0.5
+DEFINITION:
+a = {distribution=normal, prediction=a_pred, sd=o_a}
+b = {distribution=normal, prediction=b_pop,  sd=o_b}
+correlation = {r(a,b)=r_ab}
+
+[LONGITUDINAL]
+input={a, b}
+EQUATION:
+f = a + b*t

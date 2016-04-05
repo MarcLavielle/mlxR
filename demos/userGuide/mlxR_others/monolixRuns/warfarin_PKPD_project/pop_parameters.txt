@@ -1,0 +1,82 @@
+******************************************************************
+*      warfarin_PKPD_project.mlxtran
+*      March 25, 2016 at 10:03:56
+*      Monolix version: 4.4.0
+******************************************************************
+
+Estimation of the population parameters
+
+               parameter     s.e. (lin)   r.s.e.(%)    p-value 
+Tlag_pop     :    0.649         0.17          26               
+ka_pop       :     1.24          0.3          24               
+V_pop        :     7.96         0.22           3               
+beta_V_lw70  :    0.885         0.14          16      6.8e-010 
+Cl_pop       :    0.134       0.0064           5               
+beta_Cl_lw70 :    0.604         0.25          42         0.016 
+Imax_pop     :    0.964       0.0053           1               
+IC50_pop     :    0.993        0.092           9               
+Rin_pop      :     5.45         0.19           3               
+kout_pop     :   0.0563       0.0018           3               
+
+omega_Tlag   :    0.668         0.19          29               
+omega_ka     :    0.815         0.18          22               
+omega_V      :     0.14        0.022          16               
+omega_Cl     :    0.262        0.034          13               
+omega_Imax   :    0.166         0.17         102               
+omega_IC50   :    0.486        0.067          14               
+omega_Rin    :   0.0373        0.027          72               
+omega_kout   :   0.0295        0.029          97               
+corr_V_Cl    :    0.177          0.2         111               
+
+a1           :    0.269        0.045          17               
+b1           :   0.0568        0.009          16               
+a2           :     4.24         0.24           6               
+
+correlation matrix (IIV)
+Tlag      1                      
+ka        0       1                   
+V         0       0       1                
+Cl        0       0    0.18       1             
+Imax      0       0       0       0       1          
+IC50      0       0       0       0       0       1       
+Rin       0       0       0       0       0       0       1    
+kout      0       0       0       0       0       0       0       1 
+
+______________________________________________
+correlation matrix of the estimates(linearization)
+
+Tlag_pop          1                            
+ka_pop         0.12       1                         
+V_pop          0.06   -0.02       1                      
+beta_V_lw70    0.01   -0.02    0.12       1                   
+Cl_pop         0.04   -0.03    0.16    0.02       1                
+beta_Cl_lw70      0   -0.01    0.01    0.16    0.09       1             
+Imax_pop      -0.05    0.03   -0.09   -0.04    0.01       0       1          
+IC50_pop      -0.01   -0.01      -0   -0.01   -0.01    0.01    0.14       1       
+Rin_pop        0.13   -0.02     0.1    0.01   -0.02       0   -0.42   -0.05       1    
+kout_pop       0.14   -0.02     0.1    0.01   -0.02    0.01   -0.46   -0.04    0.94       1 
+
+Eigenvalues (min, max, max/min): 0.054  2.3  43
+
+omega_Tlag      1                               
+omega_ka    -0.03       1                            
+omega_V        -0      -0       1                         
+omega_Cl       -0      -0    0.03       1                      
+omega_Imax     -0      -0   -0.02      -0       1                   
+omega_IC50      0      -0       0      -0   -0.01       1                
+omega_Rin    0.01       0      -0      -0    0.07       0       1             
+omega_kout  -0.01      -0       0       0   -0.07      -0   -0.86       1          
+a1              0    0.02    0.01   -0.01       0      -0      -0       0       1       
+b1          -0.02   -0.03   -0.06       0   -0.02       0       0      -0   -0.79       1    
+a2          -0.01   -0.01      -0      -0   -0.06   -0.02   -0.05   -0.05   -0.01    0.01       1 
+
+Eigenvalues (min, max, max/min): 0.13  1.9  14
+
+Numerical covariates
+	lw70 = log(wt/70)		
+
+
+Population parameters and Fisher Information Matrix estimation...
+
+Elapsed time is 39.2 seconds. 
+CPU time is 87.1 seconds. 

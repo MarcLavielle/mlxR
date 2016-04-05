@@ -1,0 +1,12 @@
+DESCRIPTION: 
+ - PK  one compartment model defined using pkmodel 
+ - PD  turnover model with inhibition on the input
+
+[LONGITUDINAL]
+input =  {Tlag, ka, V, Cl, Imax, IC50, Rin, kout}
+
+EQUATION:
+Cc = pkmodel(Tlag, ka, V, Cl)
+E_0 = Rin/kout
+ddt_E = Rin*(1-Imax*Cc/(Cc+IC50)) - kout*E
+

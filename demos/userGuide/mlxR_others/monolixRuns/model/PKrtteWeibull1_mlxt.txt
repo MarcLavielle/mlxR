@@ -1,0 +1,16 @@
+DESCRIPTION: PK + repeated event 
+
+[LONGITUDINAL]
+input  = {ka, V, Cl, gamma, beta}  
+
+EQUATION:
+Cc = pkmodel(ka, V, Cl)
+if t<0.1
+  aux=0
+else
+  aux = gamma*Cc*(t^(beta-1))
+end
+
+DEFINITION:
+Hemorrhaging  = {type=event, hazard=aux}
+

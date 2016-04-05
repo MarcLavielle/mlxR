@@ -1,0 +1,10 @@
+[LONGITUDINAL]
+input = {ka, V, Cl, k12, k21, k13, k31}
+
+EQUATION:
+k = Cl/V
+ddt_Ad = -ka*Ad
+ddt_Ac = ka*Ad - k*Ac + k21*Ap - k12*Ac + k31*Aq - k13*Ac
+ddt_Ap = -k21*Ap + k12*Ac 
+ddt_Aq = -k31*Aq + k13*Ac
+C = Ac/V

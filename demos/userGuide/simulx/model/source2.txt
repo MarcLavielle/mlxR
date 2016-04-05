@@ -1,0 +1,10 @@
+[LONGITUDINAL] 
+input={r,tau, F}
+
+PK:
+depot(target=h, Tlag=tau, p=F)
+
+EQUATION:
+t0  = 0
+h_0 = 0
+ddt_h = r

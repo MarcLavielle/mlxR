@@ -1,0 +1,5 @@
+[LONGITUDINAL]
+input = {V, Cl}
+
+PK:
+Cc = pkmodel(V, Cl)

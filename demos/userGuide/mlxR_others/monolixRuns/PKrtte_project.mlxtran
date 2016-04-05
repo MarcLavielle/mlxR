@@ -1,0 +1,64 @@
+; this script is generated automatically
+
+<DATAFILE>
+
+[FILEINFO]
+file = 'data/PKrtte_data.txt'
+delimiter = tab
+header = {ID, TIME, AMT, Y, YTYPE}
+
+[CONTENT]
+ID = {use=identifier}
+TIME = {use=time}
+AMT = {use=amount}
+Y = {use=observation, name={Concentration, Hemorrhaging}, ytype={1, 2}, type={continuous, event}}
+YTYPE = {use=observationType}
+
+<MODEL>
+
+[INDIVIDUAL]
+input = {ka_pop, omega_ka, V_pop, omega_V, Cl_pop, omega_Cl, gamma_pop, beta_pop, omega_beta}
+
+DEFINITION:
+ka = {distribution=lognormal, typical=ka_pop, sd=omega_ka}
+V = {distribution=lognormal, typical=V_pop, sd=omega_V}
+Cl = {distribution=lognormal, typical=Cl_pop, sd=omega_Cl}
+gamma = {distribution=lognormal, typical=gamma_pop, no-variability}
+beta = {distribution=lognormal, typical=beta_pop, sd=omega_beta}
+
+[LONGITUDINAL]
+input = b
+
+file = 'model/PKrtteWeibull1_mlxt.txt'
+
+DEFINITION:
+Concentration = {distribution=normal, prediction=Cc, errorModel=proportional(b)}
+
+<FIT>
+data = {Concentration, Hemorrhaging}
+model = {Concentration, Hemorrhaging}
+
+<PARAMETER>
+ka_pop = {value=1, method=MLE}
+omega_ka = {value=1, method=MLE}
+V_pop = {value=10, method=MLE}
+omega_V = {value=1, method=MLE}
+Cl_pop = {value=0.1, method=MLE}
+omega_Cl = {value=1, method=MLE}
+gamma_pop = {value=0.05, method=MLE}
+beta_pop = {value=1, method=MLE}
+omega_beta = {value=1, method=MLE}
+b = {value=0.1, method=MLE}
+
+<MONOLIX>
+
+[TASKS]
+populationParameters()
+individualParameters(method = All)
+fim(method = StochasticApproximation)
+
+[SETTINGS]
+GLOBAL:
+exportpath = 'pkrtteWeibull_project'
+autochains = no
+
