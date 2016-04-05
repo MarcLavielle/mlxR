@@ -1,7 +1,0 @@
-[LONGITUDINAL]
-input = {ka, V, k}
-
-EQUATION:
-D=100
-f1 = D/V*exp(-k*t)
-f2 = D*ka/(V*(ka-k))*(exp(-k*t) - exp(-ka*t))

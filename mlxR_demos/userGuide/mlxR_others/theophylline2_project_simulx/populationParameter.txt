@@ -1,8 +1,0 @@
-ka_pop 1.5
-V_pop 0.45983
-Cl_pop 0.03984
-omega_ka 0.63883
-omega_V 0.13202
-omega_Cl 0.26916
-corr_ka_V -0.17795
-a 0.73084

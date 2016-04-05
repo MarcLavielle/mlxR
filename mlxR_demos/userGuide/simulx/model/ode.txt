@@ -1,9 +1,0 @@
-[LONGITUDINAL]
-input = {a, b, c}
-
-EQUATION:
-t0 = 0
-f1_0 = 10
-f2_0 = 0
-ddt_f1 = a*f2 - b*f1/(1+c*f1)
-ddt_f2 = b*f1/(1+c*f1) - a*f2

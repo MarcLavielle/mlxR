@@ -1,9 +1,0 @@
-[LONGITUDINAL]
-input = {F, ka, V, k}
-
-PK:
-compartment(cmt=1, amount=Ac)
-oral(type=1, cmt=1, ka, p=F)
-iv(type=2, cmt=1)
-elimination(cmt=1, k)
-Cc = Ac/V

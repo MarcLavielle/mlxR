@@ -1,9 +1,0 @@
-[LONGITUDINAL]
-input = {ka, V, Cl}
-
-EQUATION:
-Cc = pkmodel(ka, V, Cl)
-
-OUTPUT:
-output = Cc
-

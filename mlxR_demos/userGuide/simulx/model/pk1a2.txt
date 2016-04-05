@@ -1,9 +1,0 @@
-[LONGITUDINAL]
-input = {V, Cl}
-
-PK:
-;compartment(cmt=1, volume=V, concentration=Cc)
-compartment(cmt=1, amount=Ac, volume=V)
-iv(cmt=1)
-elimination(cmt=1, Cl)
-Cc = Ac/V
