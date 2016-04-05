@@ -1,0 +1,12 @@
+DESCRIPTION: PK oral + indirect response model
+
+INPUT:
+parameter =  {Tlag, ka, V, Cl, Imax, IC50, kin, kout}
+
+EQUATION:
+Cc = pkmodel(Tlag, ka, V, Cl)
+E_0 = kin/kout
+ddt_E = kin*(1-Imax*Cc/(Cc+IC50)) - kout*E
+
+OUTPUT:
+output = {Cc, E}

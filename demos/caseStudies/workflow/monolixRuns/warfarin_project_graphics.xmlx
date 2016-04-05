@@ -1,0 +1,177 @@
+<monolix>
+	<graphics>
+		<graphicList>
+			<graphic name="projectSummary" out="1"/>
+			<graphic name="projectSummary" out="2"/>
+			<graphic name="spaghetti" out="1">
+				<colorCensData value="0"/>
+				<displayCensData value="0"/>
+				<groupColor value="1"/>
+				<groupFilterIndividual value="1"/>
+				<groupFilterObservation value="1"/>
+				<groupSplit value="1"/>
+				<legend value="0"/>
+				<regId value="1"/>
+				<segment value="1"/>
+				<withInfos value="1"/>
+			</graphic>
+			<graphic name="spaghetti" out="2">
+				<colorCensData value="0"/>
+				<displayCensData value="0"/>
+				<groupColor value="1"/>
+				<groupFilterIndividual value="1"/>
+				<groupFilterObservation value="1"/>
+				<groupSplit value="1"/>
+				<legend value="0"/>
+				<regId value="1"/>
+				<segment value="1"/>
+				<withInfos value="1"/>
+			</graphic>
+			<graphic name="individualFits" out="1">
+				<displayInfos value="0"/>
+				<filterObs value="1"/>
+				<firstIndividual value="1"/>
+				<iovSeparated value="1"/>
+				<nbColumnsInGraphic value="4"/>
+				<nbRowsInGraphic value="3"/>
+				<percentile value="3" vector="5,50,95"/>
+				<selectInd value="2"/>
+				<withCens value="1"/>
+				<withInterval value="0"/>
+				<withLegend value="0"/>
+				<withMedian value="0"/>
+				<withObservedData value="1"/>
+				<withPop value="0"/>
+				<xRegNameId value="1"/>
+			</graphic>
+			<graphic name="individualFits" out="2">
+				<displayInfos value="0"/>
+				<filterObs value="1"/>
+				<firstIndividual value="1"/>
+				<iovSeparated value="1"/>
+				<nbColumnsInGraphic value="4"/>
+				<nbRowsInGraphic value="3"/>
+				<percentile value="3" vector="5,50,95"/>
+				<selectInd value="2"/>
+				<withCens value="1"/>
+				<withInterval value="0"/>
+				<withLegend value="0"/>
+				<withMedian value="0"/>
+				<withObservedData value="1"/>
+				<withPop value="0"/>
+				<xRegNameId value="1"/>
+			</graphic>
+			<graphic name="predVsObs" out="1">
+				<beta_reg value="0.75"/>
+				<ind_estimator value="1"/>
+				<iop_blqres value="2"/>
+				<iop_censcalc value="1"/>
+				<iop_colorcens value="0"/>
+				<iop_colorobs value="1"/>
+				<iop_displaycens value="1"/>
+				<iop_displayobs value="1"/>
+				<iop_displayspline value="1"/>
+				<iop_gfind value="1"/>
+				<iop_gfobs value="1"/>
+				<iop_gs value="1"/>
+				<iop_legend value="1"/>
+				<pop_estimator value="1"/>
+				<segments value="0"/>
+			</graphic>
+			<graphic name="predVsObs" out="2">
+				<beta_reg value="0.75"/>
+				<ind_estimator value="1"/>
+				<iop_blqres value="2"/>
+				<iop_censcalc value="1"/>
+				<iop_colorcens value="0"/>
+				<iop_colorobs value="1"/>
+				<iop_displaycens value="1"/>
+				<iop_displayobs value="1"/>
+				<iop_displayspline value="1"/>
+				<iop_gfind value="1"/>
+				<iop_gfobs value="1"/>
+				<iop_gs value="1"/>
+				<iop_legend value="1"/>
+				<pop_estimator value="1"/>
+				<segments value="0"/>
+			</graphic>
+			<graphic name="covariates" out="0">
+				<applyColor value="1"/>
+				<applyFilter value="1"/>
+				<applySplit value="0"/>
+				<currentParamEstimator value="3"/>
+				<displayCorrelation value="0"/>
+				<displayData value="1"/>
+				<displayEta value="0"/>
+				<displayGroupSplit value="1"/>
+				<displayLegend value="0"/>
+				<displayParameters value="1"/>
+				<displayRegression value="1"/>
+				<displaySplines value="0"/>
+				<displayYEqZero value="0"/>
+				<nbColumnsInGraphic value="1"/>
+				<nbRowsInGraphic value="1"/>
+				<splines_beta_reg value="0.4"/>
+			</graphic>
+			<graphic name="distPsi" out="0">
+				<filterIndividual value="1"/>
+				<filterSplit value="1"/>
+				<iop_Fb value="0"/>
+				<iop_bar value="0"/>
+				<iop_dk value="0"/>
+				<iop_fk value="1"/>
+				<iop_fm value="0"/>
+				<iop_gr value="0"/>
+				<selectPhi value="2"/>
+				<withInfos value="0"/>
+				<withLegend value="0"/>
+			</graphic>
+			<graphic name="boxplot" out="0">
+				<filterIndividual value="1"/>
+				<filterSplit value="1"/>
+				<refLine value="1"/>
+				<selectEta value="2"/>
+				<shrink value="1"/>
+			</graphic>
+			<graphic name="jointDist" out="0">
+				<filterColor value="1"/>
+				<filterIndividual value="1"/>
+				<selectEta value="2"/>
+				<withData value="1"/>
+				<withRegression value="1"/>
+				<withSpline value="1"/>
+			</graphic>
+			<graphic name="cvSAEM" out="0">
+				<firstIndividual value="1"/>
+				<nbParam value="100"/>
+			</graphic>
+		</graphicList>
+		<graphicsToPrint>
+			<BLQ value="1"/>
+			<NPC value="1"/>
+			<VPC value="1"/>
+			<bayesian value="1"/>
+			<boxplot value="1"/>
+			<categorizedData value="1"/>
+			<covTable value="0"/>
+			<covariates value="1"/>
+			<cvSAEM value="1"/>
+			<distPsi value="1"/>
+			<fullTimes value="0"/>
+			<indContTable value="0"/>
+			<individualContribution value="1"/>
+			<individualFits value="1"/>
+			<intTimes value="0"/>
+			<jointDist value="1"/>
+			<kaplanMeier value="1"/>
+			<obsTimes value="0"/>
+			<predVsObs value="1"/>
+			<projectSummary value="1"/>
+			<residuals value="1"/>
+			<spaghetti value="1"/>
+			<transProba value="1"/>
+			<vpcPredDist value="1"/>
+		</graphicsToPrint>
+		<version value="420"/>
+	</graphics>
+</monolix>
