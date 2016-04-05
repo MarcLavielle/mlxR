@@ -1,0 +1,24 @@
+
+
+[INDIVIDUAL]
+input={pop_TOVER,pop_SIZE0,omega_SIZE0,omega_AE50,omega_TOVER,pop_AE50}
+
+DEFINITION:
+SIZE0 = { distribution = normal, transformation = log, reference = pop_SIZE0, sd={omega_SIZE0}}
+TOVER = { distribution = normal, transformation = log, reference = pop_TOVER, sd={omega_TOVER}}
+AE50 = { distribution = normal, transformation = log, reference = pop_AE50, sd={omega_AE50}}
+
+[LONGITUDINAL]
+input={TOVER,TEQ,SIZE0,a,b,AE50}
+
+EQUATION:
+A1_0 = 0
+A2_0 = SIZE0
+ddt_A1 = ((-(log(
+                                            2
+                                        )))/(TEQ))*(A1)
+ddt_A2 = ((((SIZE0)/((TOVER)*(168)))*((1)-((A1)/((A1)+(((AE50)*(1000))/(263))))))-((A2)/((TOVER)*(168))))*(A2)
+
+DEFINITION:
+A2_obs = { distribution = normal, prediction = A2,  errorModel=combined1(a, b)}
+

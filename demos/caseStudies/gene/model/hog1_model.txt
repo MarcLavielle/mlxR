@@ -1,0 +1,11 @@
+[LONGITUDINAL] 
+input={kappa, gamma, nh, Kd, s0}
+
+PK:
+depot(target=h)
+
+EQUATION:
+ddt_h = 0
+ddt_s = kappa*h - gamma*s
+sh    = (s+s0)^nh
+u     = sh/(Kd^nh+sh)

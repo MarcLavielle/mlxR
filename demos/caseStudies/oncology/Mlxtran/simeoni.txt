@@ -1,0 +1,25 @@
+
+
+[LONGITUDINAL]
+input={k21,CV,psi,V1,lambda0,lambda1,k1,k2,w0,k10,k12}
+
+EQUATION:
+Q1_0 = 0
+Q2_0 = 0
+C = Q1/V1
+x1_0 = w0
+x2_0 = 0
+x3_0 = 0
+x4_0 = 0
+W = x1+x2+x3+x4
+Wtot = x1+x2+x3+x4
+ddt_Q1 = k21*Q2 - (k10+k12)*Q1
+ddt_Q2 = k12*Q1 - k21*Q2
+ddt_x1 = lambda0*x1/((1+(lambda0/lambda1*W)^psi)^(1/psi)) - k2*C*x1
+ddt_x2 = k2*C*x1 - k1*x2
+ddt_x3 = k1*x2 - k1*x3
+ddt_x4 = k1*x3 - k1*x4
+
+DEFINITION:
+y = { distribution = normal, prediction = Wtot,  errorModel=proportional(CV)}
+
