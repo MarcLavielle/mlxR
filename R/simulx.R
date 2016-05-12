@@ -245,13 +245,16 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     infoParam <- ans$infoParam
     id        <- as.factor(ans$id$oriId)
     N         <- nlevels(id)
+    test.pop <- F
     if (iproj.pop==T)
     {
+      test.pop <- T
       if(is.null(fim))
         stop('The covariance matrix of the population parameters is requested for simulating several replicates 
            of the population parameters')
       else 
         parameter[[1]] <- sim.pop(npop,parameter[[1]],infoParam,fim,kw.max=kw.max)
+      parameter[[1]]$pop <- (1:npop)
     } 
     else if (!is.null(p.pop))
     {
@@ -260,7 +263,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     }
     test.project <- T
     test.N <- T
-    test.pop <- F
   }
   else
   {
@@ -312,7 +314,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
         npop <- nrow(paramk)
         paramk$pop <- NULL
         parameter[[k]] <- paramk[1,]
-        if (npop>1){
+        if (npop>=1){
           test.pop <- T
           k.pop <- k
           pop.mat <- paramk
@@ -393,14 +395,14 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
         cat("population: ",ipop,"\n")
     }
     irw <- 0
-    if (test.pop == T)  parameter[[k.pop]] <- pop.mat[ipop,]
+    if (test.pop == T)  lv$parameter[[k.pop]] <- pop.mat[ipop,]
     if (test.rep == T)
     {
       if (test.N==F)  
         lv$group <- group
       dataIn <- simulxunit(model=model,lv=lv,settings=c(settings, data.in=T))
-      settings$data.in=F
-      settings$load.design=F
+      # settings$data.in=F
+      # settings$load.design=F
     }
     for (irep in (1:nrep))
     {
@@ -413,7 +415,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       
       if (test.rep == T)
       {
-        r <- simulxunit(data = dataIn,settings=settings, out.trt=out.trt)
+        r <- simulxunit(data = dataIn,settings=c(settings,load.design=F), out.trt=out.trt)
         # r$treatment <- NULL
       } 
       else 
@@ -518,7 +520,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     pop <- format(pop, digits = 5, justify = "left")
     pop <- cbind(pop=(1:npop),pop)
   }
-  if (!(is.null(project))) 
+  else if (!(is.null(project))) 
     pop <- parameter[[1]]
   if (!is.null(pop))
   {
