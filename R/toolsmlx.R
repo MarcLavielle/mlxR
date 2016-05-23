@@ -16,8 +16,8 @@ funique <- function(A){
   C  <- unique( A )
   # IA <- match(data.frame(t(C)), data.frame(t(A)))
   # IC <- match(data.frame(t(A)), data.frame(t(C)))
-     IA   = match( C, A )
-     IC   = match( A , C )
+  IA   = match( C, A )
+  IC   = match( A , C )
   ans  =
     list(arg1=C, arg2=IA, arg3=IC)
 }
@@ -31,7 +31,7 @@ fsort <- function(X){
   ans  = list(arg1=Y, arg2=I)
 }
 
-mklist <- function(x)
+mklist <- function(x, add.name=T)
 {
   s <- list()
   if (is.list(x) && is.null(names(x)))
@@ -60,7 +60,12 @@ mklist <- function(x)
         if (!is.null(xk))
         {
           if (is.character(xk))
-            s[[length(s)+1]]=list(name=xk) 
+          {
+            if (add.name==T)  
+              s[[length(s)+1]]=list(name=xk) 
+            else
+              s[[length(s)+1]]=xk
+          }
           else
             s[length(s)+1]=list(xk) 
         }
