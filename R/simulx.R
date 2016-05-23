@@ -170,7 +170,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   #     reshape inputs
   #--------------------------------------------------
   group     <- mklist(group)
-  parameter <- mklist(parameter)
+  parameter <- mklist(parameter, add.name = F)
   treatment <- mklist(treatment)
   regressor <- mklist(regressor)
   varlevel  <- mklist(varlevel)

@@ -47,8 +47,9 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
     }
     
     #     if (is.character(param))  {
-    if (length(param)==1  && any(sapply(param,is.character))) {
-      file = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
+    # if (length(param)==1  && any(sapply(param,is.character))) {
+      if (any(sapply(param,is.character))) {
+        file = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
       datas$parameter = readIndEstimate(file,param[which(sapply(param,is.character))])
       #        datas$parameter = readIndEstimate(file,param)
       iop_indiv=1
