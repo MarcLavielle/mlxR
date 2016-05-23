@@ -190,13 +190,13 @@ Try increasing ngc, or fix the number of doses")
         group <- NULL
     }
   }
-  t <- output$time
-  t.min <- min(t)
-  t.max <- max(t)
-  t.n   <- length(t)
-  t.step <- (t.max - t.min)/(t.n-1)
-  t.time <- seq(t.min,t.max, by=t.step)
-  output$time <- t.time
+  # t <- output$time
+  # t.min <- min(t)
+  # t.max <- max(t)
+  # t.n   <- length(t)
+  # t.step <- (t.max - t.min)/(t.n-1)
+  # t.time <- seq(t.min,t.max, by=t.step)
+  # output$time <- t.time
   
   r.simul <- simulx(model=model,group=group,treatment=treatment,parameter=parameter,
                     output=output,data=data,project=project,settings=settings,
