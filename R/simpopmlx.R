@@ -45,8 +45,8 @@ simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.
     np <- length(mu)    
   } 
   
-  i.omega <- c(grep("omega_",pname),grep("omega2_",pname))
-  i.corr <- unique(c(grep("r_",pname),grep("corr_",pname)))
+  i.omega <- c(grep("^omega_",pname),grep("^omega2_",pname))
+  i.corr <- unique(c(grep("^r_",pname),grep("^corr_",pname)))
   if (!is.null(project) | is.null(trans)){
     if (is.null(trans))
       trans=rep("N",np)
