@@ -172,6 +172,10 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       sections       = c("LONGITUDINAL")    
       myparseModel(model, sections, model )
     }
+    if (length(grep("MonolixSuite2016R1",session)))
+    {
+    patchCor(model)
+    }
   }
   #**************************************************************************
   #   test.colNames <- testC(list(treatment,param,output))
