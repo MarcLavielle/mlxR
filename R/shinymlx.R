@@ -322,8 +322,10 @@ adm2str <- function(y, sp.adm="    "){
           txtk1 <- vect2str(xk$value)
           txtk2 <- txtk1
         }else{
-          txtk1 <- paste0("input$",names.x[m],k)
-          txtk2 <- paste0("isolate(input$",names.x[m],k,")")
+          # txtk1 <- paste0("input$",names.x[m],k)
+          # txtk2 <- paste0("isolate(input$",names.x[m],k,")")
+          txtk1 <- paste0("as.numeric(input$",names.x[m],k,")")
+          txtk2 <- paste0("isolate(as.numeric(input$",names.x[m],k,"))")
         }
         txt1 <- paste0(txt1,names.x[m],"=",txtk1,",")
         txt2 <- paste0(txt2,names.x[m],"=",txtk2,",")
@@ -717,7 +719,6 @@ serverTemplate <- function(s, select, i.output, select.y)
   
   server.out <- paste0(
     'library("mlxR")
-library("reshape")
 library("gridExtra")
 source("shinymlxTools.R")
 
