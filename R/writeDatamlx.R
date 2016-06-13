@@ -111,7 +111,24 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
       M <- merge(M,r$parameter,all=T)
       n2 <- ncol(M)
       occ <- M[,(n1+1):n2]
-      n <- nrow(occ)
+      n <- nrow(M)
+      if (n2==n1+1)
+        dim(occ) <- c(n,1)
+      for (i in (2:n)){
+        if (any(is.na(occ[i,])))
+          occ[i,] <- occ[(i-1),]
+      }
+      M[,(n1+1):n2] <- occ
+    }
+    
+    if (!is.null(r$covariate)){
+      n1 <- ncol(M)
+      M <- merge(M,r$covariate,all=T)
+      n2 <- ncol(M)
+      occ <- M[,(n1+1):n2]
+      n <- nrow(M)
+      if (n2==n1+1)
+        dim(occ) <- c(n,1)
       for (i in (2:n)){
         if (any(is.na(occ[i,])))
           occ[i,] <- occ[(i-1),]
