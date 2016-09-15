@@ -203,7 +203,9 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       regModelNames<-c()
       for(line in seq(1:length(regressorLine)))
       {
-        regModelNamesTable<-strsplit(regressorLine[line],"[\\{ \\} , ]")[[1]]
+        comment<-";"
+        lineNoComment<-strsplit(regressorLine[line],comment)[[1]]
+        regModelNamesTable<-strsplit(lineNoComment,"[\\{ \\} , ]")[[1]]
         for( i in seq(1:length(regModelNamesTable))){
           regi <- regModelNamesTable[i]
           if(!identical(regi,"")&&!length(grep("=",regi,fixed=TRUE,value=TRUE))
