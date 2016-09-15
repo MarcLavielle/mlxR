@@ -153,7 +153,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   
   if (isfield(settings,"record.file"))  
     warning("\n\n 'record.file' is a deprecated option. Use 'result.file' instead.")
-
+  
   #--------------------------------------------------
   #    R MODEL
   #--------------------------------------------------
@@ -184,17 +184,31 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   stat.n <- NULL
   stat.0 <- NULL
   stat.a <- list()
+  loq.n <- NULL
+  loq.a <- list()
+  loq.arg <- c("limit", "lloq", "uloq")
+  arg.names <- c("name", "time", loq.arg)
   if (length(output)>0)
   {
+    ik0 <- NULL
     for (k in (1:length(output))){
       outk <- output[[k]]
       outk$type <- NULL
+      if (!all(sapply(outk[loq.arg],"is.null")))
+      {
+        loq.n <- c(loq.n, outk$name)
+        iloq <- which(sapply(outk[loq.arg],"is.null")==FALSE)
+        loq.a <- c(loq.a, rep(list(outk[loq.arg[iloq]]),length(outk$name)))
+        if (!(is.null(project)) && is.null(outk$time))  
+        {
+          ik0 <- c(ik0, k)
+        }
+      }
       if (is.null(outk$time))
         outk.n <- "parameter"
       else
         outk.n <- outk$name
-      outk$name <- NULL
-      outk$time <- NULL
+      outk[arg.names] <- NULL
       if (length(outk)>0)
       {
         stat.n <- c(stat.n, outk.n)
@@ -203,10 +217,14 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
         stat.0 <- c(stat.0, outk.n)
       }
     }
+    output[ik0] <- NULL
+    if (length(output)==0)
+      output <- NULL
   }
   if (write.simul==T)
     stat.0 <- c(stat.0, "treatment", "covariate")
   names(stat.a)=stat.n
+  names(loq.a)=loq.n
   
   #--------------------------------------------------
   #     Monolix project
@@ -422,6 +440,34 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
         if (test.N==F)  
           lv$group <- group
         r <- simulxunit(model=model,lv=lv,settings=settings, out.trt=out.trt)
+      }
+      
+      if (length(loq.n) > 0)
+      {
+        for (k in (1:length(loq.n)))
+        {
+          rnk <- loq.n[k]
+          if (!is.null(rnk))
+          {    
+            r[[rnk]]$cens <- 0
+            loqk <- loq.a[[k]]
+            if (!is.null(loqk$limit))
+              r[[rnk]]$limit <- loqk$limit
+            if (!is.null(loqk$lloq))
+            {
+              ik <- which(r[[rnk]][[rnk]] < loqk$lloq )
+              r[[rnk]][[rnk]][ik] <- loqk$lloq
+              r[[rnk]]$cens[ik] <- 1
+            }
+            if (!is.null(loqk$uloq))
+            {
+              ik <- which(r[[rnk]][[rnk]] > loqk$uloq )
+              r[[rnk]][[rnk]][ik] <- loqk$uloq
+              r[[rnk]]$cens[ik] <- -1
+            }
+            r[[rnk]]$cens <- factor(r[[rnk]]$cens, levels=c("0","1","-1"))
+          }
+        }
       }
       
       if (!(is.null(project))) 

@@ -77,9 +77,8 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
     y.attr <- sapply(r,attr,"type")
     j.long <- which(y.attr=="longitudinal")
     y <- NULL
-    #     if (length(j.long)==1){
-    #       y <- r[[j.long]]
-    #     }else if (length(j.long)>1){
+    rlong.names <- sapply(r[j.long],"names")
+    rln <- unique(unlist(rlong.names))
     for (k in (1:length(j.long))){
       rk <- r[[j.long[k]]]
       nk <- names(r[j.long[k]])
@@ -88,9 +87,16 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
         y <- rk
       } else {
         yk <- cbind(rk,list(ytype=k))
+        if ("cens" %in% rln && is.null(yk$cens))  
+          yk$cens <- "0"
+        if ("limit" %in% rln && is.null(yk$limit))  
+          yk$limit <- NA
         y <- rbind(y,yk)
       }
     }
+    i0 <- which(y$cens==0)
+    if (length(i0)>0 && !is.null(y$limit))
+      y$limit[i0] <- NA
     M <- y
     
     if (!is.null(r$treatment)){
