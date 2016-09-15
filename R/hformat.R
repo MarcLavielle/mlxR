@@ -152,7 +152,10 @@ hformat  <-  function(list.input)
       }
     }
   }    
-  Nid = length(unique(Nid))
+  if (!is.null(Nid))
+    Nid = length(which(!is.na(unique(Nid))))
+  else
+    Nid <- 0
   
   if (is.null(N))
     N <- Nid 
