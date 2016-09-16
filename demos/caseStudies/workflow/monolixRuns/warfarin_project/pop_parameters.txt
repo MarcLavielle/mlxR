@@ -1,6 +1,6 @@
 ******************************************************************
 *      warfarin_project.mlxtran
-*      February 22, 2016 at 17:16:06
+*      September 16, 2016 at 11:54:00
 *      Monolix version: 4.4.0
 ******************************************************************
 
@@ -67,5 +67,5 @@ Numerical covariates
 
 Population parameters and Fisher Information Matrix estimation...
 
-Elapsed time is 57.6 seconds. 
-CPU time is 130 seconds. 
+Elapsed time is 39.4 seconds. 
+CPU time is 94.6 seconds. 

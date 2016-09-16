@@ -1,13 +1,12 @@
 DESCRIPTION: PK + event 
 
-INPUT:
-parameter = {ka, V, Cl, gamma}  
+input = {ka, V, Cl, gamma}  
 
 EQUATION:
 Cc = pkmodel(ka, V, Cl)
 h = gamma*Cc
 
-OBSERVATION:
+DEFINITION:
 Concentration = {type=continuous, prediction=Cc, errorModel=proportional}
 Hemorrhaging  = {type=event, rightCensoringTime=150, hazard=h}
 

@@ -1,5 +1,5 @@
 <MODEL>
-file = 'C:/Users/Marc/mlxtoolbox/mlxR300/mlxR_demos/userGuide/mlxR_others/model/hierarchical2.txt'
+file = 'F:/mlxtoolbox/mlxR310/mlxR_demos/userGuide/mlxR_others/model/hierarchical2.txt'
 
 <PARAMETER>
 V_pop = 10

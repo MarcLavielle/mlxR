@@ -1,6 +1,6 @@
 ******************************************************************
 *      pkcat_project.mlxtran
-*      March 10, 2016 at 00:58:46
+*      September 16, 2016 at 11:59:28
 *      Monolix version: 4.4.0
 ******************************************************************
 
@@ -36,5 +36,5 @@ Numerical covariates
 
 Population parameters estimation...
 
-Elapsed time is 121 seconds. 
-CPU time is 185 seconds. 
+Elapsed time is 49.9 seconds. 
+CPU time is 77.5 seconds. 

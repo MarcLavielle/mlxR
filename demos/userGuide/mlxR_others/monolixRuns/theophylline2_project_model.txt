@@ -5,7 +5,7 @@ DEFINITION:
 ka = {distribution=lognormal, typical=ka_pop, sd=omega_ka}
 V = {distribution=lognormal, typical=V_pop, sd=omega_V}
 Cl = {distribution=lognormal, typical=Cl_pop, sd=omega_Cl}
-correlation = {level=id, r(ka,V)=corr_ka_V}
+correlation = { r(ka,V)=corr_ka_V}
 
 [LONGITUDINAL]
 input = a

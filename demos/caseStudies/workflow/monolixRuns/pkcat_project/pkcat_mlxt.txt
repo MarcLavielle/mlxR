@@ -1,12 +1,11 @@
 DESCRIPTION: First order oral absorption with a lag-time, effect compartment, and ordered categorical data
 
-INPUT:
-parameter = {Tlag, ka, V, Cl, ke0, th1, th2, th3}
+input = {Tlag, ka, V, Cl, ke0, th1, th2, th3}
 
 EQUATION:
 {Cc,Ce}= pkmodel(Tlag,ka,V,Cl,ke0)
 
-OBSERVATION:
+DEFINITION:
 conc = {
 	type=continuous, 	
 	prediction=Cc, 

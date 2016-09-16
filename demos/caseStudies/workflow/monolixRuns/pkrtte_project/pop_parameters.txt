@@ -1,7 +1,7 @@
 ******************************************************************
 *      pkrtte_project.mlxtran
-*      January 13, 2015 at 18:48:30
-*      Monolix version: 4.3.3
+*      September 16, 2016 at 12:01:48
+*      Monolix version: 4.4.0
 ******************************************************************
 
 Estimation of the population parameters
@@ -17,10 +17,10 @@ omega_V     :   0.209
 omega_Cl    :    0.22   
 omega_gamma :       0   
 
-b_1         :   0.202   
+b           :   0.202   
 
 
 Population parameters estimation...
 
-Elapsed time is 103 seconds. 
-CPU time is 432 seconds. 
+Elapsed time is 80.6 seconds. 
+CPU time is 391 seconds. 
