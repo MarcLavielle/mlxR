@@ -22,8 +22,7 @@ input = {a1, b1, a2}
 
 DESCRIPTION: PK oral + indirect response model
 
-INPUT:
-parameter =  {Tlag, ka, V, Cl, Imax, IC50, kin, kout}
+input =  {Tlag, ka, V, Cl, Imax, IC50, kin, kout}
 
 EQUATION:
 Cc = pkmodel(Tlag, ka, V, Cl)

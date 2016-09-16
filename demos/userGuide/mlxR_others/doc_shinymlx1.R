@@ -28,7 +28,7 @@ p <- c(ka=0.5, Tk0=2, V=10, k=0.2)
 
 r <- simulx(model = model1, parameter = p, output = f)
 
-r <- melt(merge(r$f1,r$f2),  id='time', variable_name='f')
+r <- melt(merge(r$f1,r$f2),  id='time', variable.name='f')
 ggplotmlx(r, aes(time,value)) + geom_line(aes(colour = f),size=1) +
   guides(colour=guide_legend(title=NULL)) +theme(legend.position=c(.9, .75))
 

@@ -1,61 +1,80 @@
 ; this script is generated automatically
 
-DESCRIPTION: 
-admin2_project.mlxtran
+<DATAFILE>
 
-DATA: 
-    path = "%MLXPROJECT%/",
-    file  ="admin2_data.txt",
-    headers = {ID,TIME,Y,ADM,AMT,RATE},
-    columnDelimiter = "\t"
+[FILEINFO]
+file = 'admin2_data.txt'
+delimiter = tab
+header = {ID, TIME, DV, DPT0, AMT, RATE}
 
-INDIVIDUAL: 
-    CL = {distribution=logNormal, iiv=yes},
-    F2 = {distribution=logitNormal, iiv=yes},
-    F3 = {distribution=logitNormal, iiv=yes},
-    F4 = {distribution=logitNormal, iiv=no},
-    V = {distribution=logNormal, iiv=yes},
-    ka2 = {distribution=logNormal, iiv=yes},
-    ka3 = {distribution=logNormal, iiv=yes},
-    ka4 = {distribution=logNormal, iiv=no}
+[CONTENT]
+ID = {use=identifier}
+TIME = {use=time}
+DV = {use=observation, name=y1, ytype=1, type=continuous}
+DPT0 = {use=administration}
+AMT = {use=amount}
+RATE = {use=rate}
 
-STRUCTURAL_MODEL: 
-    file = "mlxt:admin2_mlxt",
-    path = "%MLXPROJECT%",
-    output = {Cc}
+<MODEL>
 
+[INDIVIDUAL]
+input = {F2_pop, omega_F2, F3_pop, omega_F3, F4_pop, ka2_pop, omega_ka2, ka3_pop, omega_ka3, ka4_pop, V_pop, omega_V, CL_pop, omega_CL}
 
-OBSERVATIONS: 
-    y1 = {type=continuous, prediction=Cc, error=combined1}
+DEFINITION:
+F2 = {distribution=logitnormal, typical=F2_pop, sd=omega_F2}
+F3 = {distribution=logitnormal, typical=F3_pop, sd=omega_F3}
+F4 = {distribution=logitnormal, typical=F4_pop, no-variability}
+ka2 = {distribution=lognormal, typical=ka2_pop, sd=omega_ka2}
+ka3 = {distribution=lognormal, typical=ka3_pop, sd=omega_ka3}
+ka4 = {distribution=lognormal, typical=ka4_pop, no-variability}
+V = {distribution=lognormal, typical=V_pop, sd=omega_V}
+CL = {distribution=lognormal, typical=CL_pop, sd=omega_CL}
 
-TASKS: 
-    ; settings
-    globalSettings={
-        withVariance=no,
-        settingsGraphics="%MLXPROJECT%/admin2_project_graphics.xmlx",
-        settingsAlgorithms="%MLXPROJECT%/admin2_project_algorithms.xmlx",
-        resultFolder="%MLXPROJECT%/admin2_project"},
-    ; workflow
-    estimatePopulationParameters(
-        initialValues={
-            pop_CL = 50,
-            pop_F2 = 0.5,
-            pop_F3 = 0.5,
-            pop_F4 = 0.5,
-            pop_V = 200,
-            pop_ka2 = 0.1,
-            pop_ka3 = 0.1,
-            pop_ka4 = 0.1,
-            a_y1 = 1,
-            b_y1 = 0.2,
-            omega_CL = 1,
-            omega_F2 = 1,
-            omega_F3 = 1,
-            omega_V = 1,
-            omega_ka2 = 1,
-            omega_ka3 = 1
-            } ),
-    estimateFisherInformationMatrix( method={linearization} ),
-    estimateIndividualParameters( method={conditionalMode} ),
-    displayGraphics(),
+[LONGITUDINAL]
+input = {a, b}
+
+file = './admin2_mlxt.txt'
+
+DEFINITION:
+y1 = {distribution=normal, prediction=Cc, errorModel=combined1(a, b)}
+
+<FIT>
+data = y1
+model = y1
+
+<PARAMETER>
+F2_pop = {value=0.5, method=MLE}
+omega_F2 = {value=1, method=MLE}
+F3_pop = {value=0.5, method=MLE}
+omega_F3 = {value=1, method=MLE}
+F4_pop = {value=0.5, method=MLE}
+ka2_pop = {value=0.1, method=MLE}
+omega_ka2 = {value=1, method=MLE}
+ka3_pop = {value=0.1, method=MLE}
+omega_ka3 = {value=1, method=MLE}
+ka4_pop = {value=0.1, method=MLE}
+V_pop = {value=200, method=MLE}
+omega_V = {value=1, method=MLE}
+CL_pop = {value=50, method=MLE}
+omega_CL = {value=1, method=MLE}
+a = {value=1, method=MLE}
+b = {value=0.2, method=MLE}
+
+<MONOLIX>
+
+[TASKS]
+populationParameters()
+individualParameters(method = conditionalMode)
+fim(method = Linearization)
+plotResult()
+
+[SETTINGS]
+GLOBAL:
+exportpath = 'admin2_project'
+autochains = no
+
+LL:
+fixedsimulations = 10000
+optimizedsimulations = 1000
+tdof_opt = {2, 5, 10, 20}
 

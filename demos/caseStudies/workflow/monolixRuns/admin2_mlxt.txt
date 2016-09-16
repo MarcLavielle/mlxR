@@ -1,7 +1,6 @@
 DESCRIPTION: Combination of IV bolus and several oral administrations
 
-INPUT:
-parameter = {F2, F3, F4, ka2, ka3, ka4, V, CL}
+input = {F2, F3, F4, ka2, ka3, ka4, V, CL}
 
 PK:
 compartment(amount=Ac)

@@ -75,18 +75,13 @@ a2 = {value=4, method=MLE}
 
 <MONOLIX>
 
-
-
 [TASKS]
-
 populationParameters()
 individualParameters(method = conditionalMode)
 fim(method = Linearization)
 plotResult()
 
-
 [SETTINGS]
-
 GLOBAL:
 exportpath = 'warfarin_project'
 autochains = no

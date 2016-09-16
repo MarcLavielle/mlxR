@@ -19,7 +19,7 @@ g = b*C
 
 DEFINITION:
 y = {distribution=normal, prediction=C, sd=g}
-e = {type=event, maxEventNumber=10, rightCensoringTime=200, hazard=h}
+e = {type=event, maxEventNumber=1, rightCensoringTime=200, hazard=h}
 
 ;-----------------------------------------
 [INDIVIDUAL]
@@ -39,7 +39,7 @@ beta  = {distribution=normal,      prediction=beta_pop, sd=omega_beta}
 ")
 
 #-------------------------------------
-M <- 100
+M <- 1000
 vN <- c(25, 50, 100)
 
 adm.amount <- c(0, 25, 50, 100)

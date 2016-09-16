@@ -10,12 +10,15 @@ Cc = pkmodel(ka, V, Cl)
 
 #-----------------------------
 p <- c(ka=0.5, V=10, Cl=1)
-
 adm1 <- list(time=0, amount=100)
-out1 <- list(name="Cc", time=seq(0, 24, by=0.2))
 
-res1 <- exposure(model=myModel, parameter=p, output=out1, treatment=adm1)
-print(res1$Cc)
+out1a <- list(name="Cc", time=seq(0, 24, by=0.2))
+res1a <- exposure(model=myModel, parameter=p, output=out1a, treatment=adm1)
+print(res1a$Cc)
+
+out1b <- list(name="Cc", time=c(seq(0, 12, by=0.2), seq(12.4, 24, by=0.4)) )
+res1b <- exposure(model=myModel, parameter=p, output=out1b, treatment=adm1)
+print(res1b$Cc)
 
 #-----------------------------
 adm2 <- list(time=seq(0,160,by=8), amount=100)

@@ -48,17 +48,25 @@ names(res4)
 
 
 #-------------------------------------
-sim.param <- "mode"
 res5  <- simulx(project   = project.file,
                 output    = out1,
-                parameter = sim.param)
+                parameter = "mode")
+
+print(ggplotmlx() + 
+         # geom_point(data=res5$y1, aes(x=time, y=y1, colour=id)) +
+        geom_line(data=res5$Cc, aes(x=time, y=Cc, colour=id)) +
+        scale_x_continuous("Time") + scale_y_continuous("Concentration"))
 
 
 #-------------------------------------
-sim.param <- list("mode",c(b=0))
 res6  <- simulx(project   = project.file,
                 output    = out1,
-                parameter = sim.param)
+                parameter = list("mode",c(b=0)))
+
+print(ggplotmlx() + 
+         geom_point(data=res6$y1, aes(x=time, y=y1, colour=id)) +
+        geom_line(data=res6$Cc, aes(x=time, y=Cc, colour=id)) +
+        scale_x_continuous("Time") + scale_y_continuous("Concentration"))
 
 
 #-------------------------------------
