@@ -66,6 +66,7 @@
 #' \code{tmin} (time of minimum value), \code{cmin} (minimum value).
 #' 
 #' @importFrom utils tail
+#' @importFrom stats sd
 #' @export
 exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
                      data=NULL, project=NULL, settings=NULL, regressor=NULL, varlevel=NULL)
