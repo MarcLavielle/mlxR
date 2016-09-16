@@ -18,6 +18,9 @@ readDatamlx(project = NULL, datafile = NULL, header = NULL,
 
 \item{addl.ss}{number of additional doses to use for steady-state  (default=10)}
 }
+\value{
+A list of data frames
+}
 \description{
 Read data in a Monolix/NONMEM format
 }

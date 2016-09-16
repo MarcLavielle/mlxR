@@ -54,18 +54,18 @@ out.e <- list(name=c('e'), time=0)
 out.p <- c("V", "Cl")
 out   <- list(out.y, out.e, out.p)
 g <- list(size=100, level='individual')
-res1 <- simulx(model=modelPK, treatment=adm, parameter=p, output=out, group=g, settings=s)
+res1 <- simulx(model=modelPK, treatment=adm, parameter=p, output=out, group=g)
 
 statmlx(res1$parameter, FUN = "mean", probs = c(0.05, 0.5, 0.95))
 statmlx(res1$parameter, FUN = "quantile", probs = c(0.05, 0.5, 0.95))
-statmlx(res1$parameter, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
+statmlx(res1$parameter, FUN = c("sd", "quantile"), probs = c(0.05, 0.95))
 statmlx(res1$y, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
-statmlx(res1$e, type="event", surv.time=c(10,20))
+statmlx(res1$e, surv.time=c(10,20))
 
 res2 <- simulx(model=modelPK, treatment=adm, parameter=p, output=out, group=g, nrep=3)
-statmlx(res2$parameter, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
+statmlx(res2$parameter, FUN = c("sd", "quantile"), probs = c(0.05, 0.95))
 statmlx(res2$y, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
-statmlx(res2$e, type="event", surv.time=c(10,20,30))
+statmlx(res2$e, surv.time=c(10,20,30))
 }
 }
 
