@@ -22,6 +22,9 @@
 #' \itemize{
 #'   \item \code{name}: a vector of output names
 #'   \item \code{time}: a vector of times (only for the longitudinal outputs)
+#'   \item \code{lloq}: lower limit of quantification (only for the longitudinal outputs)
+#'   \item \code{uloq}: upper limit of quantification (only for the longitudinal outputs)
+#'   \item \code{limit}: lower bound of the censoring interval (only for the longitudinal outputs)
 #' }
 #' @param treatment a list with fields
 #' \itemize{
