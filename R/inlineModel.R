@@ -8,7 +8,7 @@ inlineModel <- function(str,filename=NULL){
   {    
     # uuidd<-uuid()
     # filename <-paste0("temp_model-",uuidd,".txt")
-    filename <-paste0("temp_model.txt")
+    filename <-"temp_model.txt"
   }
   write(str,filename)
   return(filename)

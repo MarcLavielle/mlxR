@@ -242,3 +242,38 @@ unlistRec <- function(x,s=NULL)
     return(z)
   }
 }
+
+modify.mlxtran <- function(model, addlines)
+{
+  con     <- file(model, open = "r")
+  lines   <- readLines(con)
+  close(con)
+  
+  if (!is.list(addlines[[1]]))
+    addlines <- list(addlines)
+  
+  for (k in (1:length(addlines))) {
+    section <- addlines[[k]]$section
+    if (is.null(section))
+      section <- "[LONGITUDINAL]"
+    block <- addlines[[k]]$block 
+    if (is.null(block))
+      block <- "EQUATION:"
+    idx1 <- grep(section, lines, fixed=TRUE)
+    new.lines <- lines[1:idx1]
+    lines <- c(lines[(idx1+1):length(lines)],"")
+    
+    idx2 <- grep("[",lines, fixed=TRUE)
+    if (length(idx2)==0) {
+      idx2 <- length(lines)
+    } else {
+      idx2 <- idx2[1]
+    }
+    lines <- c(new.lines,lines[1:(idx2-1)], block, addlines[[k]]$formula, "", lines[idx2:length(lines)])
+  }
+  model <- "temp_model.txt"
+  write(lines,model)
+  return(model)
+}
+
+

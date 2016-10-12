@@ -15,7 +15,7 @@
 #' the values of the percentiles are returned
 #' 
 #' @return 
-#' a list with fields:
+#' a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
 #' \itemize{
 #'   \item proba a vector of probabilities of length \code{band$number+1} 
 #'   \item color a vector of colors used for the plot of length \code{band$number}

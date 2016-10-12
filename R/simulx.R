@@ -51,6 +51,12 @@
 #'   \item \code{treatment} : if different treatements per group are defined,
 #'   \item \code{regressor} : if different regression variables per group are defined.
 #' }
+#' @param addlines a list with fields: 
+#' \itemize{
+#'   \item \code{section}: a string (default = "[LONGITUDINAL]"),
+#'   \item \code{block}: a string (default = "EQUATION:"),
+#'   \item \code{formula}: string, or vector of strings, to be inserted .
+#' }
 #' @param data a list (output of simulx when settings$data.in==TRUE)
 #' @param project the name of a Monolix project
 #' @param nrep number of replicates
@@ -110,7 +116,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
                    regressor=NULL, varlevel=NULL, group=NULL, 
                    data=NULL, project=NULL, nrep=1, npop=NULL, fim=NULL, 
                    result.folder=NULL, result.file=NULL, stat.f="statmlx",
-                   settings=NULL)
+                   addlines=NULL, settings=NULL)
 { 
   #--------------------------------------------------
   #  simulx.R is governed by the CeCILL-B license. 
@@ -229,6 +235,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   names(stat.a)=stat.n
   names(loq.a)=loq.n
   
+  
   #--------------------------------------------------
   #     Monolix project
   #--------------------------------------------------
@@ -344,6 +351,13 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     } 
   }
   
+  #--------------------------------------------------
+  #     Add equations in the Mlxtran model code
+  #--------------------------------------------------
+  if (!is.null(addlines))
+  model <- modify.mlxtran(model, addlines)
+                          
+  #--------------------------------------------------
   lv <- list(treatment=treatment,
              parameter=parameter,
              output=output,

@@ -570,6 +570,8 @@ mergeArg  <- function(p1,p2)
             #             if (isfield(p2i,'time'))
             if (!is.null(p2i$time))
               p[[np]]$time=p2i$time
+            if (!is.null(p2i$formula))
+              p[[np]]$formula=p2i$formula
           }
         }
       }

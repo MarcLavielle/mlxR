@@ -8,6 +8,15 @@
 #' @param index an integer: \code{index=k} means that the survival function for the k-th event is displayed. 
 #' Default is \code{index=1}.
 #' @param level a number between 0 and 1:  confidence interval level. 
+#' @param plot if \code{TRUE} the estimated survival function is displayed, if \code{FALSE}
+#' the values are returned
+#' 
+#' @return 
+#' a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
+#' \itemize{
+#'   \item \code{surv} a data frame with columns  \code{T} (time), \code{S} (survival), possibly \code{(S1, S2)} (confidence interval) and possibly \code{group} 
+#'   \item \code{cens} a data frame with columns  \code{T0} (time), \code{S0} (survival) and possibly \code{group} 
+#' }
 #' @examples
 #' \dontrun{
 #' tteModel1 <- inlineModel("
@@ -35,9 +44,16 @@
 #' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab
 #' @importFrom stats qnorm
 #' @export         
-kmplotmlx  <-  function(r, index=1, level=NULL)
+kmplotmlx  <-  function(r, index=1, level=NULL, plot=TRUE)
 { 
   r.name <- attr(r,"name")
+  if (length(r.name)>1 || !any(names(r)==r.name))
+  {
+    if (any(names(r)=="status"))
+      r.name <- "status"
+    if (any(names(r)=="event"))
+      r.name <- "event"
+  }
   names(r)[names(r)==r.name] <- "y"
   
   N <- length(unique(r$id))
@@ -141,24 +157,34 @@ kmplotmlx  <-  function(r, index=1, level=NULL)
     D=data.frame(T,S,group)
   }
   
+  if (length(i0)>0){
+    group <- factor(G0)
+    D0 <- data.frame(T0,S0,group)
+  } else {
+    D0 <- NULL
+  }
   
-  plot1=ggplotmlx(data=D) +  geom_line(aes(x=T, y=S, colour=group), size=1)
+  if (plot==TRUE){
+    plot1=ggplotmlx(data=D) +  geom_line(aes(x=T, y=S, colour=group), size=1)
   if (!is.null(level)){
     plot1=plot1+geom_line(aes(x=T, y=S1, colour=group), linetype="dotted", size=0.8) +
       geom_line(aes(x=T, y=S2, colour=group), linetype="dotted", size=0.8)
   }
   plot1 <- plot1 + xlab("time") + ylab("survival") 
-  if (length(i0)>0){
-    group <- factor(G0)
-    D0 <- data.frame(T0,S0,group)
+
+    if (length(i0)>0)
     plot1 <- plot1 + geom_point(data=D0, aes(x=T0,y=S0, colour=group), size=4)
-  }
+
   if (ng>1){
     plot1 <- plot1 + theme(legend.position=c(0.1,0.15))
   }else{
     plot1 <- plot1 + theme(legend.position="none")
   }  
-  return(plot1)
+  res <- plot1
+  } else {
+    res <- list(surv=D, cens=D0)
+  }
+  return(res)
 }
 
 
