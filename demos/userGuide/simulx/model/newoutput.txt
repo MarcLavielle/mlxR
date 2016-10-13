@@ -1,0 +1,13 @@
+[LONGITUDINAL]
+input = {V, k, a}
+EQUATION:
+Cc = pkmodel(V,k)
+DEFINITION:
+y = {distribution=lognormal, prediction=Cc, sd=a}
+
+[INDIVIDUAL]
+input = {V_pop, omega_V, w}
+EQUATION:
+Vpred=V_pop*(w/70)
+DEFINITION:
+V = {distribution=lognormal, prediction=Vpred, sd=omega_V}
