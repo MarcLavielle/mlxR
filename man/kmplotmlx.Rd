@@ -4,7 +4,7 @@
 \alias{kmplotmlx}
 \title{Kaplan Meier plot}
 \usage{
-kmplotmlx(r, index = 1, level = NULL)
+kmplotmlx(r, index = 1, level = NULL, plot = TRUE)
 }
 \arguments{
 \item{r}{a data frame with a column \samp{id}, a column \samp{time}, 
@@ -14,6 +14,16 @@ a column with values and possibly a column \samp{group}.}
 Default is \code{index=1}.}
 
 \item{level}{a number between 0 and 1:  confidence interval level.}
+
+\item{plot}{if \code{TRUE} the estimated survival function is displayed, if \code{FALSE}
+the values are returned}
+}
+\value{
+a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
+\itemize{
+  \item \code{surv} a data frame with columns  \code{T} (time), \code{S} (survival), possibly \code{(S1, S2)} (confidence interval) and possibly \code{group} 
+  \item \code{cens} a data frame with columns  \code{T0} (time), \code{S0} (survival) and possibly \code{group} 
+}
 }
 \description{
 Plot empirical survival functions using the Kaplan Meier estimate.

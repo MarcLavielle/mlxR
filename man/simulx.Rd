@@ -8,7 +8,7 @@ simulx(model = NULL, parameter = NULL, output = NULL, treatment = NULL,
   regressor = NULL, varlevel = NULL, group = NULL, data = NULL,
   project = NULL, nrep = 1, npop = NULL, fim = NULL,
   result.folder = NULL, result.file = NULL, stat.f = "statmlx",
-  settings = NULL)
+  addlines = NULL, settings = NULL)
 }
 \arguments{
 \item{model}{a \code{Mlxtran}, \code{R} or \code{PharmML} model used for the simulation}
@@ -68,6 +68,13 @@ simulx(model = NULL, parameter = NULL, output = NULL, treatment = NULL,
 \item{result.file}{the name of the single file where the outputs of simulx should be saved}
 
 \item{stat.f}{a R function for computing some summary (mean, quantiles, survival,...) of the simulated data. Default = "statmlx".}
+
+\item{addlines}{a list with fields: 
+\itemize{
+  \item \code{section}: a string (default = "[LONGITUDINAL]"),
+  \item \code{block}: a string (default = "EQUATION:"),
+  \item \code{formula}: string, or vector of strings, to be inserted .
+}}
 
 \item{settings}{a list of optional settings
 \itemize{
