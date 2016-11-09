@@ -179,10 +179,12 @@ resample.data  <- function(data,idOri,N,replacement=F)
           ik  <- which(names(datak)=="id")
           idk <- datak$id
           dkv=NULL
+          id1 <- as.character(idk)
+          #id1 <- as.numeric(as.character(idk))
           for (i in 1:N)
           {
-            id1 <- as.numeric(as.character(idk))
-            id2 <- as.numeric(as.character(idOri[new.id][i]))
+            id2 <- as.character(idOri[new.id][i])
+            #id2 <- as.numeric(as.character(idOri[new.id][i]))
             ji <- which(id1==id2)
             if (length(ji)>0)
             {
@@ -205,16 +207,19 @@ resample.data  <- function(data,idOri,N,replacement=F)
           {
             ik  <- which(names(datam)=="id")
             idk <- datam$id
+            id1 <- as.character(idk)
+            #id1 <- as.numeric(as.character(idk))
             dkv=NULL
             for (i in 1:N)
             {
-              # ji <- which(idk==new.id[i])
-              id1 <- as.numeric(as.character(idk))
-              id2 <- as.numeric(as.character(idOri[new.id][i]))
+              id2 <- as.character(idOri[new.id][i])
+              #id2 <- as.numeric(as.character(idOri[new.id][i]))
               ji <- which(id1==id2)
-              dkji <- datam[ji,]
-              dkji[,ik] <- i
-              dkv <- rbind(dkv,dkji,deparse.level=0)
+              if (length(ji)>0) {
+                dkji <- datam[ji,]
+                dkji[,ik] <- i
+                dkv <- rbind(dkv,dkji,deparse.level=0)
+              }
             } 
             dvkid <- as.factor(c(dkv$id, (1:N)))
             dkv$id <- dvkid[1:length(dkv$id)]
