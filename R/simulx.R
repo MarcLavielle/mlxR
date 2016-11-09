@@ -452,7 +452,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       } 
       else 
       {
-        if (test.N==T && !is.null(group))  
+        if (test.N==T && !is.null(group)) 
           lv <- resample.data(lv,id,sum(g.size),replacement)
         if (test.N==F)  
           lv$group <- group
