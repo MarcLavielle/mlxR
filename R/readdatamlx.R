@@ -51,6 +51,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   
   header=unlist(strsplit(header, ",")) 
   header <- toupper(header)
+  header[header=="DPT"]="ADM"
   nlabel = length(header)
   
   icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
