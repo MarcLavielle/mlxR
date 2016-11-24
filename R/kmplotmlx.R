@@ -56,10 +56,11 @@ kmplotmlx  <-  function(r, index=1, level=NULL, plot=TRUE)
   }
   names(r)[names(r)==r.name] <- "y"
   
-  N <- length(unique(r$id))
+  uid <- unique(r$id)
+  N <- length(uid)
   r0 <- r1 <- NULL
   for (i in seq(1,N)){
-    ri <- r[r$id==r$id[i],]
+    ri <- r[r$id==uid[i],]
     cyi <- cumsum(ri$y)
     ri$y <- 1
     if (any(index<=cyi)){
