@@ -4,7 +4,7 @@
 \alias{catplotmlx}
 \title{Plot Categorical Longitudinal Data}
 \usage{
-catplotmlx(r, breaks = NULL)
+catplotmlx(r, breaks = NULL, color = "#194280")
 }
 \arguments{
 \item{r}{a data frame with a column \samp{id}, a column \samp{time}, 
@@ -15,6 +15,8 @@ a column with values and possibly a column \samp{group}.}
   \item a vector giving the breakpoints,
   \item a single number giving the number of segments.
 }}
+
+\item{color}{a color (default="#194280")}
 }
 \description{
 Plot the empirical distribution of categorical longitudinal data.
@@ -45,7 +47,7 @@ See http://simulx.webpopix.org/mlxr/catplotmlx/ for more details.
   plot2 <- catplotmlx(res$y,breaks=seq(-2,102,by=8)) 
   print(plot2)
   
-  plot3 <- catplotmlx(res$y,breaks=5) 
+  plot3 <- catplotmlx(res$y,breaks=5, color="grey") 
   print(plot3)
   
   p2  <- c(a=6,b=0.3)

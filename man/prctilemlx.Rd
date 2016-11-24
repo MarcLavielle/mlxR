@@ -4,22 +4,20 @@
 \alias{prctilemlx}
 \title{Percentiles of the empiricial distribution of longitudinal data}
 \usage{
-prctilemlx(r, band = list(number = 8, level = 80), y.lim = NULL,
-  plot = TRUE)
+prctilemlx(r, number = 8, level = 80, plot = TRUE, color = "purple",
+  band = NULL, y.lim = NULL)
 }
 \arguments{
 \item{r}{a data frame with a column \samp{id}, a column \samp{time} and a column with values.
 The times should be the same for each individual.}
 
-\item{band}{a list with two fields
-\itemize{
-  \item \code{number} the number of intervals (i.e. the number of percentiles minus 1).
-  \item \code{level} the largest interval (i.e. the difference between the lowest and the highest percentile).
-}}
+\item{number}{the number of intervals (i.e. the number of percentiles minus 1).}
 
-\item{y.lim}{the use of y.lim is deprecated. You can use prctile(...)+ylim(...) instead.}
+\item{level}{the largest interval (i.e. the difference between the lowest and the highest percentile).}
 
-\item{plot}{if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}
+\item{plot}{if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}}
+
+\item{color}{a color (default="purple")
 the values of the percentiles are returned}
 }
 \value{
