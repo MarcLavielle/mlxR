@@ -5,13 +5,10 @@
 #' See http://simulx.webpopix.org/mlxr/prctilemlx/ for more details.
 #' @param r a data frame with a column \samp{id}, a column \samp{time} and a column with values.
 #' The times should be the same for each individual. 
-#' @param band a list with two fields
-#' \itemize{
-#'   \item \code{number} the number of intervals (i.e. the number of percentiles minus 1).
-#'   \item \code{level} the largest interval (i.e. the difference between the lowest and the highest percentile).
-#' }
-#' @param y.lim the use of y.lim is deprecated. You can use prctile(...)+ylim(...) instead.
+#' @param number the number of intervals (i.e. the number of percentiles minus 1).
+#' @param level the largest interval (i.e. the difference between the lowest and the highest percentile).
 #' @param plot if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}
+#' @param color a color (default="purple")
 #' the values of the percentiles are returned
 #' 
 #' @return 
@@ -73,17 +70,21 @@
 #' }
 #' @importFrom stats quantile
 #' @export         
-prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
+prctilemlx <- function(r,number=8,level=80,plot=TRUE,color="purple",band=NULL,y.lim=NULL)
 {
+  col.hsv <- rgb2hsv(col2rgb(color))
   if (!is.null(y.lim))
     warning("The use of y.lim is deprecated. You can use  prctile(...) +ylim(...) instead.")
-
-  alpha <- band$level
-  m <- band$number
   
-  q1=(1-alpha/100)/2
+  if (!is.null(band)) {
+    level <- band$level
+    number <- band$number
+  } 
+  m <- number
+  
+  q1=(1-level/100)/2
   q2=1-q1
-
+  
   time=NULL
   if (m%%2!=0){
     m.test <- 0
@@ -110,13 +111,13 @@ prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
   y<-apply(v,1,quantile, probs = round(q,digits=3),  na.rm = TRUE)
   nq=length(q)
   ncol <- trunc(nq/2)
-  if (band$number<=2){
-    cl=hsv(.8,.8,.7,0.4)
+  if (number<=2){
+    cl=hsv(col.hsv[1],col.hsv[2],col.hsv[3],0.4)
   }else{
-    cl=hsv(.8,.8,.7,seq(0.2,0.93,length.out=ncol)) 
+    cl=hsv(col.hsv[1],col.hsv[2],col.hsv[3],seq(0.2,0.8,length.out=ncol)) 
   }
-   if (m.test==1)
-    cl[ncol] <- hsv(.8,1,.5)
+  if (m.test==1)
+    cl[ncol] <- hsv(col.hsv[1],col.hsv[2],col.hsv[3],1)
   color <- c(cl,rev(cl))
   
   ty=cbind(round(t,digits=6),t(y))
@@ -165,14 +166,16 @@ prctilemlx <- function(r,band=list(number=8,level=80),y.lim=NULL,plot=TRUE)
       pr <- c(pr,y[j,],rev(y[j+1,]))
     
     datapoly <- data.frame(x,pr,v,vf)    
-    pk<-ggplotmlx(datapoly, aes(x=x, y=pr)) + geom_polygon(aes(fill=vf, group=vf)) +
+    # pk<-ggplotmlx(datapoly, aes(x=x, y=pr)) + geom_polygon(aes(fill=vf, group=vf)) +
+      pk<-ggplotmlx() 
+    pk<-pk + geom_polygon(data=datapoly, aes(x=x, y=pr, fill=vf, group=vf)) +
       xlab("time")+ylab(y.label) 
     if (!is.null(y.lim))
-       pk <- pk + ylim(y.lim) 
+      pk <- pk + ylim(y.lim) 
     pk <- pk +sfm
     if (m.test==1){
       data0 <- data.frame(y=y[(nq+1)/2,],x=t)
-      pk <- pk+ geom_line(data=data0, aes(x=x,y=y),col=hsv(.8,1,.5))
+      pk <- pk+ geom_line(data=data0, aes(x=x,y=y),col=hsv(col.hsv[1],col.hsv[2],col.hsv[3],1))
     }
     res <- pk
   }
