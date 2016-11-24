@@ -10,6 +10,7 @@
 #'   \item a vector giving the breakpoints,
 #'   \item a single number giving the number of segments.
 #' }
+#' @param color a color (default="#194280")
 #' @examples
 #' \dontrun{
 #'   catModel <- inlineModel("
@@ -33,7 +34,7 @@
 #'   plot2 <- catplotmlx(res$y,breaks=seq(-2,102,by=8)) 
 #'   print(plot2)
 #'   
-#'   plot3 <- catplotmlx(res$y,breaks=5) 
+#'   plot3 <- catplotmlx(res$y,breaks=5, color="grey") 
 #'   print(plot3)
 #'   
 #'   p2  <- c(a=6,b=0.3)
@@ -48,8 +49,9 @@
 #' @importFrom graphics hist
 #' @importFrom grDevices hsv
 #' @export         
-catplotmlx <- function(r, breaks=NULL)
+catplotmlx <- function(r, breaks=NULL, color="#194280")
 {
+  col.hsv <- rgb2hsv(col2rgb(color))
   r.name <- attr(r,"name")
   names(r)[names(r)==r.name] <- "y"
   if (is.null(breaks)){
@@ -78,7 +80,7 @@ catplotmlx <- function(r, breaks=NULL)
   v <- rep(as.factor(y), each=2*nt)
   x <- rep(c(t,rev(t)),ny)
   
-  color=hsv(.6,.8,.5,seq(0.3,0.9,length.out=ny))
+  color=hsv(col.hsv[1],col.hsv[2],col.hsv[3],seq(0.3,0.9,length.out=ny))
   sfm = scale_fill_manual(name=r.name,values=color)
   
   
