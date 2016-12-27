@@ -96,7 +96,8 @@ simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.
   iP <- which(tr1=="P")
   set[iP] <- se1[iP]/dnorm(qnorm(mu1[iP]))
   mut[iP] <- qnorm(mu1[iP])
-  Rt <- chol(corr1)*set
+  Rt <- chol((set%*%t(set))*corr1)
+  #Rt <- chol(corr1)*set
   K <- length(i1)
   
   n.corr <- length(i.corr)
