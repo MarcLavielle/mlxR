@@ -138,7 +138,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   Sys.setenv(LIXOFT_HOME=session)
   
   if (is.null(settings$seed))
-    settings$seed <- round(runif(1)*100000)
+    settings$seed <-  round(as.numeric(Sys.time())*1000*runif(1))%%1e11/100
+  
   set.seed(settings$seed)
   disp.iter <- ifelse((!is.null(settings$disp.iter) && settings$disp.iter==TRUE), TRUE, FALSE)
   sep <- settings$sep
@@ -355,8 +356,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   #     Add equations in the Mlxtran model code
   #--------------------------------------------------
   if (!is.null(addlines))
-  model <- modify.mlxtran(model, addlines)
-                          
+    model <- modify.mlxtran(model, addlines)
+  
   #--------------------------------------------------
   lv <- list(treatment=treatment,
              parameter=parameter,
@@ -515,13 +516,17 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           }
         }
       }
-      
       r.attr <- sapply(r,attr,"type")
       if (nrep>1)
       {
         for (k in (1:length(rs)))
-          if (is.data.frame(rs[[k]]))
+          if (is.data.frame(rs[[k]])) {
+            attr.name <- attr(rs[[k]],"name")
+            attr.type <- attr(rs[[k]],"type")
             rs[[k]] <- cbind(list(rep=as.factor(irw)), rs[[k]])
+            attr(rs[[k]],"name") <- attr.name
+            attr(rs[[k]],"type") <- attr.type 
+          }
       }
       
       

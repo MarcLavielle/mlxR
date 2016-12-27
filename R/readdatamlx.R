@@ -7,6 +7,7 @@
 #' @param datafile a formatted data file 
 #' @param header a vector of strings (mandatory if \code{datafile} is used) 
 #' @param infoProject an xmlfile 
+#' @param out.data TRUE/FALSE (default=FALSE) returns the original data as a table and some information about the Monolix project  
 #' @param addl.ss number of additional doses to use for steady-state  (default=10) 
 #' 
 #' @return A list of data frames 
@@ -25,7 +26,7 @@
 #' }
 #' @importFrom stats time
 #' @export
-readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=NULL, addl.ss=10){
+readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=NULL, out.data=FALSE, addl.ss=10){
   # READDATAMLX
   #
   # READDATAMLX reads a datafile and create a list.
@@ -134,6 +135,12 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
         return( read.table(datafile, comment.char="", header = TRUE))
       }      
     )
+  }
+  
+  if (out.data) {
+    infoProject$delimiter <- delimiter
+    infoProject$dataheader <- header
+    return(list(data=data, infoProject=infoProject))
   }
   
   #---remove rows containing NA-------

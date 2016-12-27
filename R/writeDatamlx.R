@@ -12,6 +12,7 @@
 #' @param digits (default = 5) 
 #' @param app.file  TRUE/FALSE (default=FALSE) append to file 
 #' @param app.dir  TRUE/FALSE (default=FALSE) append to dir 
+#' @param project  A Monolix project
 #' @examples
 #' \dontrun{
 #' modelPK <- inlineModel("
@@ -32,8 +33,19 @@
 #' }
 #' @importFrom utils write.table
 #' @export
-writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,digits=5,app.file=F,app.dir=F) 
+writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,digits=5,app.file=F,app.dir=F, project=NULL) 
 {
+  
+  if (!is.null(project)) {
+    dp <- readDatamlx(project=project, out.data=TRUE)
+    dp.data   <- dp$data
+    dp.info <- dp$infoProject
+    dp.header <- dp.info$dataheader
+    dp.names <- names(dp.data)
+    if (is.null(result.file)) 
+      result.file <- file.path(dp.info$resultFolder,paste0("sim_",basename(dp.info$datafile)))
+  }
+  
   if (!is.null(result.folder)){
     if (app.dir==F){
       unlink(result.folder, recursive = TRUE, force = TRUE)
@@ -97,11 +109,15 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
     i0 <- which(y$cens==0)
     if (length(i0)>0 && !is.null(y$limit))
       y$limit[i0] <- NA
+    
+    
     M <- y
     
     if (!is.null(r$treatment)){
       trt <- r$treatment
       trt$y <- NA
+      if (!is.null(M$cens))   trt$cens  <- "."
+      if (!is.null(M$limit))  trt$limit <- NA
       M <- merge(M,trt,all=TRUE)
     }
     
@@ -159,13 +175,43 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
     lo <- paste(lo,collapse=",")
     eval(parse(text=paste0("M <- M[with(M, order(",lo,")), ]")))
     
-    if (app.file == F) 
-      write.table(M,result.file,row.names=FALSE,quote=FALSE,sep=sep,append=F)
-    else
-      write.table(M,result.file,row.names=FALSE,col.names=FALSE,quote=FALSE,sep=sep,append=T)
-    
-    #     write.table(M,result.file,row.name=FALSE,quote=FALSE,sep=sep)
-    #     zz <- file(result.file)
-    #     close(zz)
+    if (!is.null(project)) {
+      if (dim(dp.data)[1] != dim(M)[1])
+        stop("Original data and simulated data don't have the same size: the original design should be used for the simulation.")
+      i.id <- which(dp.header=="ID")
+      dp.data[,i.id] <- uniquemlx(dp.data[,i.id])$sortIndex
+      if (any(dp.data[,i.id] != M$id))
+        stop("Original data and simulated data don't have the same size: the original design should be used for the simulation.")
+      lo <- dp.names[i.id]
+      i <- which(dp.header=="TIME")
+      if (length(i)>0) lo <- c(lo, dp.names[i])
+      i <- which(dp.header=="YTYPE")
+      if (length(i)>0) lo <- c(lo, dp.names[i])
+      lo <- paste(lo,collapse=",")
+      eval(parse(text=paste0("dp.data <- dp.data[with(dp.data, order(",lo,")), ]")))
+      
+      i <- which(dp.header=="Y")
+      if (length(i)>0) dp.data[,i] <- M$y
+      i <- which(dp.header=="CENS")
+      if (length(i)>0) {
+        dp.data[,i] <- M$cens
+      } else {
+        dp.data$CENS <- M$cens
+      }
+      i <- which(dp.header=="LIMIT")
+      if (length(i)>0) {
+        dp.data[,i] <- M$limit
+      } else {
+        dp.data$LIMIT <- M$limit
+      }
+      dp.data[,i.id] <- r$originalId$oriId[dp.data[,i.id]]
+      write.table(dp.data,result.file,row.names=FALSE,quote=FALSE,sep=dp.info$delimiter,append=F)
+    } else {
+      
+      if (app.file == F) 
+        write.table(M,result.file,row.names=FALSE,quote=FALSE,sep=sep,append=F)
+      else
+        write.table(M,result.file,row.names=FALSE,col.names=FALSE,quote=FALSE,sep=sep,append=T)
+    }
   } 
 }

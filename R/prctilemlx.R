@@ -5,6 +5,7 @@
 #' See http://simulx.webpopix.org/mlxr/prctilemlx/ for more details.
 #' @param r a data frame with a column \samp{id}, a column \samp{time} and a column with values.
 #' The times should be the same for each individual. 
+#' @param col a vector of 3 column numbers: (\samp{id}, \samp{time/x}, \samp{y}. Default = c(1, 2,3).
 #' @param number the number of intervals (i.e. the number of percentiles minus 1).
 #' @param level the largest interval (i.e. the difference between the lowest and the highest percentile).
 #' @param plot if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}
@@ -70,7 +71,7 @@
 #' }
 #' @importFrom stats quantile
 #' @export         
-prctilemlx <- function(r,number=8,level=80,plot=TRUE,color="purple",band=NULL,y.lim=NULL)
+prctilemlx <- function(r,col=c(1,2,3), number=8,level=80,plot=TRUE,color="purple",band=NULL,y.lim=NULL)
 {
   col.hsv <- rgb2hsv(col2rgb(color))
   if (!is.null(y.lim))
@@ -99,14 +100,21 @@ prctilemlx <- function(r,number=8,level=80,plot=TRUE,color="purple",band=NULL,y.
     m <- m+1
   }
   
+  r.names <- names(r)
+  if (any(r.names=="id"))
+    col[1] <- which(r.names=="id")
+  if (any(r.names=="time"))
+    col[2] <- which(r.names=="time")
   
-  N <- length(unique(r$id))
-  n <- length(which(r$id==r$id[1]))
-  d <- dim(r)[2]
+  id <- r[,col[1]]
+  N <- length(unique(id))
+  n <- length(which(id==id[1]))
+  d <- col[3]
   
-  t <- r$time[1:n]
-  y.label=names(r)[d]
-  v <- matrix(r[,d], nrow = n, byrow = FALSE)
+  t <- r[,col[2]][1:n]
+  x.label=names(r)[col[2]]
+  y.label=names(r)[col[3]]
+  v <- matrix(r[,col[3]], nrow = n, byrow = FALSE)
   
   y<-apply(v,1,quantile, probs = round(q,digits=3),  na.rm = TRUE)
   nq=length(q)
@@ -169,7 +177,7 @@ prctilemlx <- function(r,number=8,level=80,plot=TRUE,color="purple",band=NULL,y.
     # pk<-ggplotmlx(datapoly, aes(x=x, y=pr)) + geom_polygon(aes(fill=vf, group=vf)) +
       pk<-ggplotmlx() 
     pk<-pk + geom_polygon(data=datapoly, aes(x=x, y=pr, fill=vf, group=vf)) +
-      xlab("time")+ylab(y.label) 
+      xlab(x.label)+ylab(y.label) 
     if (!is.null(y.lim))
       pk <- pk + ylim(y.lim) 
     pk <- pk +sfm
