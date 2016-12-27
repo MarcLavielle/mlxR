@@ -71,64 +71,40 @@ pkmodel <- function(time,treatment,parameter){
   #
   #  pkmodel.R was developed by Marc Lavielle and Fazia Bellal (Inria) for the DDMoRe project. 
   # ########################################################################################  
-  if (!is.list(parameter)){
-    parameter <- list(name=names(parameter), value=as.numeric(parameter))
-  }
-  if (is.data.frame(parameter)){
-    np <- names(parameter)
-    jid <- which(np=="id")
-    parameter <- list(name=np[-jid], colNames=np, value=as.matrix(parameter))
-  }
-  pn=parameter$name
   
-  #   pn=names(parameter)
-  if(length(grep("ke0",pn))>0){iop.ke0=1}else{iop.ke0=0}
-  if(iop.ke0==0){
+  pn <- names(parameter)
+  
+  if("ke0" %in% pn) {
+    out <- list(name=c("cc","ce"),time=time)
+  } else {
     out <- list(name="cc",time=time)
   }
-  else{
-    out <- list(name=c("cc","ce"),time=time)
+  
+  pn[which(pn=="V1")]="V"
+  pn[which(pn=="Q")]="Q2"
+  
+  if ("V2" %in% pn){
+    parameter["V2"] <- parameter["Q2"]/parameter["V2"]
+    parameter["Q2"] <- parameter["Q2"]/parameter["V"]
+    pn[which(pn=="V2")]="k21"
+    pn[which(pn=="Q2")]="k12"
   }
   
-  
-  if ("V2" %in% parameter$name){
-    if ("V1" %in% parameter$name){
-      iv1 <- which(parameter$name=="V1")
-      parameter$name[iv1]="V"
-    }
-    if ("Q" %in% parameter$name){
-      iq <- which(parameter$name=="Q")
-      parameter$name[iq]="Q2"
-    }
-    iv1 <- which(parameter$name=="V")
-    iv2 <- which(parameter$name=="V2")
-    iq2 <- which(parameter$name=="Q2")
-    k12 <- parameter$value[iq2]/parameter$value[iv1]
-    k21 <- parameter$value[iq2]/parameter$value[iv2]
-    parameter$value[iq2] <- k12
-    parameter$value[iv2] <- k21
-    parameter$name[iq2]  <- "k12"
-    parameter$name[iv2]  <- "k21"
+  if ("V3" %in% pn){
+    parameter["V3"] <- parameter["Q3"]/parameter["V3"]
+    parameter["Q3"] <- parameter["Q3"]/parameter["V"]
+    pn[which(pn=="V3")]="k31"
+    pn[which(pn=="Q3")]="k13"
   }
   
-  if ("V3" %in% parameter$name){
-    iv1 <- which(parameter$name=="V")
-    iv3 <- which(parameter$name=="V3")
-    iq3 <- which(parameter$name=="Q3")
-    k13 <- parameter$value[iq3]/parameter$value[iv1]
-    k31 <- parameter$value[iq3]/parameter$value[iv3]
-    parameter$value[iq3] <- k13
-    parameter$value[iv3] <- k31
-    parameter$name[iq3]  <- "k13"
-    parameter$name[iv3]  <- "k31"
-  }
+  names(parameter) <- pn
+  pk.model <- generateModelFromPkModel(parameter,out) 
+  data <- simulx(model=pk.model, parameter=parameter, output=out, treatment=treatment)
   
-  data <- simulx(model="pkmodel",parameter=parameter,output=out,treatment=treatment)
-  if(iop.ke0==0){
-    r=data$cc
-  }
-  else{
+  if("ke0" %in% pn) {
     r=merge(data$cc,data$ce)
+  } else {
+    r=data$cc
   }
   
   if (!is.null(r$id)){
