@@ -2,12 +2,6 @@
 convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.ori=NULL){
   
   g <- dataIn$group
-  
-  #   if (is.null(g))
-  #     iop.group <- 0
-  #   else
-  #     iop.group <- 1
-  
   iop.gout <- 0
   N <- 0
   for(k in seq(1,length(g))){
@@ -149,11 +143,6 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
     }
   }
   
-  #   if (length(df)>0){
-  #     if (length(df[[1]])>1)
-  #       dd$parameter = df
-  #   }
-  # if (length(df)>1){
   if (!is.null(df)  && nrow(df)>0)
   {
     attr(df,"type") <- "parameter"
@@ -204,14 +193,6 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
       }
     }   
   }
-  
-  #   if (!is.null(id.ori)){
-  #     for(k in seq(1,length(dd))){
-  #       if (!is.null(dd[[k]]$id)){
-  #         dd[[k]]$id <- id.ori[dd[[k]]$id]
-  #       }
-  #     }
-  #   }
   
   if (iop.gout==1)
     dd$group=g
