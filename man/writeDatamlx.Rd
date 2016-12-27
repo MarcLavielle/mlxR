@@ -5,7 +5,7 @@
 \title{Write formatted data file}
 \usage{
 writeDatamlx(r, result.file = NULL, result.folder = NULL, sep = ",",
-  ext = NULL, digits = 5, app.file = F, app.dir = F)
+  ext = NULL, digits = 5, app.file = F, app.dir = F, project = NULL)
 }
 \arguments{
 \item{r}{a list of dataframes}
@@ -23,6 +23,8 @@ writeDatamlx(r, result.file = NULL, result.folder = NULL, sep = ",",
 \item{app.file}{TRUE/FALSE (default=FALSE) append to file}
 
 \item{app.dir}{TRUE/FALSE (default=FALSE) append to dir}
+
+\item{project}{A Monolix project}
 }
 \description{
 Write data contained in a list of dataframes in a single file (NONMEM/Monolix format)

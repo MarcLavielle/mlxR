@@ -4,7 +4,8 @@
 \alias{kmplotmlx}
 \title{Kaplan Meier plot}
 \usage{
-kmplotmlx(r, index = 1, level = NULL, plot = TRUE)
+kmplotmlx(r, index = 1, level = NULL, time = NULL, cens = TRUE,
+  plot = TRUE)
 }
 \arguments{
 \item{r}{a data frame with a column \samp{id}, a column \samp{time}, 
@@ -14,6 +15,8 @@ a column with values and possibly a column \samp{group}.}
 Default is \code{index=1}.}
 
 \item{level}{a number between 0 and 1:  confidence interval level.}
+
+\item{cens}{if \code{TRUE} right censoring times are diplayed.}
 
 \item{plot}{if \code{TRUE} the estimated survival function is displayed, if \code{FALSE}
 the values are returned}

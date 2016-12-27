@@ -4,12 +4,14 @@
 \alias{prctilemlx}
 \title{Percentiles of the empiricial distribution of longitudinal data}
 \usage{
-prctilemlx(r, number = 8, level = 80, plot = TRUE, color = "purple",
-  band = NULL, y.lim = NULL)
+prctilemlx(r, col = c(1, 2, 3), number = 8, level = 80, plot = TRUE,
+  color = "purple", band = NULL, y.lim = NULL)
 }
 \arguments{
 \item{r}{a data frame with a column \samp{id}, a column \samp{time} and a column with values.
 The times should be the same for each individual.}
+
+\item{col}{a vector of 3 column numbers: (\samp{id}, \samp{time/x}, \samp{y}. Default = c(1, 2,3).}
 
 \item{number}{the number of intervals (i.e. the number of percentiles minus 1).}
 

@@ -5,7 +5,7 @@
 \title{Read formatted data file}
 \usage{
 readDatamlx(project = NULL, datafile = NULL, header = NULL,
-  infoProject = NULL, addl.ss = 10)
+  infoProject = NULL, out.data = FALSE, addl.ss = 10)
 }
 \arguments{
 \item{project}{a Monolix project}
@@ -15,6 +15,8 @@ readDatamlx(project = NULL, datafile = NULL, header = NULL,
 \item{header}{a vector of strings (mandatory if \code{datafile} is used)}
 
 \item{infoProject}{an xmlfile}
+
+\item{out.data}{TRUE/FALSE (default=FALSE) returns the original data as a table and some information about the Monolix project}
 
 \item{addl.ss}{number of additional doses to use for steady-state  (default=10)}
 }
