@@ -23,8 +23,7 @@ simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.
   sd <- parameter$sd
   trans <- parameter$trans
   if (!is.null(project)){
-    ans <- processing_monolix(project=project,fim=fim)
-    parameter$pop.param
+    ans <- processing_monolix(project=project, fim=fim, create.model=FALSE)
     if (is.null(mu))
     mu <- ans$param[[1]]
     fim   <- ans$fim

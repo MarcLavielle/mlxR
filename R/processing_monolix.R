@@ -4,7 +4,7 @@
 NULL
 
 processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL,
-                                output=NULL,group=NULL,r.data=TRUE,fim=NULL)
+                                output=NULL,group=NULL,r.data=TRUE,fim=NULL,create.model=TRUE)
 {
   ### processing_monolix
   #     takes a monolix project and extract information from
@@ -48,8 +48,8 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
     
     #     if (is.character(param))  {
     # if (length(param)==1  && any(sapply(param,is.character))) {
-      if (any(sapply(param,is.character))) {
-        file = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
+    if (any(sapply(param,is.character))) {
+      file = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
       datas$parameter = readIndEstimate(file,param[which(sapply(param,is.character))])
       #        datas$parameter = readIndEstimate(file,param)
       iop_indiv=1
@@ -155,9 +155,9 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   ##************************************************************************
   #       MODEL
   #**************************************************************************
-  if (is.null(model))
-  {
-    # generate model from mlxtran file  
+  if (create.model==TRUE) {
+    if (is.null(model)) {
+      # generate model from mlxtran file  
     mlxtranfile = file_path_sans_ext(basename(project))
     mlxtranpath <- dirname(project)
     model = file.path(mlxtranpath,paste0(mlxtranfile,"_model.txt"))
@@ -173,23 +173,8 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       myparseModel(model, sections, model )
     }
     if (length(grep("MonolixSuite2016R1",session)))
-    {
-    patchCor(model)
-    }
+      patchCor(model)
   }
-  #**************************************************************************
-  #   test.colNames <- testC(list(treatment,param,output))
-  #   if ((test.colNames==TRUE) | (is.null(group[[1]]$size))) {
-  #     gr=group
-  #   }else{
-  #     gr <- list(size=c(group[[1]]$size, 1) , level=c("individual","longitudinal"))
-  #   }
-  gr <- group
-  
-  #  if (is.null(datas$regressor))
-  #    ans = list(model=model, treatment=treatment, param=paramp, output=output, group=gr, id=datas$id)
-  #   else
-  
   
   #change regressor names and use these defined in the model in the same order 
   if (!is.null(datas$regressor))
@@ -243,7 +228,12 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   paramp[[1]]<-setErrorModelName(paramp[[1]],model)
   ##initialize latent covariates defined in the model but not used,  in parameter
   paramp[[1]]<-initLatentCov(paramp[[1]],model)
-  gr    <- mklist(gr)
+  } else {
+    model <- NULL
+  }
+  
+  # gr <- group
+  gr    <- mklist(group)
   #   parameter <- mklist(paramp)
   parameter <- paramp
   treatment <- mklist(treatment)
