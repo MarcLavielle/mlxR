@@ -385,18 +385,20 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       if ("treatment" %in% u.name)
       {
         tr <- NULL
-        for (k in (1:ng))
-        {
+        i2 <- 0
+        for (k in (1:ng)) {
+          i1 <- i2+1
+          i2 <- i2 + group[[k]]$size
           tk <- as.data.frame(group[[k]]$treatment)
-          tk <- tk[rep(seq.int(1,nrow(tk)), group[[k]]$size), ]
-          #           tk$group <- k
+          ntk <- nrow(tk)
+          tk <- tk[rep(seq.int(1,ntk), group[[k]]$size), ]
+          tk$id <- rep(seq(i1,i2),each=ntk)
           if (is.null(tr))
             tr <- tk
           else
-            tr <- merge(tr,tk, all=T)
+            tr <- merge(tr,tk, all=T, sort=FALSE)
         }
         tr[is.na(tr)]='.'
-        tr <- cbind(data.frame(id=as.factor(seq(1:sum(g.size)))),tr)
         lv$treatment <- tr
       }
       gr.ori <- NULL
