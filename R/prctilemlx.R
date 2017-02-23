@@ -71,7 +71,7 @@
 #' }
 #' @importFrom stats quantile
 #' @export         
-prctilemlx <- function(r,col=c(1,2,3), number=8,level=80,plot=TRUE,color="purple",band=NULL,y.lim=NULL)
+prctilemlx <- function(r,col=NULL, number=8,level=80,plot=TRUE,color="purple",band=NULL,y.lim=NULL)
 {
   col.hsv <- rgb2hsv(col2rgb(color))
   if (!is.null(y.lim))
@@ -100,11 +100,25 @@ prctilemlx <- function(r,col=c(1,2,3), number=8,level=80,plot=TRUE,color="purple
     m <- m+1
   }
   
-  r.names <- names(r)
-  if (any(r.names=="id"))
-    col[1] <- which(r.names=="id")
-  if (any(r.names=="time"))
-    col[2] <- which(r.names=="time")
+  
+  if (is.null(col)) {
+    r.names <- names(r)
+    if (any(r.names=="id")) {
+      col[1] <- which(r.names=="id")
+    } else {
+      col[1] <- 1
+    }
+    if (any(r.names=="time")) {
+      col[2] <- which(r.names=="time")
+    } else {
+      col[2] <- 2
+    }
+    if (!is.null(attr(r,"name"))) {
+      col[3] <- which(r.names==attr(r,"name"))
+    } else {
+      col[3] <- 3
+    }
+  }
   
   id <- r[,col[1]]
   N <- length(unique(id))
@@ -175,7 +189,7 @@ prctilemlx <- function(r,col=c(1,2,3), number=8,level=80,plot=TRUE,color="purple
     
     datapoly <- data.frame(x,pr,v,vf)    
     # pk<-ggplotmlx(datapoly, aes(x=x, y=pr)) + geom_polygon(aes(fill=vf, group=vf)) +
-      pk<-ggplotmlx() 
+    pk<-ggplotmlx() 
     pk<-pk + geom_polygon(data=datapoly, aes(x=x, y=pr, fill=vf, group=vf)) +
       xlab(x.label)+ylab(y.label) 
     if (!is.null(y.lim))
