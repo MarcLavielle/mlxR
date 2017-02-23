@@ -263,6 +263,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
                                group=group,
                                fim=fim
     )
+    ans <- select.data(ans)
     model     <- ans$model
     treatment <- ans$treatment
     parameter <- ans$param
@@ -422,7 +423,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   R.complete <- list()
   rs <- NULL
   
-  
   for (ipop in (1:npop))
   {
     if (disp.iter==TRUE) 
@@ -440,11 +440,11 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
         lv$group <- group
       dataIn <- simulxunit(model=model,lv=lv,settings=c(settings, data.in=T))
     }
+    lv0 <- lv
     for (irep in (1:nrep))
     {
       irw <- irw + 1
       settings$seed <- settings$seed +12345
-      
       
       if (disp.iter==TRUE && nrep>1)  
         cat("replicate: ",irw,"\n")
@@ -455,8 +455,11 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       } 
       else 
       {
+#        new.id <- sort(which(id %in% ans$treatment[[1]]$id))
+#        lv <- resample.data(data=lv,idOri=id,new.id=new.id)
+#        lv <- resample.data(data=lv,idOri=id,N=length(ans$treatment[[1]]$id),replacement=replacement)
         if (test.N==T && !is.null(group)) 
-          lv <- resample.data(lv,id,sum(g.size),replacement)
+          lv <- resample.data(data=lv0,idOri=id,N=sum(g.size),replacement=replacement)
         if (test.N==F)  
           lv$group <- group
         r <- simulxunit(model=model,lv=lv,settings=settings, out.trt=out.trt)
@@ -489,10 +492,9 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           }
         }
       }
-      
-      if (!(is.null(project))) 
+     if (!(is.null(project))) 
       {
-        r$covariate <- parameter[[2]]
+        r$covariate <- parameter[[2]][which(id%in%r$originalId$oriId),]
         r$covariate$id <- (1:length(r$covariate$id))
         attr(r$covariate,"type") <- "covariate"
       }
@@ -563,6 +565,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
             res[[k]] <- rs[[k]]
       }  
     } # irep
+
     if (length(res)>0)
     {
       for (k in (1:length(res)))
@@ -685,7 +688,6 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=T)
   }
   
   
-  
   if (out.trt==T)
     trt <- dataIn$trt
   else
@@ -696,7 +698,6 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=T)
   } else {
     argList <- list(DATA=dataIn, SETTINGS=s)       
   }
-  
   if (identical(file_ext(model),"R")) {Rfile <- TRUE} else {Rfile <- FALSE}
   if ( !is.null(model) && exists(model, mode="function") ){Rsource <- TRUE} else {Rsource <- FALSE}
   if (Rfile || Rsource){
