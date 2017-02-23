@@ -151,15 +151,20 @@ dpopid <- function(x,s)
 }  
 
 
-resample.data  <- function(data,idOri,N,replacement=F)
+resample.data  <- function(data,idOri,N=NULL,new.id=NULL,replacement=F)
 {
   n <- length(unique(idOri))
-  if (replacement==TRUE){
-    new.id <- sample(1:n,N,replace=TRUE)
-  } else{
-    K <- floor(N/n)
-    new.id <- c(rep(1:n,K),sort(sample(1:n,N-K*n,replace=FALSE)))
+  if (is.null(new.id)) {
+    if (replacement==TRUE){
+      new.id <- sample(1:n,N,replace=TRUE)
+    } else{
+      K <- floor(N/n)
+      new.id <- c(rep(1:n,K),sort(sample(1:n,N-K*n,replace=FALSE)))
+    }
+  } else {
+    N <- length(new.id)
   }
+  
   new.idOri=idOri[new.id]
   data$N <- NULL
   data$idOri <- NULL  
@@ -233,6 +238,52 @@ resample.data  <- function(data,idOri,N,replacement=F)
   return(data)
 }
 
+select.data  <- function(data)
+{
+  select.id <- NULL
+  for  (j in (1:length(data)))
+  {
+    dataj <- data[[j]]
+    for  (k in (1:length(dataj)))
+    {
+      datak <- dataj[[k]]
+      if (is.data.frame(datak))
+      {
+        if (!is.null(datak$id))
+        {
+          if (is.null(select.id)) {
+            select.id <- unique(datak$id)
+          } else {
+            select.id <- intersect(select.id , unique(datak$id))
+          }
+        } 
+      }
+    }
+  }
+  if (!is.null(select.id)) {
+    if (length(select.id)==0)
+      stop("Please check the id's... the intersection is empty")
+    N <- nlevels(select.id)
+    for  (j in (1:length(data)))
+    {
+      dataj <- data[[j]]
+      for  (k in (1:length(dataj)))
+      {
+        datak <- dataj[[k]]
+        if (is.data.frame(datak))
+        {
+          if (!is.null(datak$id))
+          {
+            idk <- which(datak$id %in% select.id)
+            data[[j]][[k]] <- datak[idk,]
+          } 
+        }
+      }
+    }
+    data$id <- data.frame(newId=as.factor(seq(1:length(select.id))),oriId=select.id)
+  }
+  return(data)
+}
 
 unlistRec <- function(x,s=NULL)
 {
