@@ -100,6 +100,8 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   #**************************************************************************
   r = readPopEstimate(file.path(infoProject$resultFolder,'estimates.txt'),fim);
   pop_param <- r[[1]]
+  # add fixed parameters not existing in estimates.txt, but in infoProject$fixedParameters
+  pop_param<-c( pop_param,infoProject$fixedParameters)
   paramp <- list(pop_param,datas$covariate,datas$parameter)
   
   if  (!is.null(param)) 
@@ -298,7 +300,9 @@ getInfoXml  <- function (project)
   infoData                = myparseXML(xmlfile, mlxtranpath, "data")
   infoProject$datafile    = infoData[[1]]$uri
   infoProject$dataformat  = infoData[[1]]$columnDelimiter
-  infoProject$dataheader  = infoData[[1]]$headers
+  # regressor in monolixC+++ are now named REG
+  headers <- gsub("REG","X",infoData[[1]]$headers)
+  infoProject$dataheader  = headers
   infoOutput              = myparseXML(xmlfile, mlxtranpath, 'observationModel')
   
   for (k in 1:length(infoOutput))
@@ -312,6 +316,15 @@ getInfoXml  <- function (project)
   p.names <- do.call("rbind", lapply(infoParam, "[[", "name"))[,1]
   p.trans <- do.call("rbind", lapply(infoParam, "[[", "transformation"))[,1]
   infoProject$parameter <- list(name=p.names, trans=p.trans)
+  
+  infoFixedParam = myparseXML(xmlfile, mlxtranpath, "fixedParameter")
+  info.length <- unlist(lapply(infoFixedParam,length))
+  infoFixedParam <- infoFixedParam[info.length==2]
+  fixp.names <- do.call("rbind", lapply(infoFixedParam, "[[", "name"))[,1]
+  fixp.values <- do.call("rbind", lapply(infoFixedParam, "[[", "value"))[,1]
+  fixedParamValues <-as.numeric(fixp.values)
+  names(fixedParamValues) = fixp.names
+  infoProject$fixedParameters <- fixedParamValues
   
   if(file_ext(project) == "mlxtran")
     unlink(xmlfile, recursive=T)
@@ -331,22 +344,24 @@ myparseXML  <- function (filename, mlxtranpath, node)
   set     = getNodeSet(tree,paste0("//", node))
   tmp=list(name=NULL)
   ans=list()
-  for (i in 1 : length(set)) {
-    attributs      = xmlAttrs(set[[i]])
-    namesAttributs = names(attributs)
-    tmp['name']= node
-    for (j in 1 : length(namesAttributs)) {      
-      tmp[namesAttributs[[j]]]=attributs[[j]]
-      # replace '%MLXPROJECT%' by the symbol of current folder "."
-      if (namesAttributs[[j]] == "uri")
-        tmp[namesAttributs[[j]]]=sub("%MLXPROJECT%", mlxtranpath, tmp[namesAttributs[[j]]]) 
-      # repalce '\\t' by "tab"
-      if (namesAttributs[[j]] == "columnDelimiter") {
-        if (tmp[namesAttributs[[j]]] == '\\t' )
-          tmp[namesAttributs[[j]]]= "tab"
-      }
-    } 
-    ans= c(ans, list(tmp))
+  if(length(set)){
+    for (i in 1 : length(set)) {
+      attributs      = xmlAttrs(set[[i]])
+      namesAttributs = names(attributs)
+      tmp['name']= node
+      for (j in 1 : length(namesAttributs)) {      
+        tmp[namesAttributs[[j]]]=attributs[[j]]
+        # replace '%MLXPROJECT%' by the symbol of current folder "."
+        if (namesAttributs[[j]] == "uri")
+          tmp[namesAttributs[[j]]]=sub("%MLXPROJECT%", mlxtranpath, tmp[namesAttributs[[j]]]) 
+        # repalce '\\t' by "tab"
+        if (namesAttributs[[j]] == "columnDelimiter") {
+          if (tmp[namesAttributs[[j]]] == '\\t' )
+            tmp[namesAttributs[[j]]]= "tab"
+        }
+      } 
+      ans= c(ans, list(tmp))
+    }
   }
   return(ans)
 }
@@ -356,15 +371,22 @@ readPopEstimate  <-  function(filename, fim=NULL) {
   if (file.exists(filename)) {
     data        = read.table(filename, header = TRUE, sep=";")
     if (ncol(data)==1)
+      data        = read.table(filename, header = TRUE, sep=",")
+    if (ncol(data)==1)
       data        = read.table(filename, header = TRUE, sep="\t")
-    
+    if (ncol(data)==1)
+      data        = read.table(filename, header = TRUE, sep=" ")
     name        = as.character(data[[1]])
     name        = sub(" +", "", name)
     name        = sub(" +$", "", name)
     
     #ic <- grep("corr_",name)
     #name[ic] <- sub("corr_","r_",name[ic])
-    param <- as.numeric(as.character(data[['parameter']]))
+    if(is.element("value",names(data))){
+      param <- as.numeric(as.character(data[['value']]))
+    } else{
+      param <- as.numeric(as.character(data[['parameter']]))
+    }
     names(param) <- name
     
     if (!is.null(fim)){

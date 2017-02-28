@@ -105,7 +105,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     delimiter=""
   }else if (tolower(fileFormat)=="tab"){
     delimiter='\t'
-  }else if (tolower(fileFormat)==";"){
+  }else if (tolower(fileFormat)==";"||tolower(fileFormat)=="semicolumn"){
     delimiter=';'
   }else if (tolower(fileFormat)=="\t"){
     delimiter='\t'
@@ -197,7 +197,12 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     #     else
     #       ix=NULL
   }
-  t=S[[itime]]
+  if (!is.null(itime)) {
+    t=S[[itime]]
+  }else{
+    # no time,  no regressor
+    t = 1:nrow(S) 
+  }
   nx=length(ix)
   
   nocc <- length(iocc)
@@ -437,7 +442,9 @@ getInfoXml  <- function (project)
   infoData                = myparseXML(xmlfile, mlxtranpath, "data")
   infoProject$datafile    = infoData[[1]]$uri
   infoProject$dataformat  = infoData[[1]]$columnDelimiter
-  infoProject$dataheader  = infoData[[1]]$headers
+  # regressor in monolixC+++ are now named REG
+  headers <- gsub("REG","X",infoData[[1]]$headers)
+  infoProject$dataheader  = headers
   ##************************************************************************
   #       GET OUTPUT INFO
   #*************************************************************************
@@ -457,6 +464,15 @@ getInfoXml  <- function (project)
   p.names <- do.call("rbind", lapply(infoParam, "[[", 1))[,1]
   p.trans <- do.call("rbind", lapply(infoParam, "[[", 2))[,1]
   infoProject$parameter <- list(name=p.names, trans=p.trans)
+  
+  infoFixedParam = myparseXML(xmlfile, mlxtranpath, "fixedParameter")
+  info.length <- unlist(lapply(infoFixedParam,length))
+  infoFixedParam <- infoFixedParam[info.length==2]
+  fixp.names <- do.call("rbind", lapply(infoFixedParam, "[[", "name"))[,1]
+  fixp.values <- do.call("rbind", lapply(infoFixedParam, "[[", "value"))[,1]
+  fixedParamValues <-as.numeric(fixp.values)
+  names(fixedParamValues) = fixp.names
+  infoProject$fixedParameters <- fixedParamValues
   
   if(file_ext(project) == "mlxtran")
   {unlink(xmlfile, recursive=T)}
