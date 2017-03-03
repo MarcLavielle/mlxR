@@ -113,10 +113,20 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   fim <- r[[3]]
   if (!is.null(fim)){
     pop_se <- r[[2]]
+    # add fixed parameters
+    fixedPar<-rep(0,length(infoProject$fixedParameters))
+    names(fixedPar)<-names(infoProject$fixedParameters)
+    pop_se<-c( pop_se, fixedPar)
     if (fim=="sa")
       f.mat = readFIM(file.path(infoProject$resultFolder,'correlationEstimates_sa.txt'))
     else
       f.mat = readFIM(file.path(infoProject$resultFolder,'correlationEstimates_lin.txt'))
+    # add fixed parameters
+    fmatResized<-rbind(as.matrix(f.mat),matrix(NaN,length(fixedPar),nrow(f.mat)))
+    fmatResized<-cbind(as.matrix(fmatResized),matrix(NaN,nrow(fmatResized),length(fixedPar)))
+    colnames(fmatResized)<-c(colnames(f.mat),names(fixedPar))
+    rownames(fmatResized)<-colnames(fmatResized)
+    f.mat <-fmatResized
     if0 <- which(names(f.mat) %in% names(unlist(param)))
     f.mat[if0,] <- f.mat[,if0] <- NaN
     pop_se[if0] <- 0
