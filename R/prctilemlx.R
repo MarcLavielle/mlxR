@@ -100,7 +100,6 @@ prctilemlx <- function(r,col=NULL, number=8,level=80,plot=TRUE,color="purple",ba
     m <- m+1
   }
   
-  
   if (is.null(col)) {
     r.names <- names(r)
     if (any(r.names=="id")) {
@@ -114,7 +113,7 @@ prctilemlx <- function(r,col=NULL, number=8,level=80,plot=TRUE,color="purple",ba
       col[2] <- 2
     }
     if (!is.null(attr(r,"name"))) {
-      col[3] <- which(r.names==attr(r,"name"))
+      col[3] <- max(which(r.names==attr(r,"name")))
     } else {
       col[3] <- 3
     }
