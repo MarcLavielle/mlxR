@@ -202,11 +202,10 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       {
         comment<-";"
         lineNoComment<-strsplit(regressorLine[line],comment)[[1]]
-        regModelNamesTable<-strsplit(lineNoComment,"[\\{ \\} , ]")[[1]]
+        regModelNamesTable<-strsplit(lineNoComment,"[\\{ \\} , =]")[[1]]
         for( i in seq(1:length(regModelNamesTable))){
           regi <- regModelNamesTable[i]
-          if(!identical(regi,"")&&!length(grep("=",regi,fixed=TRUE,value=TRUE))
-             &&!length(grep("regressor",regi,fixed=TRUE,value=TRUE))
+          if(!identical(regi,"") &&!length(grep("regressor",regi,fixed=TRUE,value=TRUE))
              &&!length(grep("use",regi,fixed=TRUE,value=TRUE))
           ){
             regModelNames<-c(regModelNames,regi)
@@ -262,7 +261,8 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
              id=datas$id,
              occasion=occ,
              fim=fim,
-             infoParam=infoProject$parameter)
+             infoParam=infoProject$parameter,
+             catNames=datas$catNames)
   
   return(ans)
 }

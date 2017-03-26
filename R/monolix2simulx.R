@@ -51,6 +51,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   regressor     <- ans$regressor
   occasion      <- ans$occ
   fim           <- ans$fim
+  catNames      <- ans$catNames
   mlxtranpath <- dirname(project)
   mlxtranfile = file_path_sans_ext(basename(project))
   mypath <- getwd()
@@ -109,8 +110,23 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
     
     individualCovariate <- parameter[[2]]
     if (!is.null(individualCovariate)){
-      outfile = file.path(Rproject,paste0("/individualCovariate.txt"))      
-      cat(paste0("individualCovariate<- read.table('individualCovariate.txt', header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      outfile = file.path(Rproject,paste0("/individualCovariate.txt"))  
+      if(!is.null(catNames)){
+        if(length(catNames)>1){
+          cat(paste0("colCatType<-rep(\"character\",",length(catNames),")\nnames(colCatType)<-c(\"",catNames[1],"\""), 
+              file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+          for(i in seq(2,length(catNames))){
+            cat(paste0(",\"",catNames[i],"\""), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+          }
+          cat(paste0(")\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        }else{
+          cat(paste0("colCatType<-\"character\"\nnames(colCatType)<-\"",catNames[1],"\"\n"), 
+              file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        }
+        cat(paste0("individualCovariate<- read.table('individualCovariate.txt', header = TRUE,colClasses = colCatType) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      }else{
+        cat(paste0("individualCovariate<- read.table('individualCovariate.txt', header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      }
       write.table(individualCovariate,file=outfile,row.names=FALSE,quote=FALSE)
       if (!is.null(param.list))
         param.list <- paste(param.list,"individualCovariate",sep=",")  

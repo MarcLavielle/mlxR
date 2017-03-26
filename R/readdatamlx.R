@@ -112,6 +112,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   }else
     delimiter=','
   
+  catNames<-NULL
   headerTest = read.table(datafile, comment.char="",sep=delimiter, nrows=1,stringsAsFactors=FALSE)
   if(headerTest[1,1]=="#"){
     headerToUse<-headerTest[,-1]
@@ -128,8 +129,14 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     
   }else{
     data = tryCatch(
-      read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
-      , error=function(e) {
+      (if(!is.null(icat)){
+        colCatType<-rep("character",length(icat))
+        catNames <-headerTest[icat]
+        names (colCatType)<-catNames
+        read.table(datafile, comment.char="", header = TRUE, sep=delimiter,colClasses = colCatType)
+      }else{
+        read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
+      }), error=function(e) {
         error<-  geterrmessage()
         message(paste0("WARNING: reading data using delimiter '",delimiter,"' failed: ", geterrmessage()))
         return( read.table(datafile, comment.char="", header = TRUE))
@@ -146,7 +153,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   #---remove rows containing NA-------
   if (!is.null(iid)) 
   {
-    narowsData <- which(is.na(data[i,iid]))
+    narowsData <- which(is.na(data[iid])) # removed in ID column only
     if(length(narowsData)>0)
       data <- data[-narowsData,]
   }
@@ -158,6 +165,32 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   newHeader[i.new] = S0[i.new]
   
   if (!is.null(iid)){
+    iobs1   = findstrcmp(S[[iy]],'.', not=TRUE)
+    if (!is.null(imdv))
+      iobs1 <- iobs1[S[iobs1,imdv]!=1]
+    if (!is.null(ievid))
+      iobs1 <- iobs1[S[iobs1,ievid]==0]
+    i0 <- c(grep(' .',S[iobs1,iy],fixed=TRUE),grep('. ',S[iobs1,iy],fixed=TRUE))
+    if (length(i0)>0)
+      iobs1 <- iobs1[-i0]
+    #keep  the data only for  ids which have observation
+    if (!is.null(iytype)){
+      idObs <-NULL
+      ytype <- factor(S[iobs1,iytype])
+      l.ytype <- levels(ytype)
+      if (is.null(observationName))
+        observationName <- paste0("y",l.ytype)
+      n.y <- length(observationName)
+      for (in.y in (1:n.y)){
+        idObs <-c(idObs,as.character(S[iobs1[which(ytype==l.ytype[in.y])],iid]))
+      }
+      idObs<-unique(idObs)
+    } else{
+      idObs<-unique(S[[iid]][iobs1])
+    }
+    idObsRows<-which(S[[iid]]%in%idObs)
+    S <- S[idObsRows,]
+    
     ans    = funique(S[[iid]])
     iduf   = ans$arg1  
     iuf    = ans$arg2
@@ -293,7 +326,6 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   ##************************************************************************
   #       OBSERVATION FIELD
   #**************************************************************************
-  
   iobs1   = findstrcmp(S[[iy]],'.', not=TRUE)
   if (!is.null(imdv))
     iobs1 <- iobs1[S[iobs1,imdv]!=1]
@@ -302,6 +334,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   i0 <- c(grep(' .',S[iobs1,iy],fixed=TRUE),grep('. ',S[iobs1,iy],fixed=TRUE))
   if (length(i0)>0)
     iobs1 <- iobs1[-i0]
+  
   yvalues = data.frame(id=idnum[iobs1], time=t[iobs1], y=as.numeric(as.character(S[iobs1,iy])))
   if (!is.null(iytype)){ 
     ytype <- factor(S[iobs1,iytype])
@@ -313,10 +346,10 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     # if (length(observationName)<n.y)
     #   observationName <- paste0("y",l.ytype)
     y<- list()
-    for (iy in (1:n.y)){
-      y[[iy]] <- yvalues[ytype==l.ytype[iy],]
-      names(y[[iy]])[3] <- observationName[iy]
-      attr(y[[iy]],'type') <- "longitudinal"
+    for (in.y in (1:n.y)){
+      y[[in.y]] <- yvalues[ytype==l.ytype[in.y],]
+      names(y[[in.y]])[3] <- observationName[in.y]
+      attr(y[[in.y]],'type') <- "longitudinal"
     }
     #     yvalues$ytype <- observationName[S[[iytype]][iobs1]]
   } else {
@@ -396,6 +429,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     datas$id <- iduf  
     datas$N <- N
   }
+  datas$catNames<-catNames
   return(datas)
 }
 
