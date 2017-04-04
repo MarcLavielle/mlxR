@@ -620,6 +620,11 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   
   Sys.setenv(LIXOFT_HOME="")
   Sys.setenv('PATH'=myOldENVPATH);
+
+  # For categorical output, returns the categories defined in the model, instead of {0, 1, ...}
+ if (!Rmodel)
+    R.complete <- repCategories(R.complete, model)
+  
   return(R.complete)
 }
 
@@ -686,7 +691,6 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=T)
     id.ori <- data$id.ori
     dataIn$id.ori <- NULL
   }
-  
   
   if (out.trt==T)
     trt <- dataIn$trt
