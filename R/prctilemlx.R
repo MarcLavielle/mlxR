@@ -48,32 +48,32 @@
 #'                 group     = list(size=N, level='individual'),
 #'                 output    = list(name='C', time=seq(0,24,by=0.1)))
 #'   # res$C is a data.frame with 2000x241=482000 rows and 3 columns
-#'   res$C[1:10,]
+#'   head(res$C)
 #'   # we can display the empirical percentiles of C using the default 
 #'   # settings (i.e. percentiles of order 10%, 20%, ... 90%)
-#'   p1   <- prctilemlx(res$C)
-#'   print(p1)
+#'   prctilemlx(res$C)
 #'   # The 3 quartiles (i.e. percentiles of order 25%, 50% and 75%) are displayed by 
 #'   # selecting a 50% interval splitted into 2 subintervals
-#'   p2  <- prctilemlx(res$C, band=list(number=2, level=50))
+#'   prctilemlx(res$C, number=2, level=50)
 #'   # A one 90% interval can be displayed using only one interval
-#'   p3   <- prctilemlx(res$C, band=list(number=1, level=90))
+#'   prctilemlx(res$C, number=1, level=90)
 #'   # or 75 subintervals in order to better represent the continuous distribution 
 #'   # of the data within this interval
-#'   p4   <- prctilemlx(res$C, band=list(number=75, level=90))
+#'   prctilemlx(res$C, number=75, level=90)
+#'   # prctilemlx produces a ggplot object that can be modified
+#'   pl <- prctilemlx(res$C, number=4, level=80) 
+#'   pl + ylab("concentration") + ggtitle("predictive distribution")
 #'   # The percentiles are not plotted by setting plot=FALSE
-#'   p5   <- prctilemlx(res$C, band=list(number=4, level=80), plot=FALSE)
-#'   print(names(p4))
-#'   print(p4$proba)
-#'   print(p4$color)
-#'   print(p4$y[1:5,])
-#'   print(p4$y[1:5,])
+#'   pr.out <- prctilemlx(res$C, number=4, level=80, plot=FALSE)
+#'   print(pr.out$proba)
+#'   print(pr.out$color)
+#'   print(pr.out$y[1:5,])
 #' }
 #' @importFrom stats quantile
 #' @export         
-prctilemlx <- function(r,col=NULL, number=8,level=80,plot=TRUE,color="purple",band=NULL,y.lim=NULL)
+prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="purple",
+                       group=NULL, facet=TRUE, labels=NULL, band=NULL, y.lim=NULL)
 {
-  col.hsv <- rgb2hsv(col2rgb(color))
   if (!is.null(y.lim))
     warning("The use of y.lim is deprecated. You can use  prctile(...) +ylim(...) instead.")
   
@@ -82,6 +82,8 @@ prctilemlx <- function(r,col=NULL, number=8,level=80,plot=TRUE,color="purple",ba
     number <- band$number
   } 
   m <- number
+  
+  if (level<1) level=100*level
   
   q1=(1-level/100)/2
   q2=1-q1
@@ -120,18 +122,16 @@ prctilemlx <- function(r,col=NULL, number=8,level=80,plot=TRUE,color="purple",ba
   }
   
   id <- r[,col[1]]
-  N <- length(unique(id))
   n <- length(which(id==id[1]))
   d <- col[3]
   
   t <- r[,col[2]][1:n]
   x.label=names(r)[col[2]]
   y.label=names(r)[col[3]]
-  v <- matrix(r[,col[3]], nrow = n, byrow = FALSE)
   
-  y<-apply(v,1,quantile, probs = round(q,digits=3),  na.rm = TRUE)
   nq=length(q)
   ncol <- trunc(nq/2)
+  col.hsv <- rgb2hsv(col2rgb(color))
   if (number<=2){
     cl=hsv(col.hsv[1],col.hsv[2],col.hsv[3],0.4)
   }else{
@@ -141,16 +141,48 @@ prctilemlx <- function(r,col=NULL, number=8,level=80,plot=TRUE,color="purple",ba
     cl[ncol] <- hsv(col.hsv[1],col.hsv[2],col.hsv[3],1)
   color <- c(cl,rev(cl))
   
-  ty=cbind(round(t,digits=6),t(y))
-  colnames(ty)[1]="time"
-  dy <- as.data.frame(ty)
   if (m%%2==0){
     colq <- color
   }else{
     colq <- color[-(nq+1)/2]
   }
   
-  res <- list(proba=q,color=colq,y=dy)
+  if (!is.null(r$group) & is.null(group)) {
+    group <- "group"
+  } else if (length(group)==1 && group=="none") {
+    group = NULL
+  }
+  
+  if (is.data.frame(group)) {
+    attr.name <- attr(r,"name")
+    r <- merge(r,group,by="id",sort=FALSE)
+    attr(r,"name") <- attr.name
+    group <- names(group)
+    group <- group[-which(group=="id")]
+  }
+  
+  if (!is.null(labels)) {
+    if (length(group)==1) 
+      labels <- ifelse(is.list(labels),labels, list(labels))
+    for (k in (1: length(group)))
+      r[[group[k]]] <- factor(r[[group[k]]], labels=labels[[k]])
+  }
+
+  if (!is.null(group)) {
+    ig <- interaction(r[group])
+  } else {
+    n.tot <- dim(r)[1]
+    ig <- factor(rep(1, n.tot))
+  }
+  
+  ug <- levels(ig)
+  ng <- length(ug)
+  y <- list()
+  for (k in (1:ng)) {
+    jk <- which(ig==ug[k])
+    vk <- matrix(r[jk,col[3]], nrow = n, byrow = FALSE)
+    y[[k]] <- apply(vk,1,quantile, probs = round(q,digits=3),  na.rm = TRUE)
+  }
   
   if (plot==TRUE){
     nt <- length(t)
@@ -182,23 +214,61 @@ prctilemlx <- function(r,col=NULL, number=8,level=80,plot=TRUE,color="purple",ba
     bq <- as.character(rev(vq))
     sfm = scale_fill_manual(name="proba",values=colq,breaks=bq)
     
-    pr <- NULL
-    for (j in (1:(nq-1)))
-      pr <- c(pr,y[j,],rev(y[j+1,]))
+    datapoly <- NULL
+    pk<-ggplotmlx()
+    for (k in (1:ng)) {
+      pr <- NULL
+      for (j in (1:(nq-1)))
+        pr <- c(pr,y[[k]][j,],rev(y[[k]][j+1,]))
+      dk <- data.frame(x,pr,vf)
+      if (!is.null(group)) {
+        jk <- which(ig==ug[k])
+        dk[group] <- r[group][jk[1],]
+      }
+      datapoly <- rbind( datapoly, dk)
+      pk<-pk + geom_polygon(data=dk, aes(x=x, y=pr, fill=vf, group=vf)) 
+    }
+    # pk<-pk + geom_polygon(data=datapoly, aes(x=x, y=pr, fill=vf, group=vf)) 
+      pk<-pk +  xlab(x.label)+ylab(y.label)
+
+
+    pk<-pk + xlab(x.label)+ylab(y.label) 
     
-    datapoly <- data.frame(x,pr,v,vf)    
-    # pk<-ggplotmlx(datapoly, aes(x=x, y=pr)) + geom_polygon(aes(fill=vf, group=vf)) +
-    pk<-ggplotmlx() 
-    pk<-pk + geom_polygon(data=datapoly, aes(x=x, y=pr, fill=vf, group=vf)) +
-      xlab(x.label)+ylab(y.label) 
     if (!is.null(y.lim))
       pk <- pk + ylim(y.lim) 
     pk <- pk +sfm
     if (m.test==1){
-      data0 <- data.frame(y=y[(nq+1)/2,],x=t)
-      pk <- pk+ geom_line(data=data0, aes(x=x,y=y),col=hsv(col.hsv[1],col.hsv[2],col.hsv[3],1))
+#      data0 <- NULL
+      for (k in (1:ng)) {
+        datak <- data.frame(y=y[[k]][(nq+1)/2,],x=t)
+        if (!is.null(group)) {
+          jk <- which(ig==ug[k])
+          datak[group] <- r[group][jk[1],]
+        }
+        pk <- pk+ geom_line(data=datak, aes(x=x,y=y),col=hsv(col.hsv[1],col.hsv[2],col.hsv[3],1))
+        #        data0 <- rbind(data0, datak)
+      }
+#      pk <- pk+ geom_line(data=data0, aes(x=x,y=y),col=hsv(col.hsv[1],col.hsv[2],col.hsv[3],1))
+    }
+    if (facet==TRUE) {
+    if (length(group)==1)
+      pk <- pk + facet_wrap(group)
+    if (length(group)==2)
+      pk <- pk + facet_grid(paste(group[1],"~",group[2]))
     }
     res <- pk
+  } else {
+    dy <- NULL
+    for (k in (1:ng)) {
+      tyk <- as.data.frame(cbind(round(t,digits=6),t(y[[k]])))
+      if (!is.null(group)) {
+        jk <- which(ig==ug[k])
+        tyk[group] <- factor(r[group][jk[1],])
+      }
+      dy=rbind(dy, tyk)
+    }
+    names(dy)[1]="time"
+    res <- list(proba=q,color=colq,y=dy)
   }
   return(res)
 }

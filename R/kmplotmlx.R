@@ -45,7 +45,8 @@
 #' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab
 #' @importFrom stats qnorm
 #' @export         
-kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE)
+kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, color="#e05969", 
+                        plot=TRUE, group=NULL, facet=TRUE, labels=NULL)
 { 
   r.name <- attr(r,"name")
   if (length(r.name)>1 || !any(names(r)==r.name)) {
@@ -55,6 +56,42 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE)
       r.name <- "event"
   }
   names(r)[names(r)==r.name] <- "y"
+  
+  if (!is.null(r$group) & is.null(group)) {
+    group <- "group"
+  } else if (length(group)==1 && group=="none") {
+    group = NULL
+  }
+  
+  if (is.data.frame(group)) {
+    attr.name <- attr(r,"name")
+    r <- merge(r,group,by="id",sort=FALSE)
+    attr(r,"name") <- attr.name
+    group <- names(group)
+    group <- group[-which(group=="id")]
+  }
+  
+  if (!is.null(labels)) {
+    if (length(group)==1) 
+      labels <- ifelse(is.list(labels),labels, list(labels))
+    for (k in (1: length(group)))
+      r[[group[k]]] <- factor(r[[group[k]]], labels=labels[[k]])
+  }
+  
+  if (!is.null(group)) {
+    ig <- interaction(r[group])
+    ig <- factor(ig)
+  } else {
+    n.tot <- dim(r)[1]
+    ig <- factor(rep(1, n.tot))
+    group <- "group"
+    r$group <- ig
+  }
+  
+  r$col <- ig
+  ug <- levels(ig)
+  ng <- length(ug)
+  
   
   if (!is.null(r$rep)) {
     if (!is.null(level)) {
@@ -103,18 +140,14 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE)
       re <- rbind(r1,r0)
       re <- re[with(re, order(time)), ]
       
-      if (any( "group" %in% names(re) )) {
-        g=as.numeric(levels(re$group))[re$group]
-      } else {
-        g=rep(1,length(re$id))
-      }
-      ng=max(g)
+      g=re$col
+      
       re$id <- NULL
       
       S <- Se <- T <- G <- NULL
       S0 <- T0 <- G0 <- NULL
       t0=min(rj$time)
-      for (kg in seq(1,ng)) {
+      for (kg in ug) {
         rk<-re[g==kg,]
         Nk <- dim(rk)[1]
         ut <- uniquemlx(rk$time)
@@ -156,29 +189,34 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE)
           Tk<-time
         }
         T<-c(T,Tk)
-        G<-c(G,rep(kg,length(Tk)))
+        jk1 <- which(ig==kg)[1]
+        Gk <- r[group][rep(jk1,length(Tk)),]
+        if (!is.data.frame(Gk)) {
+          Gk <- data.frame(Gk)
+          names(Gk) <- names(r[group])
+        }
+        G <- rbind(G,Gk)
         
         if (cens) {
           i0 <- which(ru$c>0)
           if (length(i0)>0) {
             T0 <- c(T0,ru$time[i0])
             S0 <- c(S0,Sk[i0])
-            G0 <- c(G0, rep(kg, length(i0) ))
+            G0k <- r[group][rep(jk1,length(i0)),]
+            if (!is.data.frame(G0k)) {
+              G0k <- data.frame(G0k)
+              names(G0k) <- names(r[group])
+            }
+            G0 <- rbind(G0, G0k)
           }
         }
       }
     } else if (index=="numberEvent") {
-      level=NULL
-      if (any( "group" %in% names(r) )) {
-        g=as.numeric(levels(rj$group))[rj$group]
-      } else {
-        g=rep(1,length(rj$id))
-      }
-      ng=max(g)
-      
+      #g <- as.numeric(levels(rj$col)[rj$col])
+      g <- rj$col
       t0=min(rj$time)
       S <- T <- G <- NULL
-      for (kg in seq(1,ng)) {
+      for (kg in ug) {
         rk<-rj[g==kg,]
         uidk <- unique(rk$id)
         Nk <- dim(rk)[1]
@@ -204,7 +242,13 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE)
           Tk<-time
         }
         T<-c(T,Tk)
-        G<-c(G,rep(kg,length(Tk)))
+        jk1 <- which(ig==kg)[1]
+        Gk <- r[group][rep(jk1,length(Tk)),]
+        if (!is.data.frame(Gk)) {
+          Gk <- data.frame(Gk)
+          names(Gk) <- names(r[group])
+        }
+        G <- rbind(G,Gk)
       }
       
     } else {
@@ -214,24 +258,28 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE)
     
     Dk <- data.frame(time=T,S)
     if (plot==TRUE | ng>1) 
-       Dk <- cbind(data.frame(group=factor(G)), Dk)
+      Dk <- cbind(G, Dk)
     if (nrep>1)
-      Dk <- cbind(data.frame(rep=jrep), Dk)
-        if (!is.null(level)) {
+      Dk <- cbind(data.frame(rep=factor(jrep)), Dk)
+    if (!is.null(level)) {
       alpha <- (1-level)/2
       s1 <- log(S/(1-S)) + Se*qnorm(alpha)  # logit 
       s2 <- log(S/(1-S)) + Se*qnorm(1-alpha)
+      nan.s1 <- which(is.nan(s1))
+      nan.s2 <- which(is.nan(s2))
+      s1[is.nan(s1)] <- s1[nan.s1-1]
+      s2[is.nan(s2)] <- s2[nan.s2-1]
       Dk$S1 <- 1/(1+exp(-s1))
       Dk$S2 <- 1/(1+exp(-s2))
     }
     D <- rbind(D, Dk)
     
-    if (length(i0)>0) {
+    if (exists("T0")  && !is.null(T0)) {
       D0k <- data.frame(time=T0,S0)
       if (plot==TRUE | ng>1) 
-        D0k <- cbind(data.frame(group=factor(G0)), D0k)
+        D0k <- cbind(G0, D0k)
       if (nrep>1)
-        D0k <- cbind(data.frame(rep=jrep), D0k)
+        D0k$rep <- factor(jrep)
       D0 <- rbind(D0, D0k)
     }
     
@@ -239,15 +287,36 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE)
   
   
   if (plot==TRUE) {
-    if (nrep==1) {
-      plot1=ggplotmlx(data=D) +  geom_line(aes(x=time, y=S, colour=group), size=1)
+    if (facet==TRUE) {
+      if (nrep==1) {
+        plot1=ggplotmlx(data=D) +  geom_line(aes(x=time, y=S), color=color, size=1)
+      } else {
+        plot1=ggplotmlx(data=D) +  geom_line(aes(x=time, y=S, group=rep), color=color, size=1)
+      }
+      if (!is.null(level)){
+        plot1=plot1+geom_line(aes(x=time, y=S1), linetype="dotted", color=color, size=0.8) +
+          geom_line(aes(x=time, y=S2), linetype="dotted", color=color, size=0.8)
+      }
+      
     } else {
-      plot1=ggplotmlx(data=D) +  geom_line(aes(x=time, y=S, colour=group, group=interaction(group,as.factor(rep))), size=1)
+      D$group <- interaction(D[group])
+      if (nrep==1) {
+        plot1=ggplotmlx(data=D) +  geom_line(aes(x=time, y=S, colour=group), size=1)
+      } else {
+        D$Dgrep <- interaction(D$group,D$rep)
+        plot1=ggplotmlx(data=D) +  geom_line(aes(x=time, y=S, colour=group, group=Dgrep), size=1)
+      }
+      if (!is.null(level)){
+        if (nrep==1) {
+          plot1=plot1+geom_line(aes(x=time, y=S1, colour=group), linetype="dotted", size=0.8) +
+            geom_line(aes(x=time, y=S2, colour=group), linetype="dotted", size=0.8)
+        } else {
+          plot1=plot1+geom_line(aes(x=time, y=S1, colour=group, group=Dgrep), linetype="dotted", size=0.8) +
+            geom_line(aes(x=time, y=S2, colour=group, group=Dgrep), linetype="dotted", size=0.8)
+        }
+      }
     }
-    if (!is.null(level)){
-      plot1=plot1+geom_line(aes(x=time, y=S1, colour=group), linetype="dotted", size=0.8) +
-        geom_line(aes(x=time, y=S2, colour=group), linetype="dotted", size=0.8)
-    }
+    
     if (index=="numberEvent") {
       plot1 <- plot1 + xlab("time") + ylab("mean number of events per individual") 
     } else if (test.index==FALSE) {
@@ -256,14 +325,28 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE)
       plot1 <- plot1 + xlab("time") + ylab(paste0("survival (event number ", index, ")" ))
     }
     
-    if (length(i0)>0)
-      plot1 <- plot1 + geom_point(data=D0, aes(x=time,y=S0, colour=group), size=4)
+    if (exists("S0") && !is.null(S0)) {
+      if (facet==TRUE) {
+        plot1 <- plot1 + geom_point(data=D0, aes(x=time,y=S0), color=color, size=4)
+      } else {
+        D0$group <- interaction(D0[group])
+        plot1 <- plot1 + geom_point(data=D0, aes(x=time,y=S0, colour=group), size=4)
+      }
+    }
+    
+    plot1 <- plot1 + theme(legend.position="none")
     
     if (ng>1) {
-      plot1 <- plot1 + theme(legend.position=c(0.1,0.4))
-    }else{
-      plot1 <- plot1 + theme(legend.position="none")
-    }  
+      if (facet==TRUE) {
+        if (length(group)==1) 
+          plot1 <- plot1 + facet_wrap(group)
+        if (length(group)==2) 
+          plot1 <- plot1 + facet_grid(paste(group[1],"~",group[2]))
+      } else {
+        plot1 <- plot1 + theme(legend.justification=c(0,0), legend.position=c(0.05,0.1))
+      }
+    }
+    
     res <- plot1
   } else {
     res <- list(surv=D, cens=D0)
