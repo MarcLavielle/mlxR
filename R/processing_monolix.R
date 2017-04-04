@@ -683,6 +683,7 @@ splitModel  <-  function(file_model, sections)
       idx_sections   = grep("[",lines, fixed=TRUE)
       idx_sections   = c(idx_sections,length(lines))
       idx            = grep(sections_i,lines, fixed=TRUE)
+      if (length(idx)>0) {
       fin_sections   = idx_sections[idx_sections>idx]
       model_temp     = ""
       while (idx < fin_sections[[1]]) {
@@ -691,6 +692,9 @@ splitModel  <-  function(file_model, sections)
       }
       terms[[i]]$name = sections_i
       terms[[i]]$model= model_temp
+      } else {
+        terms <- NULL
+      }
     }
     return(terms)
     
