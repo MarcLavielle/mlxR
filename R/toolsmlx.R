@@ -333,3 +333,39 @@ modify.mlxtran <- function(model, addlines)
 }
 
 
+repCategories <- function(r, model) {
+  categories <- NULL
+  lines <- splitModel(model,"LONGITUDINAL")[[1]]$model
+  if (!is.null(lines)) {
+    ldef  <- grep("DEFINITION:",lines, fixed=TRUE)
+    if (length(ldef)>0) {
+      lines <- lines[-c(1:ldef)]
+      lcat  <- grep("categories",lines, fixed=TRUE)
+      if (length(lcat)>0) {
+        r.names <- names(r)
+        lines <- gsub(" ","",lines)
+        lcat <- which(gregexpr("type=categorical",lines)>0)
+        lci <- c(lcat-1, length(lines))
+        for (j in (1:length(lcat))) {
+          linej <- lines[lcat[j]]
+          # jj <- regexpr("type=categorical",linej)
+          # gsub("^.*?type=categorical","type=categorical",linej)
+          wj <- which(strsplit(linej,"type=categorical")[[1]][1] == paste0(r.names,"={"))
+          if (length(wj)>0) {
+            linesj <- lines[c((lci[j]+1):(lci[j+1]))]
+            linesj <- linesj[which(gregexpr("categories=",linesj)>0)]
+            str <- gsub("^.*?categories","categories",linesj)
+            str <- sub(".*?\\{(.*?)\\}.*", "\\1", str)
+            categories <- strsplit(str,",")[[1]]
+            rwj <- as.factor(r[[wj]][[r.names[wj]]])
+            levels(rwj) <- categories
+            r[[wj]][[r.names[wj]]] <- rwj
+          }
+        }
+      }
+    }
+  }
+  return(r)
+}
+
+
