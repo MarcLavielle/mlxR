@@ -203,6 +203,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     ik0 <- NULL
     for (k in (1:length(output))){
       outk <- output[[k]]
+      if (is.null(outk$name))
+        stop("\n'name' is missing in the definition of an output\n")
       outk$type <- NULL
       if (!all(sapply(outk[loq.arg],"is.null")))
       {
@@ -242,7 +244,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   #--------------------------------------------------
   if (!(is.null(project)))  
   {
-    
     if (!is.null(npop))
     {
       iproj.pop <- T
@@ -305,19 +306,16 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     id <- NULL
     test.N <- F
     test.pop <- F
-    for (k in (1:length(l.input)))
-    {
+    for (k in (1:length(l.input))) {
       lk <- l.input[k]
       eval(parse(text=paste0('pk <- ',lk))) 
       pk<- dpopid(pk,lk)
-      if (!is.null(pk$N))
-      {
+      if (!is.null(pk$N)) {
         test.N <- T
         if (!is.null(pk$id)) 
           id <- unique(c(id, pk$id))
       }
-      if (!is.null(pk$npop))
-      {
+      if (!is.null(pk$npop)) {
         test.pop <- T
         npop <- unique(c(npop,pk$npop))
         if (length(npop)>1)
@@ -617,7 +615,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     R.complete$population <- pop
   }
   
-  
+
   Sys.setenv(LIXOFT_HOME="")
   Sys.setenv('PATH'=myOldENVPATH);
 

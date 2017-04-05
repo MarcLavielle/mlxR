@@ -113,8 +113,7 @@ dpopid <- function(x,s)
 {
   n <- length(x)
   r <- list(name=s,j=NULL,id=NULL,N=NULL,pop=NULL,npop=NULL)
-  for (k in (1:n))
-  {
+  for (k in (1:n)) {
     xk <- x[[k]]
     if (is.list(xk)) {
       if (!is.data.frame(xk)){
@@ -123,18 +122,15 @@ dpopid <- function(x,s)
         else
           xk <- NULL
       }
-      if (!is.null(xk$id)){
-        # idk <- as.factor(unique(xk$id))
+      if (is.null(xk$id) & !is.null(xk$ID) ) {
+        warning("\n'ID' is used instead of 'id' in an input argument of 'simulx'\n")
+        xk$id <- xk$ID
+        xk$ID <- NULL
+      }
+      
+      if (!is.null(xk$id)) {
         idk <- levels(factor(xk$id))
-        # if (!is.null(r$id)) {
-        # if (!identical(idk,r$id))
-        #   stop(paste("Different id's are defined in ",s))
-        # } else
-        # r$id <- as.factor(idk)
         r$id <- unique(c(r$id,idk))
-        # r$N <- unique(c(r$N,length(idk)))
-        # if (length(r$N)>1)
-        #   stop(paste('Different numbers of subjects are defined in ',s))
         r$j <- c(r$j,k)
       }
       if (!is.null(xk$pop)){
@@ -143,7 +139,7 @@ dpopid <- function(x,s)
           stop(paste('Different numbers of populations are defined in ',s))
         r$pop <- c(r$pop,k)
       }
-    } # else if (is.list(xk))
+    } 
   }
   if (!is.null(r$id))
     r$N <- length(r$id)
@@ -241,28 +237,37 @@ resample.data  <- function(data,idOri,N=NULL,new.id=NULL,replacement=F)
 select.data  <- function(data)
 {
   select.id <- NULL
-  for  (j in (1:length(data)))
-  {
+  for  (j in (1:length(data))) {
     dataj <- data[[j]]
-    for  (k in (1:length(dataj)))
-    {
+    for  (k in (1:length(dataj))) {
       datak <- dataj[[k]]
-      if (is.data.frame(datak))
-      {
-        if (!is.null(datak$id))
-        {
+      if (is.data.frame(datak)) {
+        if (!is.null(datak$id)) {
           if (is.null(select.id)) {
             select.id <- unique(datak$id)
           } else {
             select.id <- intersect(select.id , unique(datak$id))
           }
         } 
+      } else {
+        for  (m in (1:length(datak))) {
+          datam <- datak[[m]]
+          if (is.data.frame(datam)) {
+            if (!is.null(datam$id)) {
+              if (is.null(select.id)) {
+                select.id <- unique(datam$id)
+              } else {
+                select.id <- intersect(select.id , unique(datam$id))
+              }
+            } 
+          }
+        }
       }
     }
   }
   if (!is.null(select.id)) {
     if (length(select.id)==0)
-      stop("Please check the id's... the intersection is empty")
+      stop("\nPlease check the id's... The selection of the id's for the different inputs of simulx is not consistent: the intersection is empty!\n")
     N <- nlevels(select.id)
     for  (j in (1:length(data)))
     {
@@ -339,7 +344,7 @@ repCategories <- function(r, model) {
   if (!is.null(lines)) {
     ldef  <- grep("DEFINITION:",lines, fixed=TRUE)
     if (length(ldef)>0) {
-      lines <- lines[-c(1:ldef)]
+      lines <- lines[-c(1:ldef[1])]
       lcat  <- grep("categories",lines, fixed=TRUE)
       if (length(lcat)>0) {
         r.names <- names(r)
@@ -348,9 +353,7 @@ repCategories <- function(r, model) {
         lci <- c(lcat-1, length(lines))
         for (j in (1:length(lcat))) {
           linej <- lines[lcat[j]]
-          # jj <- regexpr("type=categorical",linej)
-          # gsub("^.*?type=categorical","type=categorical",linej)
-          wj <- which(strsplit(linej,"type=categorical")[[1]][1] == paste0(r.names,"={"))
+         wj <- which(strsplit(linej,"type=categorical")[[1]][1] == paste0(r.names,"={"))
           if (length(wj)>0) {
             linesj <- lines[c((lci[j]+1):(lci[j+1]))]
             linesj <- linesj[which(gregexpr("categories=",linesj)>0)]

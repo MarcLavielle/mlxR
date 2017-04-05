@@ -14,8 +14,7 @@ hformat  <-  function(list.input)
   lv=list(treatment,parameter,output,regressor,varlevel)
   
   #------------------------------------
-  if (!is.null(group))
-  {
+  if (!is.null(group)) {
     if (!is.null(names(group))) 
       group <- list(group) 
     N=length(group)
@@ -31,10 +30,8 @@ hformat  <-  function(list.input)
     else 
       Rsource <- FALSE
     
-    if (Rsource || Rfile)
-    {
-      for (k in (1:N))
-      {
+    if (Rsource || Rfile) {
+      for (k in (1:N)) {
         if (is.null(group[[k]]$size))
           group[[k]]$size <- 1
         if (length(group$size)>1)
@@ -42,21 +39,14 @@ hformat  <-  function(list.input)
         if (!is.null(group[[k]]$level))
           warning("'level' defined in 'group' is not used with a R model.")
       }
-    }
-    else
-    {    
+    } else {    
       model.info <- parse.model(model)
-      for (k in (1:N))
-      {
-        if (is.null(group[[k]]$size))
-        {
+      for (k in (1:N)) {
+        if (is.null(group[[k]]$size)) {
           group[[k]]$size <- rep(1, length(model.info$level))
           group[[k]]$level <- model.info$level
-        }
-        else
-        {
-          if (is.null(group[[k]]$level))
-          {
+        } else {
+          if (is.null(group[[k]]$level)) {
             if (length(group[[k]]$size)>1)
               stop("levels of randomization associated to the sizes have not been defined in 'group'", call.=FALSE)      
             if ("population" %in% model.info$level)
@@ -110,42 +100,32 @@ hformat  <-  function(list.input)
       for (j in seq(1,length(lvk))) 
       {
         lvkj <- lvk[[j]]
-        # dkj <- dim(lvkj)
-        #     if (!is.null(dkj)){
-        #   N=c(N,dkj[1])
-        if (isfield(lvkj,"id"))
-        {
-          # N <- c(N,length(unique(lvkj$id)))
-          # lu <- unique(lvkj$id)
+        if (isfield(lvkj,"id")) {
           lvkj$id <- match(lvkj$id, id)
           Nid <- c(Nid,lvkj$id)
         }
-        else if(isfield(lvkj,"design"))
-        {
-          # lu <- unique(lvkj$design$id)
+        else if(isfield(lvkj,"design")) {
           lvkj$design$id <- match(lvkj$design$id, id)
           Nid <- c(Nid,lvkj$design$id)
-          #             names(lvkj)[names(lvkj)=="design"]<-"time"
           lv[[k]][[j]]=lvkj
         }
-        else if(isfield(lvkj,"time"))
-        {
-          if (isfield(lvkj$time,"id"))
-          {
-            # lu <- unique(lvkj$time$id)
+        else if(isfield(lvkj,"time")) {
+          if (!isfield(lvkj$time,"id") & isfield(lvkj$time,"ID") ) {
+            warning("\n'ID' is used instead of 'id' in an input argument of 'simulx'\n")
+            lvkj$time$id <- lvkj$time$ID
+            lvkj$time$ID <- NULL
+          }
+          if (isfield(lvkj$time,"id")) {
             lvkj$time$id <- match(lvkj$time$id, id)
             Nid <- c(Nid,lvkj$time$id)
           }
         }
-        else if(isfield(lvkj,'header'))
-        {
+        else if(isfield(lvkj,'header')) {
           warning("deprecated syntax:  use 'colNames' instead of 'header'",immediate.=TRUE)
           names(lvkj)[names(lvkj)=="header"]<-"colNames"
         }
         
-        if (isfield(lvkj,'colNames'))
-        {
-          #N=c(N,length(unique(lvkj$value[,1]))) #assuming that first column = id
+        if (isfield(lvkj,'colNames')) {
           Nid=c(Nid,lvkj$value[,1]) #assuming that first column = id
         }
         lv[[k]][[j]]=lvkj
@@ -176,16 +156,14 @@ hformat  <-  function(list.input)
   #---  parameters
   iv <- which(nv=="parameter")
   parameter <- vector("list", N)
-  if (!is.null(lv[[iv]])){
+  if (!is.null(lv[[iv]])) {
     r <- format.parameter(parameter,lv[[iv]],seq(1,N))
     if (length(r$id)>0) {id.ori=c(id.ori,r$id)}
     parameter <- r$parameter
   }
-  for (i in seq(1,N))
-  {
+  for (i in seq(1,N)) {
     gi <- group[[i]]
-    if (isfield(gi,'parameter')) 
-    {
+    if (isfield(gi,'parameter')) {
       r <- format.parameter(parameter,gi$parameter,i)
       parameter <- r$parameter
       group[[i]]$parameter <- NULL
@@ -196,8 +174,7 @@ hformat  <-  function(list.input)
   
   #---  outputs
   output <- list(individual=vector("list", N),group=vector("list", N), id=id)
-  for (i in seq(1,N))
-  {
+  for (i in seq(1,N)) {
     output$individual[[i]]=list(name=NULL,time=NULL)
     output$group[[i]]=list(name=NULL)
   }
@@ -205,11 +182,9 @@ hformat  <-  function(list.input)
   r <- format.output(output,lv[[iv]],seq(1,N))
   if (length(r$id)>0) {id.ori=c(id.ori,r$id)}
   output <- r$output
-  for (i in seq(1,N))
-  {
+  for (i in seq(1,N)) {
     gi <- group[[i]]
-    if (isfield(gi,'output')) 
-    {
+    if (isfield(gi,'output')) {
       r <- format.output(output,gi$output,i)
       output <- r$output
     }
@@ -220,8 +195,7 @@ hformat  <-  function(list.input)
   
   #---  treatments
   iv <- which(nv=="treatment")
-  if (!is.null(lv[[iv]]))
-  {
+  if (!is.null(lv[[iv]])) {
     r <- format.treatment(lv[[iv]],seq(1,N))
     if (length(r$id)>0) 
       id.ori=c(id.ori,r$id)
@@ -317,40 +291,39 @@ format.treatment <- function(treatment,uN)
   for (k in seq(1,length(treatment)))
   {
     trtk <- treatment[[k]]
-    if (isfield(trtk,'colNames'))
-    {
+    if (isfield(trtk,'colNames')) {
       pp <- as.data.frame(trtk$value)
       names(pp) <- trtk$colNames
       trtk=pp
-    }
-    else if (!is.data.frame(trtk))
-    {
+    } else if (!is.data.frame(trtk)) {
       trtk <- as.data.frame(trtk,stringsAsFactors =FALSE)
+      if (is.null(trtk$time) | (is.null(trtk$amount) & is.null(trtk$amt)) )
+        stop("\n\nBoth 'time' and 'amount' should be defined in a treatment list\n")
       n <- nrow(trtk)
       trtk <- trtk[rep(1:n,each=N),] 
       trtk$id <- rep(uN,n)
-    }
-    else
-    {
-      idk <- sort(unique(trtk$id))
-      # if (any(idk != uN)) 
-      #id.ori[[length(id.ori)+1]]<-idk
-      # id.ori<-c(id.ori,idk)
-      # trtk$id <- match(trtk$id, idk)
+    } else {
+      if (is.null(trtk$id) & !is.null(trtk$ID) ) {
+        warning("\n'ID' is used instead of 'id' in the treatment list\n")
+        trtk$id <- trtk$ID
+        trtk$ID <- NULL
+      }
       
+      idk <- sort(unique(trtk$id))
     }
+    if (is.null(trtk$time) | (is.null(trtk$amount) & is.null(trtk$amt)) )
+      stop("\n\nBoth 'time' and 'amount' should be defined in a treatment list\n")
+    
     names(trtk)[names(trtk)=="amt"] <- "amount"
     names(trtk)[names(trtk)=="adm"] <- "type"
     
-    if (!is.null(trtk$rate))
-    {
+    if (!is.null(trtk$rate)) {
       trtkrate=rep(Inf,length(trtk$rate))
       irate <- (trtk$rate!=".")
       trtkrate[irate]=as.numeric(as.character(trtk$rate[irate]))
       trtk$rate <- trtkrate
     }
-    if (!is.null(trtk$tinf))
-    {
+    if (!is.null(trtk$tinf)) {
       names(trtk)[names(trtk)=="tinf"] <- "rate"
       trtkrate=rep(Inf,length(trtk$rate))
       irate <- trtk$rate!="."
@@ -506,11 +479,9 @@ format.output <- function(output, out,uN)
   ioutput <- output$individual
   goutput <- output$group
   id.ori <- NULL
-  for (k in seq(1,length(out)))
-  {
+  for (k in seq(1,length(out))) {
     outk <- out[[k]]
-    if (is.data.frame(outk))
-    {
+    if (is.data.frame(outk)) {
       n.outk <- names(outk)
       outk <- list(name=n.outk[!(n.outk %in% c("id","time"))], 
                    time = outk[,c("id","time")])
@@ -519,21 +490,18 @@ format.output <- function(output, out,uN)
       outk <- list(name=outk)
     okname <- unlist(outk$name)
     nok <- length(okname)
-    if (isfield(outk,'colNames'))
-    {
+    if (isfield(outk,'colNames')) {
       pp=as.data.frame(outk$value)
       names(pp)=outk$colNames
       outk$design=pp
     }
-    if (!is.null(outk$time) && ("id" %in% names(outk$time)))
-    {      
-      # id <- sort(unique(as.factor(outk$time$id)))
-      # id <- sort(unique(outk$time$id))
-      # id <- output$id
-      # if (length(id) !=length(uN) ||  any(id != uN))
-      #   id.ori<-sort(unique(c(id.ori,id)))
-      # idk <- match(id,levels(id))
-      # idk <- match(sort(unique(outk$time$id)),id)
+    if (!isfield(outk$time,"id") & isfield(outk$time,"ID") ) {
+      warning("\n'id' is used instead of 'ID' in the output list\n")
+      outk$time$id <- outk$time$ID
+      outk$time$ID <- NULL
+    }
+    
+    if (!is.null(outk$time) && ("id" %in% names(outk$time))) {      
       idk <- match(sort(unique(outk$time$id)),uN)
       for (i in seq(1:length(idk)))
       {
@@ -547,13 +515,9 @@ format.output <- function(output, out,uN)
         ioutput[[ik]]$name=c(ioutput[[ik]]$name,okname)
         ioutput[[ik]]$time=c(ioutput[[ik]]$time,oitime)
       }
-    }
-    else
-    { 
-      for (i in uN)
-      {
-        if (isfield(outk,"time"))
-        {
+    } else { 
+      for (i in uN) {
+        if (isfield(outk,"time")) {
           oitime <- vector("list" , nok)
           for (j in seq(1,nok))
             oitime[[j]] <- sort(outk$time)
