@@ -327,10 +327,10 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, color="#e0
     
     if (exists("S0") && !is.null(S0)) {
       if (facet==TRUE) {
-        plot1 <- plot1 + geom_point(data=D0, aes(x=time,y=S0), color=color, size=4)
+        plot1 <- plot1 + geom_point(data=D0, aes(x=time,y=S0), color=color, size=3)
       } else {
         D0$group <- interaction(D0[group])
-        plot1 <- plot1 + geom_point(data=D0, aes(x=time,y=S0, colour=group), size=4)
+        plot1 <- plot1 + geom_point(data=D0, aes(x=time,y=S0, colour=group), size=3)
       }
     }
     
