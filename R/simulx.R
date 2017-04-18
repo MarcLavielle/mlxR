@@ -364,7 +364,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
              regressor=regressor,
              varlevel=varlevel,
              id=id)
-  
   if (test.N==T && !is.null(group))
   {
     if (any(sapply(group, function(x) is.null(x$size))))
@@ -420,7 +419,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   
   R.complete <- list()
   rs <- NULL
-  
+
   for (ipop in (1:npop))
   {
     if (disp.iter==TRUE) 
@@ -490,7 +489,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           }
         }
       }
-     if (!(is.null(project))) 
+     if (!(is.null(project)) & (!is.null(settings$data.in) && !settings$data.in))
       {
         r$covariate <- parameter[[2]][which(id%in%r$originalId$oriId),]
         r$covariate$id <- (1:length(r$covariate$id))
