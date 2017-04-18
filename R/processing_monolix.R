@@ -677,7 +677,7 @@ splitModel  <-  function(file_model, sections)
     {
       sections_i = sections[[i]]
       con        = file(file_model, open = "r")
-      lines      = readLines(con)
+      lines      = readLines(con, warn=FALSE)
       close(con)
       
       idx_sections   = grep("[",lines, fixed=TRUE)
