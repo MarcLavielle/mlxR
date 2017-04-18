@@ -307,7 +307,7 @@ unlistRec <- function(x,s=NULL)
 modify.mlxtran <- function(model, addlines)
 {
   con     <- file(model, open = "r")
-  lines   <- readLines(con)
+  lines   <- readLines(con, warn=FALSE)
   close(con)
   
   if (!is.list(addlines[[1]]))
