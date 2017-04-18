@@ -50,10 +50,15 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, color="#e0
 { 
   r.name <- attr(r,"name")
   if (length(r.name)>1 || !any(names(r)==r.name)) {
-    if (any(names(r)=="status"))
+    if (any(names(r)=="status")) {
       r.name <- "status"
-    if (any(names(r)=="event"))
+    } else if (any(names(r)=="event")) {
       r.name <- "event"
+    } else {
+      dn <- setdiff(names(r),c("id","time","group"))
+      if (length(dn)==1)
+        r.name <- dn
+    }
   }
   names(r)[names(r)==r.name] <- "y"
   
@@ -62,6 +67,9 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, color="#e0
   } else if (length(group)==1 && group=="none") {
     group = NULL
   }
+  
+  if (is.null(r$id))
+    r$id <- (1: dim(r)[1])
   
   if (is.data.frame(group)) {
     attr.name <- attr(r,"name")
@@ -147,6 +155,8 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, color="#e0
       S <- Se <- T <- G <- NULL
       S0 <- T0 <- G0 <- NULL
       t0=min(rj$time)
+      if (min(rj$time[rj$y==1]) < min(rj$time[rj$y==0]))
+        t0 <- 0
       for (kg in ug) {
         rk<-re[g==kg,]
         Nk <- dim(rk)[1]
