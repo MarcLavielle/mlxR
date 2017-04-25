@@ -192,9 +192,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     S <- S[idObsRows,]
     
     ans    = funique(S[[iid]])
-    iduf   = ans$arg1  
+    iduf   = ans$arg1
     iuf    = ans$arg2
-    idnumf = ans$arg3
+    #idnumf = ans$arg3
     ans = fsort(iuf)
     ia  = ans$arg1
     ib  = ans$arg2
