@@ -5,7 +5,8 @@
 \title{Kaplan Meier plot}
 \usage{
 kmplotmlx(r, index = 1, level = NULL, time = NULL, cens = TRUE,
-  plot = TRUE)
+  plot = TRUE, color = "#e05969", group = NULL, facet = TRUE,
+  labels = NULL)
 }
 \arguments{
 \item{r}{a data frame with a column \samp{id}, a column \samp{time}, 
@@ -16,10 +17,20 @@ Default is \code{index=1}.}
 
 \item{level}{a number between 0 and 1:  confidence interval level.}
 
+\item{time}{a vector of time points where the survival function is evaluated.}
+
 \item{cens}{if \code{TRUE} right censoring times are diplayed.}
 
 \item{plot}{if \code{TRUE} the estimated survival function is displayed, if \code{FALSE}
 the values are returned}
+
+\item{color}{color to be used for the plots (default="#e05969")}
+
+\item{group}{variable to be used for defining groups (by default, \samp{group} is used when it exists)}
+
+\item{facet}{makes subplots for different groups if \code{TRUE}}
+
+\item{labels}{vector of strings}
 }
 \value{
 a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
@@ -59,4 +70,3 @@ tteModel1 <- inlineModel("
   print(pl2)
 }
 }
-

@@ -86,4 +86,3 @@ Specific input arguments can be also used for computing the exposure at steady s
 i.e. after the administration of an "infinite" number of doses.              
 See http://simulx.webpopix.org/exposure/ for more details.
 }
-

@@ -21,4 +21,3 @@ the vector
 \description{
 Reads  a table into a vector
 }
-

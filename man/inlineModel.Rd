@@ -14,4 +14,3 @@ inlineModel(str, filename = NULL)
 \description{
 inline model
 }
-

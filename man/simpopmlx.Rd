@@ -33,4 +33,3 @@ project.file <- 'monolixRuns/theophylline1_project.mlxtran'  #relative path
 pop1 <- simpopmlx(n=3, project=project.file)
 }
 }
-

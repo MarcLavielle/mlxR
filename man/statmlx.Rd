@@ -68,4 +68,3 @@ statmlx(res2$y, FUN = c("mean", "sd", "quantile"), probs = c(0.05, 0.95))
 statmlx(res2$e, surv.time=c(10,20,30))
 }
 }
-

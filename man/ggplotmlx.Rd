@@ -15,4 +15,3 @@ see \code{\link[ggplot2]{ggplot}}
 \description{
 mlxR wrapper around \code{\link[ggplot2]{ggplot}} with a custom theme
 }
-

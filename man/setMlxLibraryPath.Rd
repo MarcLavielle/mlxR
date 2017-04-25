@@ -12,4 +12,3 @@ setMlxLibraryPath(mlxLibraryPath = NULL)
 \description{
 Sets the MlxLibrary path in order to tell mlxR where is the MlxLibrary to use
 }
-

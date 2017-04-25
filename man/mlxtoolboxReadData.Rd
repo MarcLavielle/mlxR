@@ -23,4 +23,3 @@ datas: a list of containg:
 \description{
 Reads a data file in a monolix Project format for the simulator  Simulx using mlxtoobox code.
 }
-

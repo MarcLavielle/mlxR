@@ -39,4 +39,3 @@ with the \samp{Mlxplore} software.
 \details{
 See http://simulx.webpopix.org/mlxr/mlxplore/ for more details.
 }
-

@@ -44,4 +44,3 @@ monolix2simulx(project=project.file,open=TRUE)
 monolix2simulx(project=project.file,parameter=list("mean",c(a=0, b=0)),open=TRUE)
 }
 }
-

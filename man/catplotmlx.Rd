@@ -4,11 +4,12 @@
 \alias{catplotmlx}
 \title{Plot Categorical Longitudinal Data}
 \usage{
-catplotmlx(r, breaks = NULL, color = "#194280")
+catplotmlx(r, col = NULL, breaks = NULL, plot = TRUE, color = "#194280",
+  group = NULL, facet = TRUE, labels = NULL)
 }
 \arguments{
 \item{r}{a data frame with a column \samp{id}, a column \samp{time}, 
-a column with values and possibly a column \samp{group}.}
+a column with values and possibly Hk[ja column \samp{group}.}
 
 \item{breaks}{one of:
 \itemize{
@@ -16,7 +17,20 @@ a column with values and possibly a column \samp{group}.}
   \item a single number giving the number of segments.
 }}
 
-\item{color}{a color (default="#194280")}
+\item{color}{a color to be used for the plots (default="#194280")}
+
+\item{group}{variable to be used for defining groups (by default, \samp{group} is used when it exists)}
+
+\item{facet}{makes subplots for different groups if \code{TRUE}}
+
+\item{labels}{vector of strings}
+}
+\value{
+a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
+\itemize{
+  \item color a vector of colors used for the plot 
+  \item y a data frame with the values of the empirical distribution computed at each time point
+}
 }
 \description{
 Plot the empirical distribution of categorical longitudinal data.
@@ -37,26 +51,26 @@ See http://simulx.webpopix.org/mlxr/catplotmlx/ for more details.
   logit(P(y<=1))=lp1, logit(P(y<=2))=lp2}
   ")
   
-  p1  <- c(a=8,b=0.2)
-  y  <- list(name='y', time=seq(0, 100, by=4))   
-  g1 <- list(size=100, parameter=p1)
-  res <- simulx(model=catModel, output=y, group=g1)
-  plot1 <- catplotmlx(res$y)
-  print(plot1)
-  
-  plot2 <- catplotmlx(res$y,breaks=seq(-2,102,by=8)) 
-  print(plot2)
-  
-  plot3 <- catplotmlx(res$y,breaks=5, color="grey") 
-  print(plot3)
-  
-  p2  <- c(a=6,b=0.3)
-  g2 <- list(size=100, parameter=p2)
-  res <- simulx(model=catModel, output=y, group=list(g1,g2))
-  plot4 <- catplotmlx(res$y) 
-  if( require("gridExtra") ){
-    grid.arrange(plot4[[1]],plot4[[2]],ncol=2)
-  }
-}
-}
+  y.out  <- list(name='y', time=seq(0, 100, by=4))
 
+  Ng  <- 1000
+  g1 <- list(size=Ng, parameter=c(a=6,b=0.2))
+  res <- simulx(model=catModel, output=y.out, group=g1)
+  catplotmlx(res$y)
+  catplotmlx(res$y, breaks=seq(-2,102,by=8), color="purple") 
+  catplotmlx(res$y, breaks=5, color="#490917") 
+  
+  g2 <- list(size=Ng, parameter=c(a=10,b=0.2))
+  res <- simulx(model=catModel, output=y.out, group=list(g1,g2))
+  catplotmlx(res$y) 
+  catplotmlx(res$y, group="none")
+  
+  g3 <- list(size=Ng, parameter=c(a=6,b=0.4))
+  g4 <- list(size=Ng, parameter=c(a=10,b=0.4))
+  res <- simulx(model=catModel, output=y.out, group=list(g1,g2,g3,g4))
+  catplotmlx(res$y)
+   
+  cov <- data.frame(id=levels(res$y$id), a=rep(c(6,10,6,10),each=Ng), b=rep(c(0.2,0.2,0.4,0.4),each=Ng))
+  catplotmlx(res$y, group=cov) 
+}
+}

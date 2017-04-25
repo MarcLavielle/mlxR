@@ -52,4 +52,3 @@ writeDatamlx(res, result.file="res.txt", sep="\\t")
 writeDatamlx(res, result.folder="res")
 }
 }
-

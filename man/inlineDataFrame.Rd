@@ -18,4 +18,3 @@ inlineDataFrame(str, header = TRUE, colClasses = NA, ...)
 \description{
 utility function to inline creation of a data frame
 }
-

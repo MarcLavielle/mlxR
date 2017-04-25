@@ -43,4 +43,3 @@ d <- readDatamlx(datafile='monolixRuns/warfarin_data.txt',
                  header=c('id','time','amt','y','ytype','cov','cov','cat'))
 }
 }
-
