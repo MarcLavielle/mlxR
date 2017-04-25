@@ -18,9 +18,16 @@ funique <- function(A){
   # IC <- match(data.frame(t(A)), data.frame(t(C)))
   IA   = match( C, A )
   IC   = match( A , C )
-  ans  =
-    list(arg1=C, arg2=IA, arg3=IC)
+  ans  = list(arg1=C, arg2=IA, arg3=IC)
 }
+
+uniquemlx <- function(x) { 
+  d <- !duplicated(x) 
+  u=list(uniqueValue=x[d], firstIndex=which(d), sortIndex=match(x,x[d])) 
+  return(u)
+}
+
+
 
 fsort <- function(X){
   #   [Y,I] = sort(X,DIM,MODE) also returns an index matrix I.
@@ -337,6 +344,32 @@ modify.mlxtran <- function(model, addlines)
   return(model)
 }
 
+rct.mlxtran <- function(model, addlines)
+{
+  con     <- file(model, open = "r")
+  lines   <- readLines(con, warn=FALSE)
+  close(con)
+  i1 <- grep("event", lines)
+  if (length(i1)>0) {
+    lines <- gsub(" ","",lines)
+    for (k in (1:length(i1))) {
+      ik1 <- i1[k]
+      lk1 <- lines[ik1]
+      if (length(grep("type=", lk1))>0) {
+        ik2 <- grep("}",lines[ik1:length(lines)])[1] + ik1 -1
+        lk <- lines[ik1:ik2]
+        if (length(grep("rightCensoringTime", lk))==0) {
+          if (length(grep("maxEventNumber", lk))==0) 
+            stop("Right censoring time should be defined for repeated events, when there is no maximum number of events")
+          lines[ik1] <- gsub("event","event, rightCensoringTime=1e10",lk[1])
+        }
+      }
+    }
+    model <- "temp_model.txt"
+    write(lines,model)
+  }
+  return(model)
+}
 
 repCategories <- function(r, model) {
   categories <- NULL
@@ -353,7 +386,7 @@ repCategories <- function(r, model) {
         lci <- c(lcat-1, length(lines))
         for (j in (1:length(lcat))) {
           linej <- lines[lcat[j]]
-         wj <- which(strsplit(linej,"type=categorical")[[1]][1] == paste0(r.names,"={"))
+          wj <- which(strsplit(linej,"type=categorical")[[1]][1] == paste0(r.names,"={"))
           if (length(wj)>0) {
             linesj <- lines[c((lci[j]+1):(lci[j+1]))]
             linesj <- linesj[which(gregexpr("categories=",linesj)>0)]
