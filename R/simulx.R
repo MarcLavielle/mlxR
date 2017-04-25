@@ -152,7 +152,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   if (is.null(settings$replacement)) replacement <- FALSE
   out.trt <- settings$out.trt
   if (is.null(settings$out.trt))  out.trt <- T
-  
   if (!is.null(data))
   {
     r <- simulxunit(data=data,settings=settings)
@@ -356,6 +355,10 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   #--------------------------------------------------
   if (!is.null(addlines))
     model <- modify.mlxtran(model, addlines)
+  
+  # For time to event output, add a right censoring time = 1e10 if missing
+   if (!Rmodel)
+     model <- rct.mlxtran(model)
   
   #--------------------------------------------------
   lv <- list(treatment=treatment,
@@ -681,7 +684,8 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=T)
       dataIn$id.ori <- id.ori
       s$loadDesign <- TRUE
     }    
-  }else{
+  } else {
+    s$loadDesign <- FALSE
     dataIn <- data
     iop.group <- data$iop.group
     dataIn$iop.group <- NULL
@@ -693,7 +697,6 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=T)
     trt <- dataIn$trt
   else
     trt <- NULL
-  
   if (length(s)==0){
     argList <- list(DATA=dataIn) 
   } else {
