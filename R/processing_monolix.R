@@ -23,7 +23,6 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   ##************************************************************************
   #       DATA FILE
   #**************************************************************************
-  
   if (r.data==TRUE){
     datas <- readDatamlx(infoProject=infoProject)
     
@@ -398,7 +397,6 @@ readPopEstimate  <-  function(filename, fim=NULL) {
       param <- as.numeric(as.character(data[['parameter']]))
     }
     names(param) <- name
-    
     if (!is.null(fim)){
       if (fim=='lin'){
         se <- as.numeric(as.character(data[['s.e._lin']]))
