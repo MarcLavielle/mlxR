@@ -8,9 +8,14 @@
 #' @param index an integer: \code{index=k} means that the survival function for the k-th event is displayed. 
 #' Default is \code{index=1}.
 #' @param level a number between 0 and 1:  confidence interval level. 
+#' @param time a vector of time points where the survival function is evaluated.
 #' @param cens if \code{TRUE} right censoring times are diplayed.
 #' @param plot if \code{TRUE} the estimated survival function is displayed, if \code{FALSE}
 #' the values are returned
+#' @param color  color to be used for the plots (default="#e05969")
+#' @param group  variable to be used for defining groups (by default, \samp{group} is used when it exists)
+#' @param facet  makes subplots for different groups if \code{TRUE} 
+#' @param labels  vector of strings 
 #' 
 #' @return 
 #' a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
@@ -45,8 +50,8 @@
 #' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab
 #' @importFrom stats qnorm
 #' @export         
-kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, color="#e05969", 
-                        plot=TRUE, group=NULL, facet=TRUE, labels=NULL)
+kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE, 
+                        color="#e05969", group=NULL, facet=TRUE, labels=NULL)
 { 
   r.name <- attr(r,"name")
   if (length(r.name)>1 || !any(names(r)==r.name)) {
@@ -55,7 +60,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, color="#e0
     } else if (any(names(r)=="event")) {
       r.name <- "event"
     } else {
-      dn <- setdiff(names(r),c("id","time","group"))
+      dn <- setdiff(names(r),c("id","time","group",group))
       if (length(dn)==1)
         r.name <- dn
     }
@@ -362,15 +367,6 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, color="#e0
     res <- list(surv=D, cens=D0)
   }
   return(res)
-}
-
-
-
-#--------------------------------------------------------
-uniquemlx <- function(x) { 
-  d <- !duplicated(x) 
-  u=list(uniqueValue=x[d], firstIndex=which(d), sortIndex=match(x,x[d])) 
-  return(u)
 }
 
 

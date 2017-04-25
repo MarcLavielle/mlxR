@@ -9,8 +9,11 @@
 #' @param number the number of intervals (i.e. the number of percentiles minus 1).
 #' @param level the largest interval (i.e. the difference between the lowest and the highest percentile).
 #' @param plot if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}
-#' @param color a color (default="purple")
-#' the values of the percentiles are returned
+#' the values are returned
+#' @param color a color to be used for the plots (default="purple")
+#' @param group  variable to be used for defining groups (by default, \samp{group} is used when it exists)
+#' @param facet  makes subplots for different groups if \code{TRUE} 
+#' @param labels  vector of strings 
 #' 
 #' @return 
 #' a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:

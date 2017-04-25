@@ -10,7 +10,17 @@
 #'   \item a vector giving the breakpoints,
 #'   \item a single number giving the number of segments.
 #' }
-#' @param color a color (default="#194280")
+#' @param color a color to be used for the plots (default="#194280")
+#' @param group  variable to be used for defining groups (by default, \samp{group} is used when it exists)
+#' @param facet  makes subplots for different groups if \code{TRUE} 
+#' @param labels  vector of strings 
+#' 
+#' @return 
+#' a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
+#' \itemize{
+#'   \item color a vector of colors used for the plot 
+#'   \item y a data frame with the values of the empirical distribution computed at each time point
+#' }
 #' @examples
 #' \dontrun{
 #'   catModel <- inlineModel("
@@ -50,7 +60,7 @@
 #' @importFrom graphics hist
 #' @importFrom grDevices hsv
 #' @export         
-catplotmlx <- function(r, col=NULL, breaks=NULL, color="#194280", plot=TRUE, 
+catplotmlx <- function(r, col=NULL, breaks=NULL, plot=TRUE, color="#194280", 
                        group=NULL, facet=TRUE, labels=NULL)
 {
   
