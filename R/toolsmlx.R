@@ -351,7 +351,7 @@ rct.mlxtran <- function(model, addlines)
   close(con)
   i1 <- grep("event", lines)
   if (length(i1)>0) {
-    lines <- gsub(" ","",lines)
+    lines[i1] <- gsub(" ","",lines[i1])
     for (k in (1:length(i1))) {
       ik1 <- i1[k]
       lk1 <- lines[ik1]
@@ -361,7 +361,7 @@ rct.mlxtran <- function(model, addlines)
         if (length(grep("rightCensoringTime", lk))==0) {
           if (length(grep("maxEventNumber", lk))==0) 
             stop("Right censoring time should be defined for repeated events, when there is no maximum number of events")
-          lines[ik1] <- gsub("event","event, rightCensoringTime=1e10",lk[1])
+          lines[ik1] <- gsub("type=event","type=event, rightCensoringTime=1e10",lk[1])
         }
       }
     }
