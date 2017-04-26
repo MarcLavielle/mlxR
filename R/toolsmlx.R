@@ -363,6 +363,8 @@ rct.mlxtran <- function(model, addlines)
             stop("Right censoring time should be defined for repeated events, when there is no maximum number of events")
           lines[ik1] <- gsub("type=event","type=event, rightCensoringTime=1e10",lk[1])
         }
+        if (length(grep("intervalCensored", lk))>0 & length(grep("intervalLength", lk))==0) 
+          stop("Interval length should be defined when events are interval censored")
       }
     }
     model <- "temp_model.txt"
