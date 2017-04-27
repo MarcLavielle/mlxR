@@ -130,9 +130,11 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   }else{
     data = tryCatch(
       (if(!is.null(icat)){
-        colCatType<-rep("character",length(icat))
+        colCatType<-rep(NA,length(headerTest))
         catNames <-headerTest[icat]
-        names (colCatType)<-catNames
+        names(catNames)<-NULL
+        catNames<-trimws(unlist(catNames))
+        colCatType[icat]<-rep("character",length(icat))
         read.table(datafile, comment.char="", header = TRUE, sep=delimiter,colClasses = colCatType)
       }else{
         read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
@@ -320,7 +322,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     u <- rbind(u,u.addl)
     u <- rbind(u,u.ss)
     # u <- u[order(u$id,u$time),]
+    if(nrow(u)){
     datas   = list(treatment = u)
+    }
   }
   
   ##************************************************************************
