@@ -179,9 +179,9 @@ prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="purple"
     ig <- interaction(r[group])
   } else {
     n.tot <- dim(r)[1]
-    ig <- factor(rep(1, n.tot))
+    ig <- rep(1, n.tot)
   }
-  
+  ig <- factor(ig)
   ug <- levels(ig)
   ng <- length(ug)
   y <- list()
