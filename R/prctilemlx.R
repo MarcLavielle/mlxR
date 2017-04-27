@@ -83,7 +83,7 @@
 prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="purple",
                        group=NULL, facet=TRUE, labels=NULL, band=NULL)
 {
-
+  
   if (!is.null(band)) {
     level <- band$level
     number <- band$number
@@ -174,7 +174,7 @@ prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="purple"
     for (k in (1: length(group)))
       r[[group[k]]] <- factor(r[[group[k]]], labels=labels[[k]])
   }
-
+  
   if (!is.null(group)) {
     ig <- interaction(r[group])
   } else {
@@ -236,14 +236,14 @@ prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="purple"
       pk<-pk + geom_polygon(data=dk, aes(x=x, y=pr, fill=vf, group=vf)) 
     }
     # pk<-pk + geom_polygon(data=datapoly, aes(x=x, y=pr, fill=vf, group=vf)) 
-      pk<-pk +  xlab(x.label)+ylab(y.label)
-
-
+    pk<-pk +  xlab(x.label)+ylab(y.label)
+    
+    
     pk<-pk + xlab(x.label)+ylab(y.label) 
     
     pk <- pk +sfm
     if (m.test==1){
-#      data0 <- NULL
+      #      data0 <- NULL
       for (k in (1:ng)) {
         datak <- data.frame(y=y[[k]][(nq+1)/2,],x=t)
         if (!is.null(group)) {
@@ -253,20 +253,20 @@ prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="purple"
         pk <- pk+ geom_line(data=datak, aes(x=x,y=y),col=hsv(col.hsv[1],col.hsv[2],col.hsv[3],1))
         #        data0 <- rbind(data0, datak)
       }
-#      pk <- pk+ geom_line(data=data0, aes(x=x,y=y),col=hsv(col.hsv[1],col.hsv[2],col.hsv[3],1))
+      #      pk <- pk+ geom_line(data=data0, aes(x=x,y=y),col=hsv(col.hsv[1],col.hsv[2],col.hsv[3],1))
     }
     if (facet==TRUE) {
-    if (length(group)==1)
-      pk <- pk + facet_wrap(group)
-    if (length(group)==2)
-      pk <- pk + facet_grid(paste(group[1],"~",group[2]))
+      if (length(group)==1)
+        pk <- pk + facet_wrap(group)
+      if (length(group)==2)
+        pk <- pk + facet_grid(paste(group[1],"~",group[2]))
     }
     res <- pk
   } else {
     dy <- NULL
     for (k in (1:ng)) {
       tyk <- as.data.frame(cbind(round(t,digits=6),t(y[[k]])))
-      if (!is.null(group) && nlevels(r[[group]])>1) {
+      if (!is.null(group) && nlevels(factor(r[[group]]))>1) {
         jk <- which(ig==ug[k])
         tyk[group] <- factor(r[group][jk[1],])
       }
