@@ -266,7 +266,7 @@ prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="purple"
     dy <- NULL
     for (k in (1:ng)) {
       tyk <- as.data.frame(cbind(round(t,digits=6),t(y[[k]])))
-      if (!is.null(group) & nlevels(group)>1) {
+      if (!is.null(group) && nlevels(r[[group]])>1) {
         jk <- which(ig==ug[k])
         tyk[group] <- factor(r[group][jk[1],])
       }
