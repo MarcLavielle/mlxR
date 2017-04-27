@@ -47,8 +47,8 @@
 #'   pl2  <- kmplotmlx(res2$e)
 #'   print(pl2)
 #' }
-#' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab
-#' @importFrom stats qnorm
+#' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab facet_wrap facet_grid
+#' @importFrom stats qnorm approx
 #' @export         
 kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE, 
                         color="#e05969", group=NULL, facet=TRUE, labels=NULL)
@@ -300,6 +300,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
     
   }
   
+  S1 <- S2 <- Dgrep <- NULL
   
   if (plot==TRUE) {
     if (facet==TRUE) {
@@ -309,25 +310,25 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
         plot1=ggplotmlx(data=D) +  geom_line(aes(x=time, y=S, group=rep), color=color, size=1)
       }
       if (!is.null(level)){
-        plot1=plot1+geom_line(aes(x=time, y=S1), linetype="dotted", color=color, size=0.8) +
-          geom_line(aes(x=time, y=S2), linetype="dotted", color=color, size=0.8)
+        plot1=plot1+geom_line(data=D,aes(x=time, y=S1), linetype="dotted", color=color, size=0.8) +
+          geom_line(data=D,aes(x=time, y=S2), linetype="dotted", color=color, size=0.8)
       }
       
     } else {
       D$group <- interaction(D[group])
       if (nrep==1) {
-        plot1=ggplotmlx(data=D) +  geom_line(aes(x=time, y=S, colour=group), size=1)
+        plot1=ggplotmlx() +  geom_line(data=D, aes(x=time, y=S, color=group), size=1)
       } else {
         D$Dgrep <- interaction(D$group,D$rep)
-        plot1=ggplotmlx(data=D) +  geom_line(aes(x=time, y=S, colour=group, group=Dgrep), size=1)
-      }
+        plot1 <- ggplotmlx() +  geom_line(data=D, aes(x=time, y=S, colour=group, group=Dgrep), size=1)
+       }
       if (!is.null(level)){
         if (nrep==1) {
-          plot1=plot1+geom_line(aes(x=time, y=S1, colour=group), linetype="dotted", size=0.8) +
-            geom_line(aes(x=time, y=S2, colour=group), linetype="dotted", size=0.8)
+          plot1=plot1+geom_line(data=D, aes(x=time, y=S1, colour=group), linetype="dotted", size=0.8) +
+            geom_line(data=D, aes(x=time, y=S2, colour=group), linetype="dotted", size=0.8)
         } else {
-          plot1=plot1+geom_line(aes(x=time, y=S1, colour=group, group=Dgrep), linetype="dotted", size=0.8) +
-            geom_line(aes(x=time, y=S2, colour=group, group=Dgrep), linetype="dotted", size=0.8)
+          plot1=plot1+geom_line(data=D, aes(x=time, y=S1, colour=group, group=Dgrep), linetype="dotted", size=0.8) +
+            geom_line(data=D, aes(x=time, y=S2, colour=group, group=Dgrep), linetype="dotted", size=0.8)
         }
       }
     }

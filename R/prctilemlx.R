@@ -14,6 +14,11 @@
 #' @param group  variable to be used for defining groups (by default, \samp{group} is used when it exists)
 #' @param facet  makes subplots for different groups if \code{TRUE} 
 #' @param labels  vector of strings 
+#' @param band is deprecated (use number and level instead) ; a list with two fields
+#' \itemize{
+#'   \item \code{number} the number of intervals (i.e. the number of percentiles minus 1).
+#'   \item \code{level} the largest interval (i.e. the difference between the lowest and the highest percentile).
+#' }
 #' 
 #' @return 
 #' a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
@@ -72,14 +77,13 @@
 #'   print(pr.out$color)
 #'   print(pr.out$y[1:5,])
 #' }
-#' @importFrom stats quantile
+#' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab facet_wrap facet_grid
+#' @importFrom stats quantile 
 #' @export         
 prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="purple",
-                       group=NULL, facet=TRUE, labels=NULL, band=NULL, y.lim=NULL)
+                       group=NULL, facet=TRUE, labels=NULL, band=NULL)
 {
-  if (!is.null(y.lim))
-    warning("The use of y.lim is deprecated. You can use  prctile(...) +ylim(...) instead.")
-  
+
   if (!is.null(band)) {
     level <- band$level
     number <- band$number
@@ -237,8 +241,6 @@ prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="purple"
 
     pk<-pk + xlab(x.label)+ylab(y.label) 
     
-    if (!is.null(y.lim))
-      pk <- pk + ylim(y.lim) 
     pk <- pk +sfm
     if (m.test==1){
 #      data0 <- NULL

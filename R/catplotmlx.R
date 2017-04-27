@@ -5,11 +5,14 @@
 #' See http://simulx.webpopix.org/mlxr/catplotmlx/ for more details.      
 #' @param r a data frame with a column \samp{id}, a column \samp{time}, 
 #' a column with values and possibly Hk[ja column \samp{group}.
+#' @param col a vector of 3 column numbers: (\samp{id}, \samp{time/x}, \samp{y}. Default = c(1, 2,3).
 #' @param breaks one of:
 #' \itemize{
 #'   \item a vector giving the breakpoints,
 #'   \item a single number giving the number of segments.
 #' }
+#' @param plot if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}
+#' the values are returned
 #' @param color a color to be used for the plots (default="#194280")
 #' @param group  variable to be used for defining groups (by default, \samp{group} is used when it exists)
 #' @param facet  makes subplots for different groups if \code{TRUE} 
@@ -53,12 +56,13 @@
 #'   res <- simulx(model=catModel, output=y.out, group=list(g1,g2,g3,g4))
 #'   catplotmlx(res$y)
 #'    
-#'   cov <- data.frame(id=levels(res$y$id), a=rep(c(6,10,6,10),each=Ng), b=rep(c(0.2,0.2,0.4,0.4),each=Ng))
+#'   cov <- data.frame(id=levels(res$y$id), a=rep(c(6,10,6,10),each=Ng), 
+#'                     b=rep(c(0.2,0.2,0.4,0.4),each=Ng))
 #'   catplotmlx(res$y, group=cov) 
 #' }
-#' @importFrom ggplot2 ggplot aes geom_polygon xlab ylab ylim ggtitle scale_fill_manual
-#' @importFrom graphics hist
-#' @importFrom grDevices hsv
+#' @importFrom ggplot2 ggplot aes geom_polygon xlab ylab ylim ggtitle scale_fill_manual facet_wrap facet_grid
+#' @importFrom graphics hist 
+#' @importFrom grDevices hsv rgb2hsv col2rgb 
 #' @export         
 catplotmlx <- function(r, col=NULL, breaks=NULL, plot=TRUE, color="#194280", 
                        group=NULL, facet=TRUE, labels=NULL)
