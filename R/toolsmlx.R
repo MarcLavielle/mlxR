@@ -355,7 +355,7 @@ rct.mlxtran <- function(model, addlines)
     for (k in (1:length(i1))) {
       ik1 <- i1[k]
       lk1 <- lines[ik1]
-      if (length(grep("type=", lk1))>0) {
+      if (length(grep("type=event", lk1))>0) {
         ik2 <- grep("}",lines[ik1:length(lines)])[1] + ik1 -1
         lk <- lines[ik1:ik2]
         if (length(grep("rightCensoringTime", lk))==0) {
