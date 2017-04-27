@@ -26,7 +26,6 @@ Imports:
     XML,
     Rcpp (>= 0.11.3),
     tools,
-    tcltk,
     methods,
     graphics,
     grDevices,
