@@ -11,11 +11,16 @@ catplotmlx(r, col = NULL, breaks = NULL, plot = TRUE, color = "#194280",
 \item{r}{a data frame with a column \samp{id}, a column \samp{time}, 
 a column with values and possibly Hk[ja column \samp{group}.}
 
+\item{col}{a vector of 3 column numbers: (\samp{id}, \samp{time/x}, \samp{y}. Default = c(1, 2,3).}
+
 \item{breaks}{one of:
 \itemize{
   \item a vector giving the breakpoints,
   \item a single number giving the number of segments.
 }}
+
+\item{plot}{if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}
+the values are returned}
 
 \item{color}{a color to be used for the plots (default="#194280")}
 
@@ -70,7 +75,8 @@ See http://simulx.webpopix.org/mlxr/catplotmlx/ for more details.
   res <- simulx(model=catModel, output=y.out, group=list(g1,g2,g3,g4))
   catplotmlx(res$y)
    
-  cov <- data.frame(id=levels(res$y$id), a=rep(c(6,10,6,10),each=Ng), b=rep(c(0.2,0.2,0.4,0.4),each=Ng))
+  cov <- data.frame(id=levels(res$y$id), a=rep(c(6,10,6,10),each=Ng), 
+                    b=rep(c(0.2,0.2,0.4,0.4),each=Ng))
   catplotmlx(res$y, group=cov) 
 }
 }

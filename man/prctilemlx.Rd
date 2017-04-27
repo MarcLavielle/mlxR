@@ -6,7 +6,7 @@
 \usage{
 prctilemlx(r, col = NULL, number = 8, level = 80, plot = TRUE,
   color = "purple", group = NULL, facet = TRUE, labels = NULL,
-  band = NULL, y.lim = NULL)
+  band = NULL)
 }
 \arguments{
 \item{r}{a data frame with a column \samp{id}, a column \samp{time} and a column with values.
@@ -28,6 +28,12 @@ the values are returned}
 \item{facet}{makes subplots for different groups if \code{TRUE}}
 
 \item{labels}{vector of strings}
+
+\item{band}{is deprecated (use number and level instead) ; a list with two fields
+\itemize{
+  \item \code{number} the number of intervals (i.e. the number of percentiles minus 1).
+  \item \code{level} the largest interval (i.e. the difference between the lowest and the highest percentile).
+}}
 }
 \value{
 a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
