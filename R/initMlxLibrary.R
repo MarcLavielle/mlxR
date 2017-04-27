@@ -1,5 +1,5 @@
 #' @importFrom Rcpp sourceCpp
-#' @importFrom tcltk tk_choose.dir
+#' @importFrom tcltk2 tk_choose.dir
 
 NULL
 
