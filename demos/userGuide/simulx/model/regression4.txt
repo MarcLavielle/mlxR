@@ -1,9 +1,0 @@
-[LONGITUDINAL]
-input = {parameter = {k1, k2, f0, g0}, 
-         regressor = {x1, x2} }
-EQUATION:
-t0  = 0
-f_0 = f0
-g_0 = g0
-ddt_f = -k1*f + k2*g + x1
-ddt_g =  k1*f - k2*g + x2

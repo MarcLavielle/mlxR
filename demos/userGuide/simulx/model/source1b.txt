@@ -1,7 +1,0 @@
-[LONGITUDINAL] 
-input={r}
-
-EQUATION:
-t0  = 0
-h_0 = 0
-ddt_h = r
