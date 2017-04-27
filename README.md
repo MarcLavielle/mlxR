@@ -1,14 +1,14 @@
 # mlxR
 
-A toolbox for the simulation and visualization of mixed effects models. 
+A package for the simulation and visualization of mixed effects models. 
 See [this page for more information](http://simulx.webpopix.org). 
 
 # install
 
 To use `mlxR` you first need to install `mlxLibrary` from 
-[here](http://download.lixoft.com?software=mlxlibrary)
+[here](http://lixoft.com/downloads/)
 
-Then you can install the development version from `github`: 
+You can install the development version from `github`: 
 
 ```
 library("devtools")
