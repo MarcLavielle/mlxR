@@ -39,6 +39,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
                             model=NULL,
                             treatment=NULL,
                             parameter=parameter,
+                            regressor=NULL,
                             output=NULL,
                             group=group,
                             r.data=r.data,
