@@ -129,10 +129,12 @@ prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="purple"
   }
   
   id <- r[,col[1]]
-  n <- length(which(id==id[1]))
   d <- col[3]
+  t <- unique(r[,col[2]])
+  n <- length(t)
   
-  t <- r[,col[2]][1:n]
+  # n <- length(which(id==id[1]))
+  # t <- r[,col[2]][1:n]
   x.label=names(r)[col[2]]
   y.label=names(r)[col[3]]
   
