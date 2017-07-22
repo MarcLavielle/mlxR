@@ -153,8 +153,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   }
   
   #---remove rows containing NA-------
-  if (!is.null(iid)) 
-  {
+  if (!is.null(iid)) {
     narowsData <- which(is.na(data[iid])) # removed in ID column only
     if(length(narowsData)>0)
       data <- data[-narowsData,]
@@ -187,7 +186,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
         idObs <-c(idObs,as.character(S[iobs1[which(ytype==l.ytype[in.y])],iid]))
       }
       idObs<-unique(idObs)
-    } else{
+    } else {
       idObs<-unique(S[[iid]][iobs1])
     }
     idObsRows<-which(S[[iid]]%in%idObs)
@@ -208,33 +207,20 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     iu    = ia
     # idnum = as.factor(ic[idnumf])
     idnum = as.factor(S[[iid]])
-  }
-  else
-  {
+  } else {
     iduf <- 1
     idnum <- as.factor(1)
   }
   
   iduf = as.factor(iduf)
   N     = length(iduf)
-  
-  #   iop_id = 0
-  #   i      = 1
-  #   while(iop_id==0 && i<=N) {
-  #     iop_id = (i==ids[[i]])
-  #     i      = i+1
-  #   }
-  
-  if (is.null(itime)) {
+
+  if (is.null(itime)) 
     itime=ix[1]
-    #     if(length(ix)>1)
-    #       ix=ix[2:length(ix)]
-    #     else
-    #       ix=NULL
-  }
+  
   if (!is.null(itime)) {
     t=S[[itime]]
-  }else{
+  } else {
     # no time,  no regressor
     t = 1:nrow(S) 
   }
@@ -243,8 +229,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   nocc <- length(iocc)
   
   if (!is.null(icat)) {
-    for (j in (1:length(icat)))
-    {
+    for (j in (1:length(icat))) {
       Scatj <- S[[icat[j]]]  
       Scatj <- gsub(" ", "", Scatj, fixed = TRUE)
       S[[icat[j]]] <- as.factor(Scatj)  
@@ -253,19 +238,17 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   ##************************************************************************
   #       TREATMENT FIELD
   #**************************************************************************
+  i1.evid <- NULL
   if (!is.null(iamt)) {
     i1 = findstrcmp(S[[iamt]],'.', not=TRUE)
-    if (!is.null(ievid))
+    if (!is.null(ievid)) {
       i1 <- i1[S[i1,ievid]!=0]
+      i1.evid <- i1[S[i1,ievid]==4]
+    }
     i0 <- c(grep(' .',S[i1,iamt],fixed=TRUE),grep('. ',S[i1,iamt],fixed=TRUE))
     if (length(i0)>0)
       i1 <- i1[-i0]
-    #     u <- as.numeric(as.character(S[i1,iamt]))
-    if (is.null(irate))
-      irate = NULL
-    if (is.null(iadm)) 
-      iadm = NULL
-    ixdose <- c(iamt, irate, iadm)
+    ixdose <- c(iamt, irate, itinf, iadm)
     if (length(ixdose)==1)
       u=data.frame(idnum[i1], t[i1],as.numeric(as.character(S[i1,ixdose])))
     else
@@ -274,15 +257,12 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     #
     u.addl <- NULL
     u.ss <- NULL
-    if (!is.null(iaddl))
-    {
+    if (!is.null(iaddl)) {
       addl <- as.numeric(as.character(S[i1,iaddl]))
       ii <- as.numeric(as.character(S[i1,iii]))
       j.addl <- which(addl>0)
-      if (length(j.addl)>0)
-      {
-        for (j in (1:length(j.addl)))
-        {
+      if (length(j.addl)>0) {
+        for (j in (1:length(j.addl))) {
           k <- j.addl[j]
           adk <- addl[k]
           uk <- u[rep(k, adk),]
@@ -291,10 +271,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
         }
       }
       j.addl <- which(addl<0)
-      if (length(j.addl)>0)
-      {
-        for (j in (1:length(j.addl)))
-        {
+      if (length(j.addl)>0) {
+        for (j in (1:length(j.addl))) {
           k <- j.addl[j]
           adk <- -addl[k]
           uk <- u[rep(k, adk),]
@@ -303,15 +281,14 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
         }
       }
     }
-    if (!is.null(iss))
-    {
+    i1.ss <- NULL
+    if (!is.null(iss)) {
       ss <- S[i1,iss]
       ii <- as.numeric(as.character(S[i1,iii]))
       j.ss <- which(ss==1)
-      if (length(j.ss)>0)
-      {
-        for (j in (1:length(j.ss)))
-        {
+      if (length(j.ss)>0) {
+        i1.ss <- i1[j.ss]
+        for (j in (1:length(j.ss))) {
           k <- j.ss[j]
           uk <- u[rep(k, addl.ss),]
           uk$time <- u$time[k] - ii[k]*seq(1:addl.ss)
@@ -322,8 +299,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     u <- rbind(u,u.addl)
     u <- rbind(u,u.ss)
     # u <- u[order(u$id,u$time),]
-    if(nrow(u)){
-    datas   = list(treatment = u)
+    if(nrow(u)) {
+      datas   = list(treatment = u)
     }
   }
   
@@ -350,7 +327,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     # if (length(observationName)<n.y)
     #   observationName <- paste0("y",l.ytype)
     y<- list()
-    for (in.y in (1:n.y)){
+    for (in.y in (1:n.y)) {
       y[[in.y]] <- yvalues[ytype==l.ytype[in.y],]
       names(y[[in.y]])[3] <- observationName[in.y]
       attr(y[[in.y]],'type') <- "longitudinal"
@@ -372,13 +349,13 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   #       REGRESSOR FIELD
   #**************************************************************************
   
-  if (nx>0){
+  if (nx>0) {
     Sx <- S[ix]
     Dx <- data.frame(id=idnum, time=t, Sx)
     ix.num <- which(!sapply(Sx,is.numeric))
-    if (!is.null(ix.num)){
+    if (!is.null(ix.num)) {
       jx <- NULL
-      for (k in (ix.num)){
+      for (k in (ix.num)) {
         jx <- c(jx, findstrcmp(Sx[[ix.num[k]]],'.'))
       }
       if (!is.null(jx))
@@ -393,7 +370,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   #       OCCASION FIELD
   #**************************************************************************
   
-  if (nocc>0){
+  if (nocc>0) {
     ov <-data.frame(id=idnum, time=t, S[iocc])
     oo=ov[-2]
     u <- unique(oo)
@@ -417,8 +394,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     datas$covariate = cdf
   }
   
-  for (k in (1:length(datas)))
-  {
+  for (k in (1:length(datas))) {
     dk <- datas[[k]]
     ik <- match(dk$id,iduf)
     if (!is.null(dk$time))
@@ -428,8 +404,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     if (is.null(iid))
       datas[[k]]$id <- NULL
   }
-  if (!is.null(iid))
-  {
+  if (!is.null(iid)) {
     datas$id <- iduf  
     datas$N <- N
   }
@@ -450,8 +425,7 @@ getInfoXml  <- function (project)
   mlxtranpathfile = file_path_sans_ext(project)
   mlxtranfile = file_path_sans_ext(basename(project))
   infoProject$mlxtranpath = mlxtranpath
-  if(file_ext(project) == "mlxtran")
-  {
+  if(file_ext(project) == "mlxtran") {
     #  project<-mlxProject2xml(project)
     session<-Sys.getenv("session.simulx")
     xmlfile <- file.path(mlxtranpath,paste0(mlxtranfile,"_tr.xmlx"))
@@ -492,9 +466,8 @@ getInfoXml  <- function (project)
   #           output           : {'conc'  'pca'}
   infoOutput         = myparseXML(xmlfile, mlxtranpath, 'observationModel')
   
-  for (k in 1:length(infoOutput)){
-    infoProject$output[[k]] = infoOutput[[k]]$name;
-  }
+  for (k in 1:length(infoOutput)) 
+    infoProject$output[[k]] = infoOutput[[k]]$name
   
   infoParam = myparseXML(xmlfile, mlxtranpath, "parameter")
   info.length <- unlist(lapply(infoParam,length))
@@ -513,6 +486,7 @@ getInfoXml  <- function (project)
   infoProject$fixedParameters <- fixedParamValues
   
   if(file_ext(project) == "mlxtran")
-  {unlink(xmlfile, recursive=T)}
+    unlink(xmlfile, recursive=T)
+  
   return(infoProject)
 }
