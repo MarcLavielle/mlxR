@@ -41,7 +41,11 @@ simulx(model = NULL, parameter = NULL, output = NULL, treatment = NULL,
   \item \code{value} : a vector of values.
 }}
 
-\item{varlevel}{(not supported by mlxLibrary 2016R1)}
+\item{varlevel}{(IOV supported by mlxR >= 3.2.2) a list (or a dataframe) with fields: 
+\itemize{
+  \item \code{name} : name of the variable which defines the occasions,
+  \item \code{time} : a vector of times (beginnings of occasions) ,
+}}
 
 \item{group}{a list, or a list of lists, with fields: 
 \itemize{
