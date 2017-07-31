@@ -93,7 +93,10 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   pop_param <- r[[1]]
   # add fixed parameters not existing in estimates.txt, but in infoProject$fixedParameters
   pop_param<-c( pop_param,infoProject$fixedParameters)
-  paramp <- list(pop_param,datas$covariate,datas$parameter)
+  if (!is.null(datas$covariate.iiv))
+    paramp <- list(pop_param,datas$covariate.iiv,datas$parameter,datas$covariate.iov)
+  else
+    paramp <- list(pop_param,datas$covariate,datas$parameter)
   
   if  (!is.null(param)) 
     paramp <- mergeDataFrame(paramp, param)
@@ -153,6 +156,25 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   if (create.model==TRUE) {
     if (is.null(model)) {
       # generate model from mlxtran file  
+      
+      con        = file(project, open = "r")
+      lines      = readLines(con, warn=FALSE)
+      close(con)
+      lvl <- grep("varlevel",lines)
+      if (length(lvl)>0) {
+        flv <- line2field(lines[lvl])
+        iov.varlevel <- lapply(flv, function(x) x$fields["varlevel"])
+        iov.sd <- lapply(flv, function(x) x$fields["sd"])
+        iov.var <- lapply(flv, function(x) x$fields["var"])
+        flv <- lapply(flv, function(x) {x$fields$varlevel=NULL; x$fields$sd=x$fields$sd[1]; x$fields$var=x$fields$var[1]; return(x)})
+        l.lvl <- field2line(flv)
+        lines[lvl] <- l.lvl
+        project0 <- project
+        project <- "monolixRuns/varlevel_temp.mlxtran"
+        write(lines,project)
+      }
+      
+      
       mlxtranfile = file_path_sans_ext(basename(project))
       mlxtranpath <- dirname(project)
       model = file.path(mlxtranpath,paste0(mlxtranfile,"_model.txt"))
@@ -162,6 +184,35 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       str=paste0(str,' --output-file=',model,' --input-file=',project,' --option=with-observation-model') 
       system(str, wait=T)
       pathLib = Sys.getenv("LIXOFT_HOME")
+      
+      if (length(lvl)>0) {
+        con        = file(model, open = "r")
+        lines      = readLines(con, warn=FALSE)
+        close(con)
+        lvl <- match(l.lvl,gsub(" ","",lines))
+        flv <- line2field(lines[lvl])
+        iov.input <- c()
+        for (jf in (1: length(flv))) {
+          flv[[jf]]$fields$varlevel <- iov.varlevel[[jf]]$varlevel
+          if (!is.null(iov.sd[[jf]][[1]])) {
+            flv[[jf]]$fields$sd <- iov.sd[[jf]]$sd
+            iov.input <- c(iov.input,iov.sd[[jf]]$sd[2])
+          }
+          if (!is.null(iov.var[[jf]][[1]])) {
+            flv[[jf]]$fields$var <- iov.var[[jf]]$var
+            iov.input <- c(iov.input,iov.sd[[jf]]$var[2])
+          }
+        }
+        
+        lines[lvl] <- field2line(flv)
+        ig <- grep("\\[INDIVIDUAL\\]", lines)
+        lines <- c(lines[1:ig],paste0("input = {",paste0(iov.input, collapse=","),"}"),lines[(ig+1):length(lines)])
+        mlxtranfile = file_path_sans_ext(basename(project0))
+        mlxtranpath <- dirname(project0)
+        model = file.path(mlxtranpath,paste0(mlxtranfile,"_model.txt"))
+        write(lines,model)
+      }
+      
       if (iop_indiv==1) {      
         # create a submodel file of model_file corresponding to the specified sections specified 
         sections       = c("LONGITUDINAL")    
@@ -607,7 +658,7 @@ myparseModel  <-  function(model_file, sections, submodel_file)
   
   str= ""
   for (i in 1 :  length( terms))
-    str= c(str, terms[[i]]$model)
+    str= c(str, terms[[i]]$lines)
   
   write(str,submodel_file)
 }
@@ -624,7 +675,7 @@ splitModel  <-  function(file_model, sections)
   #       name corresponds to the name of the section contained in model. 
   #
   #       sections :  a list of string containing the name of the sections we want to use to split the model. 
-  #                   could be "POPULATION", "COVARIATE","INDIVIDUAL", "LONGITUDINAL"
+  #                   could be xc
   #   Examples
   #   --------
   #       file_model  = "home/model.txt"
@@ -641,29 +692,34 @@ splitModel  <-  function(file_model, sections)
   #          chr [1:20]
   #
   if (file.exists(file_model)) {
+    con        = file(file_model, open = "r")
+    lines      = readLines(con, warn=FALSE)
+    close(con)
+    
+    lines <- gsub("\\;.*","",lines)
+    lines <- gsub("^\\s+|\\s+$", "", lines)
+    lines <- gsub("\\s*=\\s*", "=", lines)
+    lines <- gsub("\\s*,\\s*", ",", lines)
+    lines <- lines[sapply(lines, nchar) > 0]
+    lines <- c(lines,"")
+    idx_sections   = grep("[",lines, fixed=TRUE)
+    idx_sections   = c(idx_sections,length(lines))
     terms         = list()
     length(terms) = length(sections)
-    for (i in 1 : length(sections))
-    {
+    for (i in 1 : length(sections)) {
       sections_i = sections[[i]]
-      con        = file(file_model, open = "r")
-      lines      = readLines(con, warn=FALSE)
-      close(con)
-      
-      idx_sections   = grep("[",lines, fixed=TRUE)
-      idx_sections   = c(idx_sections,length(lines))
-      idx            = grep(sections_i,lines, fixed=TRUE)
+      idx        = grep(sections_i,lines, fixed=TRUE)
+      terms[[i]]$name = sections_i
       if (length(idx)>0) {
         fin_sections   = idx_sections[idx_sections>idx]
-        model_temp     = ""
+        model_temp     = c()
         while (idx < fin_sections[[1]]) {
           model_temp = c(model_temp, lines[idx])
           idx        = idx +1
         }
-        terms[[i]]$name = sections_i
-        terms[[i]]$model= model_temp
+        terms[[i]]$lines= strmerge(model_temp)
       } else {
-        terms <- NULL
+        terms[[i]]$lines= NULL
       }
     }
     return(terms)

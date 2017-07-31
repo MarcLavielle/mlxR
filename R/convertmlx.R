@@ -1,5 +1,6 @@
 
-convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.ori=NULL){
+convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.ori=NULL, cat0=NULL){
+  
   
   g <- dataIn$group
   iop.gout <- 0
@@ -62,7 +63,7 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
       ick <- which(ak$name==cv$name)
       if (length(ick)>0){
         vk <- cv$categories[[ick]][vk]
-      }else{
+      } else {
         if (isfield(ak,"categories")){
           vk <- ak$categories[vk]
         }
@@ -277,6 +278,16 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
       }
     }
   }
+  
+  if (!is.null(cat0)) {
+    dn <-names(dd)
+    for (k in (1: length(cat0))) {
+      ik <- which(dn==cat0[[k]]$name)
+      if (length(ik)>0) 
+        dd[[ik]][dn[ik]] <- cat0[[k]]$categories[dd[[ik]][[dn[ik]]]+1]
+    }
+  }
+  
   return(dd)
   
 }

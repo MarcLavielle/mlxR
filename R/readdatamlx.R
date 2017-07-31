@@ -214,7 +214,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   
   iduf = as.factor(iduf)
   N     = length(iduf)
-
+  
   if (is.null(itime)) 
     itime=ix[1]
   
@@ -384,14 +384,30 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   #       COVARIATE FIELD
   #*************************************************************************
   
+  cdf <- cdf.iov <- NULL
   nc = length(icov) + length(icat)
   if (nc>0) {
     ic <- c(icov,icat)
     cdf <- data.frame(id=iduf)
-    for (k in (1:nc))
-      cdf[[k+1]] <- S[[ic[k]]][iu]
-    names(cdf)[2:(nc+1)]=names(S)[ic]    
-    datas$covariate = cdf
+    if (!is.null(datas$occasion)) 
+      cdf.iov <- ov[io,c(1,2)]
+    k1 <- 1
+    k2 <- 2
+    for (k in (1:nc)) {
+      if (dim(unique(S[,c(iid,ic[k])]))[1]==N) {
+        k1 <- k1+1
+        cdf[[k1]] <- S[[ic[k]]][iu]
+        names(cdf)[k1]=names(S)[ic[k]]    
+      } else {
+        k2 <- k2+1
+        cdf.iov[[k2]] <- S[[ic[k]]][io]
+        names(cdf.iov)[k2]=names(S)[ic[k]]    
+      }
+    }
+    if (dim(cdf)[2]>1)
+      datas$covariate = cdf
+    if (!is.null(cdf.iov))
+      datas$covariate.iov = cdf.iov
   }
   
   for (k in (1:length(datas))) {
@@ -408,7 +424,14 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     datas$id <- iduf  
     datas$N <- N
   }
-  datas$catNames<-catNames
+  datas$catNames<-catNames[catNames %in% names(cdf)]
+  datas$catNames.iov<-catNames[catNames %in% names(cdf.iov)]
+  
+  if (!is.null(datas$covariate.iov)) {
+    datas$covariate.iiv <- datas$covariate
+    datas$catNames.iiv <- datas$catNames
+    datas$catNames <- datas$covariate <- NULL
+  }
   return(datas)
 }
 
