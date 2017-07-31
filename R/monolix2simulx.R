@@ -115,8 +115,8 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
       indcov <- "individualCovariate"
       if (!is.null(occasion)) 
         indcov <- paste0(indcov, "IIV")
-
-        outfile = file.path(Rproject,paste0("/",indcov,".txt"))  
+      
+      outfile = file.path(Rproject,paste0("/",indcov,".txt"))  
       if(!is.null(catNames)){
         
         cat(paste0("colCatType<-rep(NA,",ncol(individualCovariate),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
@@ -127,7 +127,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
         }
         cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         cat(paste0("colCatType[catNamesCols]<-rep(\"character\",",length(catNames),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-          cat(paste0(indcov," <- read.table('",indcov,".txt', header = TRUE,colClasses = colCatType) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0(indcov," <- read.table('",indcov,".txt', header = TRUE,colClasses = colCatType) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       }else{
         cat(paste0(indcov," <- read.table('",indcov,".txt', header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       }
@@ -141,31 +141,32 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
         cat(paste0(indcov,"[,",i.factor+1,"]<- as.factor(",indcov,"[,",i.factor+1,"]) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
     } 
     
-    
-    individualCovariate.iov <- parameter[[4]]
-    if (!is.null(individualCovariate.iov)){
-      outfile = file.path(Rproject,paste0("/individualCovariateIOV.txt"))  
-      if(!is.null(catNames.iov)){
-        
-        cat(paste0("colCatType<-rep(NA,",ncol(individualCovariate.iov),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-        catNamesCols.iov <-which(colnames(individualCovariate.iov)%in%catNames.iov)
-        cat(paste0("catNamesCols<-c(",catNamesCols.iov[1]),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-        for(i in seq(2,length(catNames.iov))){
-          cat(paste0(",",catNamesCols.iov[i]), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+    if (length(parameter)>=4) {
+      individualCovariate.iov <- parameter[[4]]
+      if (!is.null(individualCovariate.iov)){
+        outfile = file.path(Rproject,paste0("/individualCovariateIOV.txt"))  
+        if(!is.null(catNames.iov)){
+          
+          cat(paste0("colCatType<-rep(NA,",ncol(individualCovariate.iov),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+          catNamesCols.iov <-which(colnames(individualCovariate.iov)%in%catNames.iov)
+          cat(paste0("catNamesCols<-c(",catNamesCols.iov[1]),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+          for(i in seq(2,length(catNames.iov))){
+            cat(paste0(",",catNamesCols.iov[i]), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+          }
+          cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+          cat(paste0("colCatType[catNamesCols]<-rep(\"character\",",length(catNames.iov),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+          cat(paste0("individualCovariateIOV <- read.table('individualCovariateIOV.txt', header = TRUE,colClasses = colCatType) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        }else{
+          cat(paste0("individualCovariateIOV <- read.table('individualCovariateIOV.txt', header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
         }
-        cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-        cat(paste0("colCatType[catNamesCols]<-rep(\"character\",",length(catNames.iov),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-        cat(paste0("individualCovariateIOV <- read.table('individualCovariateIOV.txt', header = TRUE,colClasses = colCatType) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-      }else{
-        cat(paste0("individualCovariateIOV <- read.table('individualCovariateIOV.txt', header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        write.table(individualCovariate.iov,file=outfile,row.names=FALSE,quote=FALSE)
+        param.list <- paste(param.list,"individualCovariateIOV",sep=",")  
+        i.factor <- which(sapply(individualCovariate.iov[-1], is.factor))
+        if (length(i.factor)>0){
+          cat(paste0("individualCovariateIOV[,",i.factor+1,"]<- as.factor(individualCovariateIOV[,",i.factor+1,"]) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        }
       }
-      write.table(individualCovariate.iov,file=outfile,row.names=FALSE,quote=FALSE)
-      param.list <- paste(param.list,"individualCovariate.iov",sep=",")  
-      i.factor <- which(sapply(individualCovariate.iov[-1], is.factor))
-      if (length(i.factor)>0){
-        cat(paste0("individualCovariate.iov[,",i.factor+1,"]<- as.factor(individualCovariate.iov[,",i.factor+1,"]) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-      }
-    } 
+    }
     
     individualParameter <- parameter[[3]]
     if (!is.null(individualParameter)){
