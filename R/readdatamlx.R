@@ -76,22 +76,19 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   #       Gestion du format du fichier de donnees
   #*************************************************************************  
   fileFormat=NULL
-  if (is.list(infoProject))
-  {
+  if (is.list(infoProject)) {
     if (isfield(infoProject, 'dataformat'))
       fileFormat = infoProject$dataformat      
   }
-  if (is.null(fileFormat))
-  {  
+  if (is.null(fileFormat)) {  
     tmp=unlist(strsplit(datafile, "\\."))
     e= tmp[[length(tmp)]]
-    if (e=='csv'){
+    if (e=='csv')
       fileFormat="csv"
-    }else{
+    else
       fileFormat="space"
-    }
   }
-  if (tolower(fileFormat)=="csv"){
+  if (tolower(fileFormat)=="csv") {
     h1 = read.table(datafile, sep=",", nrows=1)
     h2 = read.table(datafile, sep=";", nrows=1)
     if (length(h1)>length(h2)) 
@@ -99,17 +96,17 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     else 
       delimiter=';'
     
-  }else if (tolower(fileFormat)=="space"){
+  } else if (tolower(fileFormat)=="space") {
     delimiter=""
-  }else if (tolower(fileFormat)==" "){
+  } else if (tolower(fileFormat)==" ") {
     delimiter=""
-  }else if (tolower(fileFormat)=="tab"){
+  } else if (tolower(fileFormat)=="tab") {
     delimiter='\t'
-  }else if (tolower(fileFormat)==";"||tolower(fileFormat)=="semicolumn"){
+  } else if (tolower(fileFormat)==";"||tolower(fileFormat)=="semicolumn") {
     delimiter=';'
-  }else if (tolower(fileFormat)=="\t"){
+  } else if (tolower(fileFormat)=="\t") {
     delimiter='\t'
-  }else
+  } else
     delimiter=','
   
   catNames<-NULL
@@ -127,16 +124,16 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     data<- dataNoHeader
     names(data)<- headerToUse
     
-  }else{
+  } else {
     data = tryCatch(
-      (if(!is.null(icat)){
+      (if(!is.null(icat)) {
         colCatType<-rep(NA,length(headerTest))
         catNames <-headerTest[icat]
         names(catNames)<-NULL
         catNames<-trimws(unlist(catNames))
         colCatType[icat]<-rep("character",length(icat))
         read.table(datafile, comment.char="", header = TRUE, sep=delimiter,colClasses = colCatType)
-      }else{
+      } else {
         read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
       }), error=function(e) {
         error<-  geterrmessage()
@@ -165,7 +162,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   i.new <- c(icov,icat,ix,iocc)
   newHeader[i.new] = S0[i.new]
   
-  if (!is.null(iid)){
+  if (!is.null(iid)) {
     iobs1   = findstrcmp(S[[iy]],'.', not=TRUE)
     if (!is.null(imdv))
       iobs1 <- iobs1[S[iobs1,imdv]!=1]
@@ -175,16 +172,15 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     if (length(i0)>0)
       iobs1 <- iobs1[-i0]
     #keep  the data only for  ids which have observation
-    if (!is.null(iytype)){
+    if (!is.null(iytype)) {
       idObs <-NULL
       ytype <- factor(S[iobs1,iytype])
       l.ytype <- levels(ytype)
       if (is.null(observationName))
         observationName <- paste0("y",l.ytype)
       n.y <- length(observationName)
-      for (in.y in (1:n.y)){
+      for (in.y in (1:n.y)) 
         idObs <-c(idObs,as.character(S[iobs1[which(ytype==l.ytype[in.y])],iid]))
-      }
       idObs<-unique(idObs)
     } else {
       idObs<-unique(S[[iid]][iobs1])
@@ -389,12 +385,12 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   if (nc>0) {
     ic <- c(icov,icat)
     cdf <- data.frame(id=iduf)
-    if (!is.null(datas$occasion)) 
+    if (nocc>0) 
       cdf.iov <- ov[io,c(1,2)]
     k1 <- 1
     k2 <- 2
     for (k in (1:nc)) {
-      if (dim(unique(S[,c(iid,ic[k])]))[1]==N) {
+      if (nocc==0 | dim(unique(S[,c(iid,ic[k])]))[1]==N) {
         k1 <- k1+1
         cdf[[k1]] <- S[[ic[k]]][iu]
         names(cdf)[k1]=names(S)[ic[k]]    
@@ -424,9 +420,12 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     datas$id <- iduf  
     datas$N <- N
   }
-  datas$catNames<-catNames[catNames %in% names(cdf)]
-  datas$catNames.iov<-catNames[catNames %in% names(cdf.iov)]
-  
+  foo <- catNames[catNames %in% names(cdf)]
+  if (length(foo) >0) 
+    datas$catNames <- foo
+  foo <-catNames[catNames %in% names(cdf.iov)]
+  if (length(foo) >0) 
+    datas$catNames.iov <- foo
   if (!is.null(datas$covariate.iov)) {
     datas$covariate.iiv <- datas$covariate
     datas$catNames.iiv <- datas$catNames
