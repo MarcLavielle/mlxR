@@ -72,7 +72,8 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   mlxtranfile = file_path_sans_ext(basename(project))
   projectExe <- file.path(RprojectPath,paste0(mlxtranfile,".R"))
   cat(paste0("# File generated automatically on ", Sys.time(),"\n \n"), file =projectExe, fill = FALSE, labels = NULL,append = TRUE)
-  cat("library(mlxR)  \n \nsetwd(dirname(parent.frame(2)$ofile)) \n\n# model \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+#  cat("library(mlxR)  \n \nsetwd(dirname(parent.frame(2)$ofile)) \n\n# model \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  cat(paste0("\nsetwd(\"",RprojectPath,"\")"),"\n\n# model \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   cat(paste0("model<-\"",modelname,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
   # write  treatment 
@@ -87,9 +88,22 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
     cat("trt <- read.table(\"treatment.txt\", header = TRUE) \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   }
   
+  param.list <- NULL
+  # occasion    
+  if(!(is.null(occasion))) {  
+    cat("\n# occasion \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    outfile = file.path(Rproject,paste0("/occasion.txt"))      
+    write.table(occasion,file=outfile,row.names=FALSE,quote=FALSE)
+    cat(paste0("occasion <-read.table(\"occasion.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+
+    # cat(paste0("cov.occ <- occasion\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+    # cat(paste0("names(cov.occ)[3] <- \"OCC\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+    # cat(paste0("cov.occ[,3]<- as.factor(cov.occ[,3])"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+    # param.list <- "cov.occ"
+  }
+  
   # write  parameters   
   if(!(is.null(parameter))){  
-    param.list <- NULL
     cat("\n# parameters \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
     
     if (!is.null(ans$id)){
@@ -233,13 +247,6 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
     cat(paste0("regressor <-read.table(\"regressor.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
   }
   
-  # occasion    
-  if(!(is.null(occasion))) {  
-    cat("\n# occasion \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    outfile = file.path(Rproject,paste0("/occasion.txt"))      
-    write.table(occasion,file=outfile,row.names=FALSE,quote=FALSE)
-    cat(paste0("occasion <-read.table(\"occasion.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-  }
   
   # call the simulator
   cat("\n# call the simulator \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)

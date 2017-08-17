@@ -6,27 +6,33 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
   lines <- c()
   v.iov <- var.iov <- iov0
   
-  rem.name <- c(occ.name,paste0("s",occ.name),paste0("s",unlist(lapply(cat0, function(x) x$name))))
+  cat0.name <-  unlist(lapply(cat0, function(x) x$name))
+  if ("OCC" %in% cat0.name)
+    rem.name <- c("occ","socc", "sOCC")
+  else
+    rem.name <- c("occ","socc", "OCC","sOCC")
+  if (!is.null(cat0))
+    rem.name <- unique(c(rem.name,paste0("s",cat0.name)))
   
   i.cov <- which(sapply(sm, function(ch)  ch$name=="[COVARIATE]"))
   if (length(i.cov)>0) {
     sec.cov <- splitSection(sm[[i.cov]])
-#    rem.name <- c(occ.name)
-#    rem.name <- c(occ.name, unlist(lapply(cat0, function(x) x$name)))
+    #    rem.name <- c(occ.name)
+    #    rem.name <- c(occ.name, unlist(lapply(cat0, function(x) x$name)))
     r0.cov <- iovin(sec.cov$input, v.iov, nocc, sec.cov$name, rem.name=rem.name)
     v.iov <- r0.cov$iov
     lines.cov <- r0.cov$lines
     var.iov <- v.iov
     if (length(sec.cov$blocks)) {
-    for (k in (1:length(sec.cov$blocks))) {
-      if (identical(sec.cov$blocks[k],'DEFINITION:'))
-        rk.cov <- iovdef(sec.cov$lines[[k]], v.iov, nocc)
-      else
-        rk.cov <- ioveq(sec.cov$lines[[k]], v.iov, nocc)
-      v.iov <- rk.cov$iov
-      var.iov <- unique(c(var.iov, v.iov))
-      lines.cov <- c(lines.cov, rk.cov$lines)
-    }
+      for (k in (1:length(sec.cov$blocks))) {
+        if (identical(sec.cov$blocks[k],'DEFINITION:'))
+          rk.cov <- iovdef(sec.cov$lines[[k]], v.iov, nocc)
+        else
+          rk.cov <- ioveq(sec.cov$lines[[k]], v.iov, nocc)
+        v.iov <- rk.cov$iov
+        var.iov <- unique(c(var.iov, v.iov))
+        lines.cov <- c(lines.cov, rk.cov$lines)
+      }
     }
     lines <- c(lines,lines.cov)
   }
@@ -214,9 +220,18 @@ iovin <- function(lines, v.iov, nocc, name, cat=NULL, rem.name=NULL) {
   if (!is.null(rem.name)) {
     vc <- sub("\\=.*","",lines)
     lines <- lines[!(vc %in% rem.name)]
-    lines <- gsub(paste(paste0(",",rem.name),collapse="|"),"",lines)
-    lines <- gsub(paste(paste0(rem.name,","),collapse="|"),"",lines)
+    lines <- gsub(paste(paste0(",",rem.name,","),collapse="|"),",",lines)
+    lines <- gsub(paste(paste0("\\{",rem.name,","),collapse="|"),"\\{",lines)
+    lines <- gsub(paste(paste0(",",rem.name,"\\}"),collapse="|"),"\\}",lines)
+    lines <- gsub(paste(paste0("=",rem.name),collapse="|"),"=",lines)
+    lines <- lines[lines!="input="]
+    gl <- grep("\\{\\}",lines)
+    if (length(gl)>0)
+      lines <- lines[-gl]
   }
+  
+  if (length(lines)==0)
+    return(list(iov=NULL, lines=name))
   
   suffix <- "_iov"
   sep <- "([\\,\\{\\}])"
@@ -230,7 +245,8 @@ iovin <- function(lines, v.iov, nocc, name, cat=NULL, rem.name=NULL) {
     lines <- gsub(paste0(sep,expr,sep),paste0("\\1",nexpr,"\\2"),lines)
     vc <- sub("\\=.*","",lines)
   }
-  lines <- lines[!(vc %in% v.iov)]
+  if (!is.null(v.iov))
+    lines <- lines[!(vc %in% v.iov)]
   if (!is.null(cat)) {
     for (k in (1: length(cat))) {
       lines <- c(lines, paste0("input = {", paste0(cat[[k]]$name,suffix,1:nocc,collapse=","),"}"))
@@ -293,14 +309,17 @@ iovseclong <- function(sec, v.iov, nocc, occ.name) {
   # add a block EQUATION to section LONGITUDINAL for IOV 
   
   suffix <- "_iov"
-  new.lines <- c("EQUATION:",paste0("if ",occ.name,"==1"))
-  for (ko in (1:nocc)) {
-    for (vi in v.iov) {
-      new.lines <- c(new.lines, paste0("  ",vi,"=",paste0(vi,suffix,ko)))
+  new.lines <- c()
+  if (!is.null(v.iov)) {
+    new.lines <- c("EQUATION:",paste0("if ",occ.name,"==1"))
+    for (ko in (1:nocc)) {
+      for (vi in v.iov) {
+        new.lines <- c(new.lines, paste0("  ",vi,"=",paste0(vi,suffix,ko)))
+      }
+      new.lines <- c(new.lines, paste0("elseif ",occ.name,"==",ko+1))
     }
-    new.lines <- c(new.lines, paste0("elseif ",occ.name,"==",ko+1))
+    new.lines[length(new.lines)] <- "end"
   }
-  new.lines[length(new.lines)] <- "end"
   for (k in (1:length(sec$blocks))) {
     new.lines <- c(new.lines,sec$blocks[k],sec$lines[[k]])
   }
@@ -311,8 +330,9 @@ iovdef <- function(lines, v.iov, nocc) {
   # define IOV by creating two blocks DEFINITION
   
   suffix <- "_iov"
-  gsub(",mean=",",reference=",lines)
-  gsub(",prediction=",",reference=",lines)
+  lines <- gsub(",mean=",",reference=",lines)
+  lines <- gsub(",prediction=",",reference=",lines)
+  lines <- gsub(",typical=",",reference=",lines)
   iop.sd <- (length(grep("sd=",lines))>0) 
   fields <- line2field(lines)
   i.iov <- which(sapply(fields, function(x) !is.null(x$fields$varlevel)))
@@ -324,7 +344,6 @@ iovdef <- function(lines, v.iov, nocc) {
     if (length(icv)>0) 
       i.iov <- unique(c(i.iov, k))
   }
-  new.lines  <- lines
   if (length(i.iov)>0) {
     v.iov <- sapply(fields[i.iov], function(x) x$name)
     f1 <- fields
@@ -368,6 +387,8 @@ iovdef <- function(lines, v.iov, nocc) {
       line2 <- field2line(f2)
     }
     new.lines <- c("DEFINITION:",line1,"DEFINITION:",line2)
+  } else {
+    new.lines <- c("DEFINITION:", lines)
   }
   return(list(iov=v.iov,lines=new.lines))
 }
@@ -437,7 +458,7 @@ param.iov <- function(p, occ) {
       jfk <- which(sapply(pk,is.character)|sapply(pk,is.factor))
       jfk <- jfk[names(jfk)!="id"]
       if (length(jfk)>0) {
-        pk[,jfk] <- as.factor(pk[,jfk])
+        #        pk[,jfk] <- as.factor(pk[,jfk])  #OJO
         for (jf in (1:length(jfk))) {
           indj <- indj+1
           cat[[indj]] <- list(name=names(pk)[jfk[jf]], categories=levels(pk[,jfk[jf]]))

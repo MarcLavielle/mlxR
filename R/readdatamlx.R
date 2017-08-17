@@ -155,7 +155,17 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     if(length(narowsData)>0)
       data <- data[-narowsData,]
   }
+  
   #-------------------------------
+  if (!is.null(iii))
+    levels(data[[iii]])[levels(data[[iii]])=="."]=0
+  
+  #-------------------------------
+  if (!is.null(iocc)) {
+    names(data)[iocc] <- "occ"
+    data$OCC <- as.factor(data[[iocc]])
+    icat <- c(icat,which(names(data)=="OCC"))
+  }
   
   S       = data
   S0      = names(data)
@@ -222,8 +232,6 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   }
   nx=length(ix)
   
-  nocc <- length(iocc)
-  
   if (!is.null(icat)) {
     for (j in (1:length(icat))) {
       Scatj <- S[[icat[j]]]  
@@ -234,12 +242,12 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   ##************************************************************************
   #       TREATMENT FIELD
   #**************************************************************************
-  i1.evid <- NULL
+#  i1.evid <- NULL
   if (!is.null(iamt)) {
     i1 = findstrcmp(S[[iamt]],'.', not=TRUE)
     if (!is.null(ievid)) {
       i1 <- i1[S[i1,ievid]!=0]
-      i1.evid <- i1[S[i1,ievid]==4]
+#      i1.evid <- i1[S[i1,ievid]==4]
     }
     i0 <- c(grep(' .',S[i1,iamt],fixed=TRUE),grep('. ',S[i1,iamt],fixed=TRUE))
     if (length(i0)>0)
@@ -253,6 +261,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     #
     u.addl <- NULL
     u.ss <- NULL
+    u.evid <- NULL
     if (!is.null(iaddl)) {
       addl <- as.numeric(as.character(S[i1,iaddl]))
       ii <- as.numeric(as.character(S[i1,iii]))
@@ -289,6 +298,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
           uk <- u[rep(k, addl.ss),]
           uk$time <- u$time[k] - ii[k]*seq(1:addl.ss)
           u.ss <- rbind(u.ss,uk)
+          u.evid <- rbind(u.evid,uk[addl.ss,c(1,2)])
         }
       }
     }
@@ -366,15 +376,43 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   #       OCCASION FIELD
   #**************************************************************************
   
-  if (nocc>0) {
-    ov <-data.frame(id=idnum, time=t, S[iocc])
+  if (!is.null(iocc)) {
+    S[[iocc]] <- as.numeric(as.character(S[[iocc]]))
+    ov <-data.frame(id=idnum, time=t, occ=S[iocc])
     oo=ov[-2]
     u <- unique(oo)
     #io=match(data.frame(t(u)), data.frame(t(oo)))
     io=match(data.frame(t(as.numeric(rownames(u)))), data.frame(t(as.numeric(rownames(oo)))))
-    datas$occasion <- ov[io,]
+    ov.io <- ov[io,]
+    datas$occasion <- ov.io
+  } else {
+    ov.io <- NULL
+    if (!is.null(ievid)) {
+      io <- sort(unique(c(iu,which(S[[ievid]]==4))))
+      ov.io <- S[io,c(iid,itime)]
+    }
+    if (!is.null(u.evid)) 
+      ov.io <- u.evid
+    if (!is.null(ov.io)) {
+      ov.id <- ov.io[,1]
+      occ <- rep(1,length(ov.id))
+      for (i in (2:length(ov.id))) {
+        if (ov.id[i]==ov.id[i-1])
+          occ[i] <- occ[i-1] + 1
+        else
+          occ[i] <- 1
+        end
+      }     
+      ov.io$occ <- occ
+      datas$occasion <- ov.io
+      iocc <- length(names(data))+1
+    }
   }
   
+  if (!is.null(datas$occasion)) {
+    if (length(unique(datas$occasion$occ)) == 1)
+      datas$occasion <- NULL
+  }
   
   ##************************************************************************
   #       COVARIATE FIELD
@@ -385,12 +423,12 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   if (nc>0) {
     ic <- c(icov,icat)
     cdf <- data.frame(id=iduf)
-    if (nocc>0) 
-      cdf.iov <- ov[io,c(1,2)]
+    if (!is.null(iocc)) 
+      cdf.iov <- ov.io[,c(1,2)]
     k1 <- 1
     k2 <- 2
     for (k in (1:nc)) {
-      if (nocc==0 | dim(unique(S[,c(iid,ic[k])]))[1]==N) {
+      if (is.null(iocc) | dim(unique(S[,c(iid,ic[k])]))[1]==N) {
         k1 <- k1+1
         cdf[[k1]] <- S[[ic[k]]][iu]
         names(cdf)[k1]=names(S)[ic[k]]    
@@ -401,9 +439,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
       }
     }
     if (dim(cdf)[2]>1)
-      datas$covariate = cdf
+      datas[["covariate"]] = cdf
     if (!is.null(cdf.iov))
-      datas$covariate.iov = cdf.iov
+      datas[["covariate.iov"]] = cdf.iov
   }
   
   for (k in (1:length(datas))) {
@@ -427,9 +465,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   if (length(foo) >0) 
     datas$catNames.iov <- foo
   if (!is.null(datas$covariate.iov)) {
-    datas$covariate.iiv <- datas$covariate
-    datas$catNames.iiv <- datas$catNames
-    datas$catNames <- datas$covariate <- NULL
+    datas[["covariate.iiv"]] <- datas[["covariate"]]
+    datas[["catNames.iiv"]] <- datas[["catNames"]]
+    datas[["catNames"]] <- datas[["covariate"]] <- NULL
   }
   return(datas)
 }
