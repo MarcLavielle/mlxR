@@ -242,12 +242,12 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   ##************************************************************************
   #       TREATMENT FIELD
   #**************************************************************************
-#  i1.evid <- NULL
+  #  i1.evid <- NULL
   if (!is.null(iamt)) {
     i1 = findstrcmp(S[[iamt]],'.', not=TRUE)
     if (!is.null(ievid)) {
       i1 <- i1[S[i1,ievid]!=0]
-#      i1.evid <- i1[S[i1,ievid]==4]
+      #      i1.evid <- i1[S[i1,ievid]==4]
     }
     i0 <- c(grep(' .',S[i1,iamt],fixed=TRUE),grep('. ',S[i1,iamt],fixed=TRUE))
     if (length(i0)>0)
@@ -396,13 +396,15 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     if (!is.null(ov.io)) {
       ov.id <- ov.io[,1]
       occ <- rep(1,length(ov.id))
-      for (i in (2:length(ov.id))) {
-        if (ov.id[i]==ov.id[i-1])
-          occ[i] <- occ[i-1] + 1
-        else
-          occ[i] <- 1
-        end
-      }     
+      if (length(ov.id)>=2) {
+        for (i in (2:length(ov.id))) {
+          if (ov.id[i]==ov.id[i-1])
+            occ[i] <- occ[i-1] + 1
+          else
+            occ[i] <- 1
+          end
+        }     
+      }
       ov.io$occ <- occ
       datas$occasion <- ov.io
       iocc <- length(names(data))+1
