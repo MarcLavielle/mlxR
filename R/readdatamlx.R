@@ -252,11 +252,15 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     i0 <- c(grep(' .',S[i1,iamt],fixed=TRUE),grep('. ',S[i1,iamt],fixed=TRUE))
     if (length(i0)>0)
       i1 <- i1[-i0]
+    si1 <- S[i1,]
+    si1[[iamt]] <- as.numeric(as.character(si1[[iamt]]))
+    if (!is.null(iadm)) si1[[iadm]] <- as.numeric(as.character(si1[[iadm]]))
     ixdose <- c(iamt, irate, itinf, iadm)
+    si1dose <- si1[,ixdose]
     if (length(ixdose)==1)
-      u=data.frame(idnum[i1], t[i1],as.numeric(as.character(S[i1,ixdose])))
+      u=data.frame(idnum[i1], t[i1], si1dose)
     else
-      u=cbind(list(idnum[i1], t[i1]),S[i1,ixdose])
+      u=cbind(list(idnum[i1], t[i1]), si1dose)
     names(u) = c('id',newHeader[[itime]],newHeader[ixdose])
     #
     u.addl <- NULL

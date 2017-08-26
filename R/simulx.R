@@ -451,7 +451,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   
   R.complete <- list()
   rs <- NULL
-  
   for (ipop in (1:npop)) {
     if (disp.iter==TRUE) {
       if (nrep>1) 
@@ -480,6 +479,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           lv <- resample.data(data=lv0,idOri=id,N=sum(g.size),replacement=replacement)
         if (test.N==F)  
           lv$group <- group
+
         r <- simulxunit(model=model,lv=lv,settings=settings, out.trt=out.trt,riov=riov)
       }
       

@@ -170,7 +170,8 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
         l.lvl <- field2line(flv)
         lines[lvl] <- l.lvl
         project0 <- project
-        project <- "monolixRuns/varlevel_temp.mlxtran"
+        mlxtranpath <- dirname(project)
+        project <- file.path(mlxtranpath,"varlevel_temp.mlxtran")
         write(lines,project)
       }
       
