@@ -675,7 +675,6 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=T,
     dataIn$model <- model
     dataIn$trt <- lv$treatment
     dataIn$riov <- riov
-    
     if(data.in==T) {
       dataIn$iop.group <- iop.group
       dataIn$id.ori <- id.ori
@@ -736,12 +735,11 @@ dataOutiov <- function(d,r) {
         d[[v[k]]] <- NULL
       }
     }
-#    d$parameter <- list(iiv=d$parameter, iov=iov)
-    names(d)[which(names(d)==o)] <- "occasion"
     d$parameter.iiv=d$parameter
     d$parameter <- NULL
     d$parameter.iov=iov
   }
+  names(d)[which(names(d)==o)] <- "occasion"
   return(d)
 }
 
