@@ -349,8 +349,10 @@ rct.mlxtran <- function(model, addlines)
   con     <- file(model, open = "r")
   lines   <- readLines(con, warn=FALSE)
   close(con)
+  test.w <- FALSE
   i1 <- grep("event", lines)
   if (length(i1)>0) {
+    test.w <- TRUE
     lines[i1] <- gsub(" ","",lines[i1])
     for (k in (1:length(i1))) {
       ik1 <- i1[k]
@@ -367,6 +369,14 @@ rct.mlxtran <- function(model, addlines)
           stop("Interval length should be defined when events are interval censored")
       }
     }
+  }
+  i1 <- grep("correlation", lines)
+  if (length(i1)>0) {
+    test.w <- TRUE
+    lines[i1] <- gsub(" ","",lines[i1])
+    lines[i1] <- gsub("level=id,","",lines[i1])
+  }
+  if (test.w) {
     model <- "temp_model.txt"
     write(lines,model)
   }

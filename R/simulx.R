@@ -392,8 +392,10 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     model <- modify.mlxtran(model, addlines)
   
   # For time to event output, add a right censoring time = 1e10 if missing
+  # remove level=id from correlation definitions
   if (!Rmodel)
     model <- rct.mlxtran(model)
+
   #--------------------------------------------------
   lv <- list(treatment=treatment,
              parameter=parameter,
