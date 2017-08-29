@@ -169,6 +169,14 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
         flv <- lapply(flv, function(x) {x$fields$varlevel=NULL; x$fields$sd=x$fields$sd[1]; x$fields$var=x$fields$var[1]; return(x)})
         l.lvl <- field2line(flv)
         lines[lvl] <- l.lvl
+        str <- c("correlation","id\\*occ")
+        lvlcorr <- which(apply(sapply(str, grepl, lines), 1, all))
+        if (length(lvlcorr>0)) {
+          stop("Correlations at the IOV level not supported")
+#          l.vlcorr <- lines[lvlcorr]
+#          lines[lvlcorr] <- gsub("id\\*occ","id",lines[lvlcorr] )
+#          lines[lvlcorr] <- gsub("corr_","iovcorr_",lines[lvlcorr] )
+        }
         project0 <- project
         mlxtranpath <- dirname(project)
         project <- file.path(mlxtranpath,"varlevel_temp.mlxtran")
