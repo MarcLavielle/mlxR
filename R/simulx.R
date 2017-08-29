@@ -617,7 +617,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   if (!Rmodel)
     R.complete <- repCategories(R.complete, model)
   
-  if (test.project) 
+  if (is.null(settings$data.in)) settings$data.in=FALSE
+  if (test.project & !settings$data.in) 
     file.remove(model)
   else if (!is.null(riov))
     file.remove(riov$model)
