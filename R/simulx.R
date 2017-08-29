@@ -356,6 +356,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     r <- param.iov(parameter, varlevel)
     parameter <- r$param
     riov <- translateIOV(model, names.varlevel, nocc, output, r$iov, r$cat)
+    if (test.project) 
+      file.remove(model)
     model <- riov$model
     output <- outiov(output,riov$iov,varlevel,r$iov)
     regressor <- c(regressor, varlevel)
@@ -609,14 +611,18 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     R.complete$population <- pop
   }
   
-  
   Sys.setenv(LIXOFT_HOME="")
   Sys.setenv('PATH'=myOldENVPATH);
   # For categorical output, returns the categories defined in the model, instead of {0, 1, ...}
   if (!Rmodel)
     R.complete <- repCategories(R.complete, model)
   
-  return(R.complete)
+  if (test.project) 
+    file.remove(model)
+  else if (!is.null(riov))
+    file.remove(riov$model)
+  
+    return(R.complete)
 }
 
 

@@ -35,8 +35,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   if (!is.null(project))
     infoProject <- getInfoXml(project)
   
-  if (!is.null(infoProject))
-  {
+  if (!is.null(infoProject)) {
     header          = infoProject$dataheader
     observationName = infoProject$output
     datafile        = infoProject$datafile
@@ -58,8 +57,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
   ievid <- iaddl <- iii <- iss <- NULL
   
-  for (i in 1:length(headerList))
-  {
+  for (i in 1:length(headerList)) {
     hi=headerList[[i]]
     ih <- which(header %in% hi)
     if (length(ih)==0)
@@ -69,6 +67,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     if (!is.null(ih))
       newHeader[ih]=newList[i]      
   }
+  
+  if (length(iocc)>1) 
+    stop("Multiple levels of occasions are not supported")
   
   # iss <- ists
   
@@ -111,7 +112,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   
   catNames<-NULL
   headerTest = read.table(datafile, comment.char="",sep=delimiter, nrows=1,stringsAsFactors=FALSE)
-  if(headerTest[1,1]=="#"){
+  if(headerTest[1,1]=="#") {
     headerToUse<-headerTest[,-1]
     dataNoHeader    =  tryCatch(
       read.table(datafile,comment.char = "#", sep=delimiter,stringsAsFactors=FALSE)
@@ -166,6 +167,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     data$OCC <- as.factor(data[[iocc]])
     icat <- c(icat,which(names(data)=="OCC"))
   }
+  
+  if (!is.null(iid)) names(data)[iid] <- "id"
+  if (!is.null(itime)) names(data)[itime] <- "time"
   
   S       = data
   S0      = names(data)
@@ -239,6 +243,14 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
       S[[icat[j]]] <- as.factor(Scatj)  
     }
   }
+  
+  if (!is.null(iocc)) {
+    socc <- S[,c(iid,itime,iocc)]
+    socc1 <- socc[with(socc, order(id, time,occ)), ]
+    socc2 <- socc[with(socc, order(id,occ, time)), ]
+    if (!identical(socc1,socc2))
+      stop("Only occasions within a same period of time are supported")
+  }
   ##************************************************************************
   #       TREATMENT FIELD
   #**************************************************************************
@@ -255,7 +267,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     si1 <- S[i1,]
     si1[[iamt]] <- as.numeric(as.character(si1[[iamt]]))
     if (!is.null(iadm)) si1[[iadm]] <- as.numeric(as.character(si1[[iadm]]))
-    ixdose <- c(iamt, irate, itinf, iadm)
+    if (!is.null(ievid)) si1[[ievid]] <- as.numeric(as.character(si1[[ievid]]))
+    ixdose <- c(iamt, irate, itinf, iadm, ievid)
     si1dose <- si1[,ixdose]
     if (length(ixdose)==1)
       u=data.frame(idnum[i1], t[i1], si1dose)
@@ -306,9 +319,13 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
         }
       }
     }
+#    if (!is.null(ievid)) {   }
     u <- rbind(u,u.addl)
     u <- rbind(u,u.ss)
     # u <- u[order(u$id,u$time),]
+    if (("evid" %in% names(u)) & any(u$evid==4) )
+      stop("Washout (EVID=4) is not supported")
+    
     if(nrow(u)) {
       datas   = list(treatment = u)
     }
@@ -406,7 +423,6 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
             occ[i] <- occ[i-1] + 1
           else
             occ[i] <- 1
-          end
         }     
       }
       ov.io$occ <- occ

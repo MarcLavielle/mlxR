@@ -190,6 +190,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
         con        = file(model, open = "r")
         lines      = readLines(con, warn=FALSE)
         close(con)
+        file.remove(project,model)
         lvl <- match(l.lvl,gsub(" ","",lines))
         flv <- line2field(lines[lvl])
         iov.input <- c()
