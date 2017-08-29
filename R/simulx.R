@@ -620,7 +620,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   if (is.null(settings$data.in)) settings$data.in=FALSE
   if (test.project & !settings$data.in) 
     file.remove(model)
-  else if (!is.null(riov))
+  else if (!is.null(riov) & !settings$data.in)
     file.remove(riov$model)
   
     return(R.complete)
@@ -729,7 +729,7 @@ dataOutiov <- function(d,r) {
   if (length(v)>0) {
     iov <- merge(d[[o]],d[[v[1]]])
     d[[v[1]]] <- NULL
-    d[[o]] <- NULL
+    #d[[o]] <- NULL
     if (length(v)>1) {
       for (k in (2:length(v))) {
         iov <- merge(iov,d[[v[k]]])
@@ -737,6 +737,7 @@ dataOutiov <- function(d,r) {
       }
     }
 #    d$parameter <- list(iiv=d$parameter, iov=iov)
+    names(d)[which(names(d)==o)] <- "occasion"
     d$parameter.iiv=d$parameter
     d$parameter <- NULL
     d$parameter.iov=iov
