@@ -69,6 +69,7 @@ mlxComputeRLibraryBuilder <- function(lixoftHOME){
     myOldENVPATH = Sys.getenv('PATH');
     #myNewENVPATH = sprintf("%s;%s/../tools/MinGW/bin;%s/tools/MinGW/bin", myOldENVPATH, lixoftHOME,lixoftHOME);
     myNewENVPATH = sprintf("%s/../tools/MinGW/bin;%s/tools/MinGW/bin;%s", lixoftHOME,lixoftHOME,myOldENVPATH);
+#    myNewENVPATH = sprintf("%s/tools/MinGW/bin;%s", lixoftHOME,lixoftHOME,myOldENVPATH);
     
     Sys.setenv('PATH'=myNewENVPATH)
     dirWheremlxComputeRIsInstalled = sprintf("%s/lib", lixoftHOME)
