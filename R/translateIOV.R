@@ -173,7 +173,7 @@ strmerge <- function(str1) {
     n2 <- sum(gregexpr("\\}",s)[[1]]>0)
     while(n1 > n2) {
       idx <- idx+1
-      if (identical(substr(s,nchar(s),nchar(s)),","))
+      if (identical(substr(s,nchar(s),nchar(s)),",") | identical(substr(s,nchar(s),nchar(s)),"{"))
         s <- paste0(s,str1[idx])
       else
         s <- paste(s,str1[idx],sep=",")

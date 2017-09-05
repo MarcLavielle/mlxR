@@ -255,6 +255,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   #       TREATMENT FIELD
   #**************************************************************************
   #  i1.evid <- NULL
+  u.evid <- NULL
   if (!is.null(iamt)) {
     i1 = findstrcmp(S[[iamt]],'.', not=TRUE)
     if (!is.null(ievid)) {
@@ -278,7 +279,6 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     #
     u.addl <- NULL
     u.ss <- NULL
-    u.evid <- NULL
     if (!is.null(iaddl)) {
       addl <- as.numeric(as.character(S[i1,iaddl]))
       ii <- as.numeric(as.character(S[i1,iii]))

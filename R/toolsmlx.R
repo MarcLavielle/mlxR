@@ -385,7 +385,7 @@ rct.mlxtran <- function(model, addlines)
 
 repCategories <- function(r, model) {
   categories <- NULL
-  lines <- splitModel(model,"LONGITUDINAL")[[1]]$model
+  lines <- splitModel(model,"LONGITUDINAL")[[1]]$lines
   if (!is.null(lines)) {
     ldef  <- grep("DEFINITION:",lines, fixed=TRUE)
     if (length(ldef)>0) {
