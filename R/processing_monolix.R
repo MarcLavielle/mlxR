@@ -433,13 +433,13 @@ myparseXML  <- function (filename, mlxtranpath, node)
 ##
 readPopEstimate  <-  function(filename, fim=NULL) {
   if (file.exists(filename)) {
-    data        = read.table(filename, header = TRUE, sep=";")
+    data        = read.table(filename, header = TRUE, sep=";", fill=TRUE)
     if (ncol(data)==1)
-      data        = read.table(filename, header = TRUE, sep=",")
+      data        = read.table(filename, header = TRUE, sep=",", fill=TRUE)
     if (ncol(data)==1)
-      data        = read.table(filename, header = TRUE, sep="\t")
+      data        = read.table(filename, header = TRUE, sep="\t", fill=TRUE)
     if (ncol(data)==1)
-      data        = read.table(filename, header = TRUE, sep=" ")
+      data        = read.table(filename, header = TRUE, sep=" ", fill=TRUE)
     name        = as.character(data[[1]])
     name        = sub(" +", "", name)
     name        = sub(" +$", "", name)
