@@ -155,8 +155,17 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   if (is.null(settings$replacement)) replacement <- FALSE
   out.trt <- settings$out.trt
   if (is.null(settings$out.trt))  out.trt <- T
+  
   if (!is.null(data)) {
+    imodel.inline <- FALSE
+    if (is.list(data$model)) {
+      write(data$model$str, data$model$filename)
+      data$model <- data$model$filename
+      imodel.inline <- TRUE
+    }
     r <- simulxunit(data=data,settings=settings,riov=NULL)
+    if (imodel.inline==TRUE)
+      file.remove(data$model)
     Sys.setenv(LIXOFT_HOME="")
     Sys.setenv('PATH'=myOldENVPATH);
     return(r)
@@ -165,18 +174,35 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   if (isfield(settings,"record.file"))  
     warning("\n\n 'record.file' is a deprecated option. Use 'result.file' instead.")
   
-  #--------------------------------------------------
-  #    R MODEL
-  #--------------------------------------------------
-  Rmodel <- FALSE
-  if (identical(file_ext(model),"R")) 
-    Rmodel <- TRUE
-  else if ( !is.null(model) && exists(model, mode="function") )
-    Rmodel <- TRUE
   
   #--------------------------------------------------
-  #   MODEL ->  PROJECT
+  #    MODEL
   #--------------------------------------------------
+  
+  # inline model
+  imodel.inline <- FALSE
+  if (is.list(model)) {
+    imodel.inline <- TRUE
+    # if (!is.null(settings$data.in) && settings$data.in)
+    #   imodel.inline <- FALSE
+    if (imodel.inline==TRUE) {
+      write(model$str, model$filename)
+      model <- model$filename
+    }
+  }
+  
+  #--------------------------------------------------
+  # R MODEL
+  Rmodel <- FALSE
+  if (identical(file_ext(model),"R")) {
+    Rmodel <- TRUE
+  } else {
+    if ( !is.null(model) && !is.list(model) && exists(model, mode="function") )
+      Rmodel <- TRUE
+  }
+  
+  #--------------------------------------------------
+  # MODEL ->  PROJECT
   if (identical(file_ext(model),"mlxtran")) {
     lines <- readLines(model)
     data.test <-  grep('<DATAFILE>', lines, fixed=TRUE, value=TRUE)
@@ -213,23 +239,19 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   loq.a <- list()
   loq.arg <- c("limit", "lloq", "uloq")
   arg.names <- c("name", "time", loq.arg)
-  if (length(output)>0)
-  {
+  if (length(output)>0) {
     ik0 <- NULL
     for (k in (1:length(output))){
       outk <- output[[k]]
       if (is.null(outk$name))
         stop("\n'name' is missing in the definition of an output\n")
       outk$type <- NULL
-      if (!all(sapply(outk[loq.arg],"is.null")))
-      {
+      if (!all(sapply(outk[loq.arg],"is.null"))) {
         loq.n <- c(loq.n, outk$name)
         iloq <- which(sapply(outk[loq.arg],"is.null")==FALSE)
         loq.a <- c(loq.a, rep(list(outk[loq.arg[iloq]]),length(outk$name)))
         if (!(is.null(project)) && is.null(outk$time))  
-        {
           ik0 <- c(ik0, k)
-        }
       }
       if (is.null(outk$time))
         outk.n <- "parameter"
@@ -395,7 +417,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   # remove level=id from correlation definitions
   if (!Rmodel)
     model <- rct.mlxtran(model)
-
+  
   #--------------------------------------------------
   lv <- list(treatment=treatment,
              parameter=parameter,
@@ -483,7 +505,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           lv <- resample.data(data=lv0,idOri=id,N=sum(g.size),replacement=replacement)
         if (test.N==F)  
           lv$group <- group
-
+        
         r <- simulxunit(model=model,lv=lv,settings=settings, out.trt=out.trt,riov=riov)
       }
       
@@ -620,12 +642,14 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     R.complete <- repCategories(R.complete, model)
   
   if (is.null(settings$data.in)) settings$data.in=FALSE
-  if (test.project & !settings$data.in) 
-    file.remove(model)
-  else if (!is.null(riov) & !settings$data.in)
-    file.remove(riov$model)
+  if (!settings$data.in) {
+    if (test.project | imodel.inline) 
+      file.remove(model)
+    else if (!is.null(riov))
+      file.remove(riov$model)
+  }
   
-    return(R.complete)
+  return(R.complete)
 }
 
 
