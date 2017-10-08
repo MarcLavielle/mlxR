@@ -53,6 +53,12 @@
 kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE, 
                         color="#e05969", group=NULL, facet=TRUE, labels=NULL)
 { 
+  if (is.vector(r))
+    r <- data.frame(time=r, y=1)
+  if (dim(r)[2] ==1) {
+    names(r) <- "time"
+    r$y <- 1
+  }
   r.name <- attr(r,"name")
   if (length(r.name)>1 || !any(names(r)==r.name)) {
     if (any(names(r)=="status")) {
@@ -73,8 +79,15 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
     group = NULL
   }
   
-  if (is.null(r$id))
+  if (is.null(r$id)) 
     r$id <- (1: dim(r)[1])
+  
+  if (length(unique(r$id)) == dim(r)[1]) {
+    r0 <- r
+    r0$time <- 0
+    r0$y <- 0
+    r <- rbind(r0,r)
+  }
   
   if (is.data.frame(group)) {
     attr.name <- attr(r,"name")
@@ -118,6 +131,18 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
   urep <- unique(r$rep)
   nrep <- length(urep)
   
+  if (index=="numberEvent") {
+    r0 <- subset(r, y==0 & time>0)
+    index="numberEvent0"
+    if (!is.null(r0) & length(unique(r0$time))>1) {
+      a=aggregate(r$time, list((!r$y==0),r$id, r$rep), function(x){ if (length(x)==0) -Inf else max(x)}, drop=FALSE)
+      a0 <- a$x[seq(1,length(a$x),by=2)]
+      a1 <- a$x[seq(2,length(a$x),by=2)]
+      if (length(unique(a0[which(a0>a1)]))>1)
+        index="numberEvent"
+    }
+  }
+  
   D <- D0 <- NULL
   for (jrep in (1:nrep)) {
     rj <- r[r$rep==urep[jrep],]
@@ -127,7 +152,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
     
     if (is.numeric(index)) {
       test.index <- FALSE
-      r0 <- r1 <- NULL
+      r0 <- r1 <- r10 <- NULL
       for (i in seq(1,N)) {
         ri <- rj[rj$id==uid[i],]
         cyi <- cumsum(ri$y)
@@ -136,11 +161,18 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
         ri$y <- 1
         if (any(index<=cyi)) {
           it <- min(which(index<=cyi))
-          r1 <- rbind(r1,ri[it,]) 
+          if (is.null(r1))
+            r1 = ri[it,]
+          else
+            r1[dim(r1)[1]+1,] = ri[it,]
         } else {
-          di <- dim(ri)[1]
-          r0 <- rbind(r0,ri[di,])  
+          if (is.null(r0))
+            r0 = ri[dim(ri)[1],]
+          else
+            r0[dim(r0)[1]+1,] = ri[dim(ri)[1],]
         }
+        
+        
       }
       if (!is.null(r0)) {
         names(r0)[names(r0)=="y"] <- "c"
@@ -195,10 +227,14 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
           S <- S[-length(S)]
           Se <- c(Se,rep(sek,each=2))
           Se <- Se[-length(Se)]
+          tu <- ru$time[-1]
           Tk<-c(t0,rep(tu,each=2))
         } else {
-          Sa <- approx(x=c(t0,tu),y=Sk,xout=time, rule=1)$y
-          sea <- approx(x=c(t0,tu),y=sek,xout=time, rule=1)$y
+          urt <- sort(unique(r$time))
+          Sku <- approx(x=ru$time,y=Sk,xout=urt,method="constant",rule=2)$y
+          Sa <- approx(x=urt,y=Sku,xout=time, rule=2)$y
+          seku <- approx(x=ru$time,y=sek,xout=urt,method="constant",rule=2)$y
+          sea <- approx(x=urt,y=seku,xout=time, rule=2)$y
           S <- c(S,Sa)
           Se <- c(Se,sea)
           Tk<-time
@@ -226,8 +262,9 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
           }
         }
       }
-    } else if (index=="numberEvent") {
-      #g <- as.numeric(levels(rj$col)[rj$col])
+    } else if (index=="numberEvent0") {
+      
+      
       g <- rj$col
       t0=min(rj$time)
       S <- T <- G <- NULL
@@ -252,7 +289,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
           Tk <- rep(ut,each=2)
           Tk <- Tk[-1]
         } else {
-          Sa <- approx(x=ut,y=cy,xout=time, rule=1)$y
+          Sa <- approx(x=ut,y=cy,xout=time, rule=2)$y
           S <- c(S,Sa)
           Tk<-time
         }
@@ -265,6 +302,104 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
         }
         G <- rbind(G,Gk)
       }
+      
+    } else if (index=="numberEvent") {
+      
+      
+      srj <- aggregate(rj$y, list(rj$id), sum)
+      k.max <- max(srj[,2])
+      
+      urt <- sort(unique(r$time))
+      t0 <- urt[1]
+      if (is.null(time)) 
+        Tk<-c(t0,rep(urt[-1],each=2))
+      else 
+        Tk<-time
+      
+      
+      S.tot <- 0
+      for (k in (1:k.max)) {
+        r0 <- r1 <- NULL
+        for (i in seq(1,N)) {
+          ri <- rj[rj$id==uid[i],]
+          cyi <- cumsum(ri$y)
+          ri$y <- 1
+          if (any(k<=cyi)) {
+            it <- min(which(k<=cyi))
+            if (is.null(r1))
+              r1 = ri[it,]
+            else
+              r1[dim(r1)[1]+1,] = ri[it,]
+          } else {
+            if (is.null(r0))
+              r0 = ri[dim(ri)[1],]
+            else
+              r0[dim(r0)[1]+1,] = ri[dim(ri)[1],]
+          }
+        }
+        if (!is.null(r0)) {
+          names(r0)[names(r0)=="y"] <- "c"
+          r0$d <- 0
+        }
+        if (!is.null(r1)) {
+          names(r1)[names(r1)=="y"] <- "d"
+          r1$c <- 0
+        }
+        re <- rbind(r1,r0)
+        re <- re[with(re, order(time)), ]
+        
+        g=re$col
+        
+        re$id <- NULL
+        
+        S <- NULL
+        for (kg in ug) {
+          rk<-re[g==kg,]
+          Nk <- dim(rk)[1]
+          ut <- uniquemlx(rk$time)
+          tu <- ut$uniqueValue
+          iu <- ut$sortIndex
+          nt <- length(tu)
+          ru <- data.frame(time=c(t0,tu),d=0,c=0)
+          nj <- Nk
+          for (j in seq(1,nt)) {
+            ru$c[j+1] <- sum(rk$c[iu==j])
+            ru$d[j+1] <- sum(rk$d[iu==j])
+          }
+          nj <- Nk
+          Sk <- vector(length=nt+1)
+          Sk[1] <- 1
+          for (j in seq(2,nt+1)) {
+            nj <- nj - ru$c[j-1] - ru$d[j-1]
+            pj <- (nj - ru$d[j])/nj
+            Sk[j] <- Sk[j-1]*pj
+          }
+          
+          Sku <- approx(x=ru$time,y=Sk,xout=urt,method="constant",rule=2)$y
+          if (is.null(time)) {
+            S <- c(S,rep(Sku,each=2))
+            S <- S[-length(S)]
+          } else {
+            Sa <- approx(x=urt,y=Sku,xout=time, rule=2)$y
+            S <- c(S,Sa)
+          }
+        }
+        S.tot <- S.tot + (1-S)
+      }
+      S <- S.tot
+      T <- G <- NULL
+      for (kg in ug) {
+        T<-c(T,Tk)
+        jk1 <- which(ig==kg)[1]
+        Gk <- r[group][rep(jk1,length(Tk)),]
+        if (!is.data.frame(Gk)) {
+          Gk <- data.frame(Gk)
+          names(Gk) <- names(r[group])
+        }
+        G <- rbind(G,Gk)
+      }
+      
+      
       
     } else {
       cat("\nindex should be an integer of the string 'numberEvent'\n")
@@ -321,7 +456,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
       } else {
         D$Dgrep <- interaction(D$group,D$rep)
         plot1 <- ggplotmlx() +  geom_line(data=D, aes(x=time, y=S, colour=group, group=Dgrep), size=1)
-       }
+      }
       if (!is.null(level)){
         if (nrep==1) {
           plot1=plot1+geom_line(data=D, aes(x=time, y=S1, colour=group), linetype="dotted", size=0.8) +
@@ -333,7 +468,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
       }
     }
     
-    if (index=="numberEvent") {
+    if (index=="numberEvent" | index=="numberEvent0") {
       plot1 <- plot1 + xlab("time") + ylab("mean number of events per individual") 
     } else if (test.index==FALSE) {
       plot1 <- plot1 + xlab("time") + ylab("survival") 
@@ -375,7 +510,7 @@ completemlx <- function(xi,ti,t) {
   nt <- length(t)
   nti <- length(ti)
   x <- rep(xi[nti],nt)
-  for (k in (1: (nti-2))) {
+  for (k in (1: (nti-1))) {
     itk <- which( t>=ti[k] & t < ti[k+1])
     x[itk] <- xi[k]
   }
