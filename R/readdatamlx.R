@@ -460,9 +460,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
         names(cdf.iov)[k2]=names(S)[ic[k]]    
       }
     }
-    if (dim(cdf)[2]>1)
+    if (dim(cdf)[2]>1 & k1>1)
       datas[["covariate"]] = cdf
-    if (!is.null(cdf.iov))
+    if (!is.null(cdf.iov) & k2>2)
       datas[["covariate.iov"]] = cdf.iov
   }
   

@@ -253,7 +253,7 @@ select.data  <- function(data)
           if (is.null(select.id)) {
             select.id <- unique(datak$id)
           } else {
-            select.id <- intersect(select.id , unique(datak$id))
+            select.id <- union(select.id , unique(datak$id))
           }
         } 
       } else {
@@ -264,7 +264,7 @@ select.data  <- function(data)
               if (is.null(select.id)) {
                 select.id <- unique(datam$id)
               } else {
-                select.id <- intersect(select.id , unique(datam$id))
+                select.id <- union(select.id , unique(datam$id))
               }
             } 
           }
@@ -276,16 +276,12 @@ select.data  <- function(data)
     if (length(select.id)==0)
       stop("\nPlease check the id's... The selection of the id's for the different inputs of simulx is not consistent: the intersection is empty!\n")
     N <- nlevels(select.id)
-    for  (j in (1:length(data)))
-    {
+    for  (j in (1:length(data))) {
       dataj <- data[[j]]
-      for  (k in (1:length(dataj)))
-      {
+      for  (k in (1:length(dataj))) {
         datak <- dataj[[k]]
-        if (is.data.frame(datak))
-        {
-          if (!is.null(datak$id))
-          {
+        if (is.data.frame(datak)) {
+          if (!is.null(datak$id)) {
             idk <- which(datak$id %in% select.id)
             data[[j]][[k]] <- datak[idk,]
           } 
