@@ -370,7 +370,7 @@ getInfoXml  <- function (project)
   infoOutput              = myparseXML(xmlfile, mlxtranpath, 'observationModel')
   
   for (k in 1:length(infoOutput))
-    infoProject$output[[k]] = infoOutput[[k]]$name;
+    infoProject$output[[k]] = infoOutput[[k]]$name
   
   infoParam <- myparseXML(xmlfile, mlxtranpath, "parameter")
   #   info.length <- unlist(lapply(infoParam,length))
@@ -573,7 +573,7 @@ mergeArg  <- function(p1,p2)
       testi  = 0
       namei2 = p2i$name
       for (j in 1:n1) {
-        p1j = p1[[j]];
+        p1j = p1[[j]]
         if (!is.null(p1j$colNames)) {
           if (namei2==p1j$name) {
             p[[j]] = p2i
@@ -619,7 +619,7 @@ mergeArg  <- function(p1,p2)
             }
           }
           if (testk==0) {
-            np = np+1;
+            np = np+1
             p[[np]] =list(name= list(namek2))
             if (!is.null(p2i$value))
               p[[np]]$value=p2i$value[k]

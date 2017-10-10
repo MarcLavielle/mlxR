@@ -640,7 +640,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   # For categorical output, returns the categories defined in the model, instead of {0, 1, ...}
   if (!Rmodel)
     R.complete <- repCategories(R.complete, model)
-  
   if (is.null(settings$data.in)) settings$data.in=FALSE
   if (!settings$data.in) {
     if (test.project | imodel.inline) 
