@@ -12,7 +12,7 @@ funique <- function(A){
   #   [C,IA,IC] = unique(A) also returns index vectors IA and IC such that
   #   C = A(IA) and A = C(IC).  
   #
-  # [C,IA,IC]= unique( A , 'first' );
+  # [C,IA,IC]= unique( A , 'first' )
   C  <- unique( A )
   # IA <- match(data.frame(t(C)), data.frame(t(A)))
   # IC <- match(data.frame(t(A)), data.frame(t(C)))
@@ -312,6 +312,7 @@ modify.mlxtran <- function(model, addlines)
   con     <- file(model, open = "r")
   lines   <- readLines(con, warn=FALSE)
   close(con)
+  lines <- gsub("\\;.*","",lines)
   
   if (!is.list(addlines[[1]]))
     addlines <- list(addlines)
@@ -345,6 +346,7 @@ rct.mlxtran <- function(model, addlines)
   con     <- file(model, open = "r")
   lines   <- readLines(con, warn=FALSE)
   close(con)
+  lines <- gsub("\\;.*","",lines)
   test.w <- FALSE
   i1 <- grep("event", lines)
   if (length(i1)>0) {
