@@ -97,15 +97,10 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       )
     }      
   )    
-
+  
   pop_param <- r[[1]]
-  
-  # estimates.txt (monolix version < 2017) contains all population parameters, 
-  # or populationParameters.txt (monolix2017 after 10/10/2017) contains all population parameters.
-
   # add fixed parameters not existing in estimates.txt, but in infoProject$fixedParameters
-  # pop_param<-c( pop_param,infoProject$fixedParameters)
-  
+  pop_param<-c( pop_param,infoProject$fixedParameters)
   if (!is.null(datas$covariate.iiv))
     paramp <- list(pop_param,datas$covariate.iiv,datas$parameter,datas$covariate.iov)
   else
