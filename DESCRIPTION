@@ -1,6 +1,6 @@
 Package: mlxR
 Type: Package
-Version: 3.2.3
+Version: 3.2.4
 Title: Simulation of Longitudinal Data
 Description: Simulation and visualization of complex
     models for longitudinal data. The models are encoded using the model coding
@@ -10,8 +10,7 @@ Description: Simulation and visualization of complex
     including mixed effects models, for continuous, count, categorical, and
     time-to-event data.
 Authors@R: c(
-    person( "Marc", "Lavielle", role = c("aut","cre"), email = "Marc.Lavielle@inria.fr" ), 
-    person( "Raphael", "Kuate", role = "ctb", email = "raphael.kuate@inria.fr")
+    person( "Marc", "Lavielle", role = c("aut","cre"), email = "Marc.Lavielle@inria.fr" )
     )
 URL: http://simulx.webpopix.org
 BugReports: https://github.com/MarcLavielle/mlxR/issues

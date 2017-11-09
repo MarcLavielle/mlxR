@@ -9,8 +9,36 @@ inlineModel(str, filename = NULL)
 \arguments{
 \item{str}{model}
 
-\item{filename}{where to write the temporary model}
+\item{filename}{name of the temporary model file}
+}
+\value{
+A Shiny app with files ui.R, server.R and model.txt
 }
 \description{
-inline model
+Define a model "inline"
+}
+\details{
+A temporary model file \code{filename} is created.  Default name is "temp_model.txt". 
+\code{filename="random"} generates a random name.
+}
+\examples{
+\dontrun{
+myModel1 <- inlineModel("
+[LONGITUDINAL]
+EQUATION:
+f = 10*exp(-0.2*t)
+")
+
+print(myModel1)
+
+r <- simulx(model=myModel1, output=list(name="f", time=0:100))
+
+myModel2 <- inlineModel("
+[LONGITUDINAL]
+EQUATION:
+f = 10*exp(-0.2*t)
+", filename="random")
+
+print(myModel2)
+}
 }
