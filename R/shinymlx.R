@@ -110,7 +110,10 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,
   s2f <- ""
   unlink(file.path(mainDir=appname), recursive = TRUE, force = TRUE)
   dir.create(file.path(mainDir=appname), showWarnings = FALSE)
-  file.copy(model,file.path(appname,"model.txt"),overwrite=TRUE)
+  if (is.list(model)) 
+    write(model$str, file.path(appname,"model.txt"))
+  else 
+    file.copy(model,file.path(appname,"model.txt"),overwrite=TRUE)
   
   output <- foutput(output)  
   s1 <- out2str(output)
@@ -469,7 +472,7 @@ plotOutput("plot")
 )
 ))
 ')    
-    
+
   }else if (identical(style,"navbar1")){
     ui.out <- paste0('
 ui <- shinyUI(fluidPage(
@@ -490,7 +493,7 @@ tabPanel("server.R", pre(includeText("server.R")))
 )
 ))
 ')    
-    
+
   }else if (identical(style,"navbar2")){
     ui.out <- paste0('
 ui <- shinyUI(fluidPage(
@@ -515,7 +518,7 @@ tabPanel("server.R", pre(includeText("server.R")))
 )
 ))
 ')
-    
+
   }else{
     if (!is.null(s.output)){
       sout <- paste0('
