@@ -32,8 +32,20 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   # READDATAMLX reads a datafile and create a list.
   id <- NULL
   observationName <- NULL
-  if (!is.null(project))
+  datas=NULL
+  
+  if (!is.null(project)) {
     infoProject <- getInfoXml(project)
+    r= tryCatch(
+      readPopEstimate(file.path(infoProject$resultFolder,'populationParameters.txt'))
+      , error=function(e) {
+        error<-  geterrmessage()
+        return(readPopEstimate(file.path(infoProject$resultFolder,'estimates.txt'))
+        )
+      }      
+    )    
+    datas$populationParameters <- r[[1]]
+  }
   
   if (!is.null(infoProject)) {
     header          = infoProject$dataheader
@@ -47,7 +59,6 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   newList[3:4] <- c('amount','type')
   newHeader       = vector(length=length(header))
   ixdose = NULL
-  datas=NULL
   
   header=unlist(strsplit(header, ",")) 
   header <- toupper(header)
@@ -319,7 +330,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
         }
       }
     }
-#    if (!is.null(ievid)) {   }
+    #    if (!is.null(ievid)) {   }
     u <- rbind(u,u.addl)
     u <- rbind(u,u.ss)
     # u <- u[order(u$id,u$time),]
@@ -327,7 +338,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
       stop("Washout (EVID=4) is not supported")
     
     if(nrow(u)) {
-      datas   = list(treatment = u)
+      datas   = c(datas,list(treatment = u))
     }
   }
   
@@ -468,13 +479,15 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   
   for (k in (1:length(datas))) {
     dk <- datas[[k]]
-    ik <- match(dk$id,iduf)
-    if (!is.null(dk$time))
-      datas[[k]] <- dk[order(ik,dk$time),]
-    else
-      datas[[k]] <- dk[order(ik),]
-    if (is.null(iid))
-      datas[[k]]$id <- NULL
+    if (is.data.frame(dk)) {
+      ik <- match(dk$id,iduf)
+      if (!is.null(dk$time))
+        datas[[k]] <- dk[order(ik,dk$time),]
+      else
+        datas[[k]] <- dk[order(ik),]
+      if (is.null(iid))
+        datas[[k]]$id <- NULL
+    }
   }
   if (!is.null(iid)) {
     datas$id <- iduf  
