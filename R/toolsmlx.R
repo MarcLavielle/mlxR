@@ -116,8 +116,7 @@ mklist <- function(x, add.name=T)
 }
 
 
-dpopid <- function(x,s)
-{
+dpopid <- function(x,s) {
   n <- length(x)
   r <- list(name=s,j=NULL,id=NULL,N=NULL,pop=NULL,npop=NULL)
   for (k in (1:n)) {
@@ -136,6 +135,7 @@ dpopid <- function(x,s)
       }
       
       if (!is.null(xk$id)) {
+        xk$id <- factor(xk$id, levels=unique(xk$id))
         idk <- levels(factor(xk$id))
         r$id <- unique(c(r$id,idk))
         r$j <- c(r$j,k)
@@ -143,7 +143,7 @@ dpopid <- function(x,s)
       if (!is.null(xk$pop)){
         r$npop <- unique(c(r$npop,length(unique(xk$pop))))
         if (length(r$npop)>1)
-          stop(paste('Different numbers of populations are defined in ',s))
+          stop(paste('Different numbers of populations are defined in ',s), call.=FALSE)
         r$pop <- c(r$pop,k)
       }
     } 
@@ -274,7 +274,7 @@ select.data  <- function(data)
   }
   if (!is.null(select.id)) {
     if (length(select.id)==0)
-      stop("\nPlease check the id's... The selection of the id's for the different inputs of simulx is not consistent: the intersection is empty!\n")
+      stop("\nPlease check the id's... The selection of the id's for the different inputs of simulx is not consistent: the intersection is empty!\n", call.=FALSE)
     N <- nlevels(select.id)
     for  (j in (1:length(data))) {
       dataj <- data[[j]]
@@ -360,11 +360,11 @@ rct.mlxtran <- function(model, addlines)
         lk <- lines[ik1:ik2]
         if (length(grep("rightCensoringTime", lk))==0) {
           if (length(grep("maxEventNumber", lk))==0) 
-            stop("Right censoring time should be defined for repeated events, when there is no maximum number of events")
+            stop("Right censoring time should be defined for repeated events, when there is no maximum number of events", call.=FALSE)
           lines[ik1] <- gsub("type=event","type=event, rightCensoringTime=1e10",lk[1])
         }
         if (length(grep("intervalCensored", lk))>0 & length(grep("intervalLength", lk))==0) 
-          stop("Interval length should be defined when events are interval censored")
+          stop("Interval length should be defined when events are interval censored", call.=FALSE)
       }
     }
   }

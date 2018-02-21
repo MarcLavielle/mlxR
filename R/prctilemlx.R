@@ -10,7 +10,7 @@
 #' @param level the largest interval (i.e. the difference between the lowest and the highest percentile).
 #' @param plot if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}
 #' the values are returned
-#' @param color a color to be used for the plots (default="purple")
+#' @param color a color to be used for the plots (default="#9a35ff")
 #' @param group  variable to be used for defining groups (by default, \samp{group} is used when it exists)
 #' @param facet  makes subplots for different groups if \code{TRUE} 
 #' @param labels  vector of strings 
@@ -80,7 +80,7 @@
 #' @importFrom ggplot2 ggplot geom_point theme aes geom_line xlab ylab facet_wrap facet_grid
 #' @importFrom stats quantile 
 #' @export         
-prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="purple",
+prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="#9a35ff",
                        group=NULL, facet=TRUE, labels=NULL, band=NULL)
 {
   

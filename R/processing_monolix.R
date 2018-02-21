@@ -15,6 +15,9 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   ##************************************************************************
   #       XML FILENUL
   #*************************************************************************
+  if (!file.exists(project)) 
+    stop(paste0("The Monolix project ", project, " does not exists..."), call.=FALSE)
+  
   infoProject <- getInfoXml(project)
   n.output <- length(infoProject$output)
   param <- parameter
@@ -43,14 +46,11 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
     }
     
     if (any(sapply(param,is.character))) {
-      file = file.path(infoProject$resultFolder,'indiv_parameters.txt') 
-      datas$parameter = readIndEstimate(file,param[which(sapply(param,is.character))])
-      #        datas$parameter = readIndEstimate(file,param)
+      datas$parameter = readIndEstimate(infoProject$resultFolder,param[which(sapply(param,is.character))])
       iop_indiv=1
     } else {
       iop_indiv=0
     }
-    #   data$id <- data.frame(NewId=seq(1:N),OriId=new.id)
     
     datas$id <- data.frame(newId=seq(1:datas$N),oriId=datas$id)
     if  (!is.null(param)) {
@@ -78,9 +78,11 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   }
   
   if (identical(fim,"needed")) {
-    if  (file.exists(file.path(infoProject$resultFolder,'correlationEstimates_sa.txt')))
+    if  (file.exists(file.path(infoProject$resultFolder,'correlationEstimates_sa.txt')) |
+         file.exists(file.path(infoProject$resultFolder,'FisherInformation','correlationEstimatesSA.txt')))
       fim <- 'sa'
-    else if (file.exists(file.path(infoProject$resultFolder,'correlationEstimates_lin.txt')))
+    else if (file.exists(file.path(infoProject$resultFolder,'correlationEstimates_lin.txt')) |
+             file.exists(file.path(infoProject$resultFolder,'FisherInformation','correlationEstimatesLin.txt')))
       fim <- "lin"
     else
       fim <- NULL
@@ -89,18 +91,10 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   ##************************************************************************
   #       PARAMETERS
   #**************************************************************************
-  r= tryCatch(
-    readPopEstimate(file.path(infoProject$resultFolder,'populationParameters.txt'),fim)
-    , error=function(e) {
-      error<-  geterrmessage()
-      return(readPopEstimate(file.path(infoProject$resultFolder,'estimates.txt'),fim)
-      )
-    }      
-  )    
+  
+  r <- readPopEstimate(infoProject$resultFolder,fim)
   
   pop_param <- r[[1]]
-  # add fixed parameters not existing in estimates.txt, but in infoProject$fixedParameters
-  pop_param<-c( pop_param,infoProject$fixedParameters)
   if (!is.null(datas$covariate.iiv))
     paramp <- list(pop_param,datas$covariate.iiv,datas$parameter,datas$covariate.iov)
   else
@@ -115,20 +109,11 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   fim <- r[[3]]
   if (!is.null(fim)) {
     pop_se <- r[[2]]
-    # add fixed parameters
-    fixedPar<-rep(0,length(infoProject$fixedParameters))
-    names(fixedPar)<-names(infoProject$fixedParameters)
-    pop_se<-c( pop_se, fixedPar)
-    if (fim=="sa")
-      f.mat = readFIM(file.path(infoProject$resultFolder,'correlationEstimates_sa.txt'))
-    else
-      f.mat = readFIM(file.path(infoProject$resultFolder,'correlationEstimates_lin.txt'))
-    # add fixed parameters
-    fmatResized<-rbind(as.matrix(f.mat),matrix(NaN,length(fixedPar),nrow(f.mat)))
-    fmatResized<-cbind(as.matrix(fmatResized),matrix(NaN,nrow(fmatResized),length(fixedPar)))
-    colnames(fmatResized)<-c(colnames(f.mat),names(fixedPar))
-    rownames(fmatResized)<-colnames(fmatResized)
-    f.mat <-fmatResized
+    fm = readFIM(infoProject$resultFolder, fim)
+    ifm <- match(names(fm), names(pop_param))
+    f.mat <- matrix(NaN, length(pop_param), length(pop_param))
+    f.mat[ifm,ifm] <- as.matrix(fm)
+    colnames(f.mat) <- row.names(f.mat) <- names(pop_param)
     if0 <- which(names(f.mat) %in% names(unlist(param)))
     f.mat[if0,] <- f.mat[,if0] <- NaN
     pop_se[if0] <- 0
@@ -163,81 +148,31 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   #**************************************************************************
   if (create.model==TRUE) {
     if (is.null(model)) {
-      # generate model from mlxtran file  
-      
-      con        = file(project, open = "r")
-      lines      = readLines(con, warn=FALSE)
-      close(con)
-      lvl <- grep("varlevel",lines)
-      if (length(lvl)>0) {
-        flv <- line2field(lines[lvl])
-        iov.varlevel <- lapply(flv, function(x) x$fields["varlevel"])
-        iov.sd <- lapply(flv, function(x) x$fields["sd"])
-        iov.var <- lapply(flv, function(x) x$fields["var"])
-        flv <- lapply(flv, function(x) {x$fields$varlevel=NULL; x$fields$sd=x$fields$sd[1]; x$fields$var=x$fields$var[1]; return(x)})
-        l.lvl <- field2line(flv)
-        lines[lvl] <- l.lvl
-        str <- c("correlation","id\\*occ")
-        lvlcorr <- which(apply(sapply(str, grepl, lines), 1, all))
-        if (length(lvlcorr>0)) {
-          stop("Correlations at the IOV level not supported")
-#          l.vlcorr <- lines[lvlcorr]
-#          lines[lvlcorr] <- gsub("id\\*occ","id",lines[lvlcorr] )
-#          lines[lvlcorr] <- gsub("corr_","iovcorr_",lines[lvlcorr] )
-        }
-        project0 <- project
+      # generate model from mlxtran file 
+      use.translate <- TRUE
+      if (use.translate == FALSE) {
+        lines <- myTranslate(project)
+        mlxtranfile = file_path_sans_ext(basename(project))
         mlxtranpath <- dirname(project)
-        project <- file.path(mlxtranpath,"varlevel_temp.mlxtran")
-        write(lines,project)
-      }
-      
-      
-      mlxtranfile = file_path_sans_ext(basename(project))
-      mlxtranpath <- dirname(project)
-      model = file.path(mlxtranpath,paste0(mlxtranfile,"_model.txt"))
-      session<-Sys.getenv("session.simulx")
-      zz=file.path(session,'lib','lixoftLanguageTranslator')
-      str=paste0('"',zz,'" --from=mlxproject --to=mlxtran')  
-      str=paste0(str,' --output-file=',model,' --input-file=',project,' --option=with-observation-model') 
-      system(str, wait=T)
-      pathLib = Sys.getenv("LIXOFT_HOME")
-      
-      if (length(lvl)>0) {
-        con        = file(model, open = "r")
-        lines      = readLines(con, warn=FALSE)
-        close(con)
-        file.remove(project,model)
-        lvl <- match(l.lvl,gsub(" ","",lines))
-        flv <- line2field(lines[lvl])
-        iov.input <- c()
-        for (jf in (1: length(flv))) {
-          flv[[jf]]$fields$varlevel <- iov.varlevel[[jf]]$varlevel
-          if (!is.null(iov.sd[[jf]][[1]])) {
-            flv[[jf]]$fields$sd <- iov.sd[[jf]]$sd
-            iov.input <- c(iov.input,iov.sd[[jf]]$sd[2])
-          }
-          if (!is.null(iov.var[[jf]][[1]])) {
-            flv[[jf]]$fields$var <- iov.var[[jf]]$var
-            iov.input <- c(iov.input,iov.sd[[jf]]$var[2])
-          }
-        }
-        
-        lines[lvl] <- field2line(flv)
-        ig <- grep("\\[INDIVIDUAL\\]", lines)
-        lines <- c(lines[1:ig],paste0("input = {",paste0(iov.input, collapse=","),"}"),lines[(ig+1):length(lines)])
-        mlxtranfile = file_path_sans_ext(basename(project0))
-        mlxtranpath <- dirname(project0)
-        model = file.path(mlxtranpath,paste0(mlxtranfile,"_model.txt"))
+        model = file.path(mlxtranpath,paste0(mlxtranfile,"_simulxModel.txt"))
         write(lines,model)
+      } else {
+        mlxtranfile = file_path_sans_ext(basename(project))
+        mlxtranpath <- dirname(project)
+        model = file.path(mlxtranpath,paste0(mlxtranfile,"_simulxModel.txt"))
+        session<-Sys.getenv("session.simulx")              
+        zz=file.path(session,'lib','lixoftLanguageTranslator')
+        str=paste0('"',zz,'" --from=mlxproject --to=mlxtran')  
+        str=paste0(str,' --output-file=',model,' --input-file=',project,' --option=with-observation-model') 
+        system(str, wait=T)
+        transPatch(model)
       }
-      
       if (iop_indiv==1) {      
         # create a submodel file of model_file corresponding to the specified sections specified 
         sections       = c("LONGITUDINAL")    
         myparseModel(model, sections, model )
       }
-      if (length(grep("MonolixSuite2016R1",session)))
-        patchCor(model)
+      
     }
     
     #change regressor names and use these defined in the model in the same order 
@@ -274,7 +209,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
           }
         }
         if(nbregOrig +1 !=  iregModel)
-          stop("inconsistent number of regressors between model and regressor field")
+          stop("inconsistent number of regressors between model and regressor field", call.=FALSE)
         
         names(datas$regressor)<-namesReg
       }
@@ -329,8 +264,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   return(ans)
 }
 
-getInfoXml  <- function (project)
-{
+getInfoXml  <- function (project) {
   ### getInfoXml
   #
   #   getInfoXml(project)
@@ -389,29 +323,18 @@ getInfoXml  <- function (project)
   p.trans <- do.call("rbind", lapply(infoParam, "[[", "transformation"))[,1]
   infoProject$parameter <- list(name=p.names, trans=p.trans)
   
-  infoFixedParam = myparseXML(xmlfile, mlxtranpath, "fixedParameter")
-  info.length <- unlist(lapply(infoFixedParam,length))
-  infoFixedParam <- infoFixedParam[info.length==2]
-  fixp.names <- do.call("rbind", lapply(infoFixedParam, "[[", "name"))[,1]
-  fixp.values <- do.call("rbind", lapply(infoFixedParam, "[[", "value"))[,1]
-  fixedParamValues <-as.numeric(fixp.values)
-  names(fixedParamValues) = fixp.names
-  infoProject$fixedParameters <- fixedParamValues
-  
   if(file_ext(project) == "mlxtran")
     unlink(xmlfile, recursive=T)
   
   return(infoProject)
 }
 
-myparseXML  <- function (filename, mlxtranpath, node)
-{
+myparseXML  <- function (filename, mlxtranpath, node) {
   ### myparseXML
   #
   #  myparseXML(filename, node)
   #     return information of mentioned node contained in the xmlx file (filename)
   #
-  
   tree    = xmlParse(filename)
   set     = getNodeSet(tree,paste0("//", node))
   tmp=list(name=NULL)
@@ -439,52 +362,75 @@ myparseXML  <- function (filename, mlxtranpath, node)
 }
 
 ##
-readPopEstimate  <-  function(filename, fim=NULL) {
-  if (file.exists(filename)) {
-    data        = read.table(filename, header = TRUE, sep=";", fill=TRUE)
-    if (ncol(data)==1)
-      data        = read.table(filename, header = TRUE, sep=",", fill=TRUE)
-    if (ncol(data)==1)
-      data        = read.table(filename, header = TRUE, sep="\t", fill=TRUE)
-    if (ncol(data)==1)
-      data        = read.table(filename, header = TRUE, sep=" ", fill=TRUE)
-    name        = as.character(data[[1]])
-    name        = sub(" +", "", name)
-    name        = sub(" +$", "", name)
-    
-    if(is.element("value",names(data))) {
-      param <- as.numeric(as.character(data[['value']]))
-    } else {
-      param <- as.numeric(as.character(data[['parameter']]))
+readPopEstimate  <-  function(resultFolder, fim=NULL) {
+  file.pop <- file.path(resultFolder,'populationParameters.txt')
+  if (!file.exists(file.pop)) 
+    file.pop <- file.path(resultFolder,'estimates.txt')
+  if (!file.exists(file.pop)) 
+    stop(("
+Sorry but the file with the estimated population parameters does not exist. Are you sure you estimated the population parameters?" ), call.=FALSE)
+  
+  
+  data        = read.table(file.pop, header = TRUE, sep=";", fill=TRUE)
+  if (ncol(data)==1)
+    data        = read.table(file.pop, header = TRUE, sep=",", fill=TRUE)
+  if (ncol(data)==1)
+    data        = read.table(file.pop, header = TRUE, sep="\t", fill=TRUE)
+  if (ncol(data)==1)
+    data        = read.table(file.pop, header = TRUE, sep=" ", fill=TRUE)
+  name        = as.character(data[[1]])
+  name        = sub(" +", "", name)
+  name        = sub(" +$", "", name)
+  
+  if(is.element("value",names(data))) {
+    param <- as.numeric(as.character(data[['value']]))
+  } else {
+    param <- as.numeric(as.character(data[['parameter']]))
+  }
+  names(param) <- name
+  if (!is.null(fim)) {
+    if (fim=='lin') {
+      se <- as.numeric(as.character(data[['s.e._lin']]))
+      if (length(se)==0)
+        se <- as.numeric(as.character(data[['se_lin']]))
+      if (length(se)==0)
+        stop("Fisher Information matrix estimated by linearization is not available", call.=FALSE)
+      names(se) <- name
+    } else if (fim=='sa') {
+      se <- as.numeric(as.character(data[['s.e._sa']]))
+      if (length(se)==0)
+        se <- as.numeric(as.character(data[['se_sa']]))
+      if (length(se)==0)
+        stop("Fisher Information matrix estimated by stochastic approximation is not available", call.=FALSE)
+      names(se) <- name
     }
-    names(param) <- name
-    if (!is.null(fim)) {
-      if (fim=='lin') {
-        se <- as.numeric(as.character(data[['s.e._lin']]))
-        if (length(se)==0)
-          stop("Fisher Information matrix estimated by linearization is not available")
-        names(se) <- name
-      } else if (fim=='sa') {
-        se <- as.numeric(as.character(data[['s.e._sa']]))
-        if (length(se)==0)
-          stop("Fisher Information matrix estimated by stochastic approximation is not available")
-        names(se) <- name
-      }
-    } else 
-      se <- NULL
-    
-    return(list(param,se,fim))
-    
-  } else
-    stop(paste("file : ",filename, " does not exist" ))
+  } else 
+    se <- NULL
+  
+  return(list(param,se,fim))
 }
 
 ##
-readIndEstimate  <-  function(filename, estim=NULL) {
-  if (file.exists(filename)) {
-    data         = read.table(filename,  header = TRUE)
-    header       = names(data)
-    idx          = grep(paste0("_", estim), header)
+readIndEstimate  <-  function(resultFolder, estim=NULL) {
+  
+  mlx.version <- 2017
+  file.ind <- file.path(resultFolder,'IndividualParameters','estimatedIndividualParameters.txt') 
+  if (!file.exists(file.ind)) {
+    mlx.version <- 2016
+    file.ind = file.path(resultFolder,'indiv_parameters.txt') 
+  }
+  if (!file.exists(file.ind)) 
+    stop(("
+  Sorry but the file with the individual estimates does not exist. Are you sure you estimated the individual parameters?" ), call.=FALSE)
+  
+  if (mlx.version==2017)
+    data       = read.csv(file.ind,  header = TRUE)
+  else
+    data       = read.table(file.ind,  header = TRUE)
+  header       = names(data)
+  idx          = grep(paste0("_", estim), header)
+  param<-NULL
+  if(length(idx)){
     name         = header[idx]
     name         = gsub(paste0("_", estim),"", name)
     header       = c( 'id', name)
@@ -492,26 +438,49 @@ readIndEstimate  <-  function(filename, estim=NULL) {
     value        = as.matrix(data[, c(1, idx)])
     param <- data.frame(value)
     names(param) <- header
-    return(param)
-  } else
-    stop(paste("file : ",filename, " does not exist" ))
+  }
+  if (is.null(param))
+    stop(paste0("
+  Sorry but the ",estim," of the conditional distribution has not been computed... Are you sure you computed the individual estimates?" ), call.=FALSE)
+  return(param)
 }
 
 ##
-readFIM  <-  function(filename){
+readFIM  <-  function(path, fim){
+  
+  if (fim=="sa") {
+    filename <- file.path(path,'correlationEstimates_sa.txt')
+    mlx.version <- 2016
+    if (!file.exists(filename)) {
+      filename = file.path(path,'FisherInformation','correlationEstimatesSA.txt')
+      mlx.version <- 2017
+    }
+  } else {
+    filename <- file.path(path,'correlationEstimates_lin.txt')
+    mlx.version <- 2016
+    if (!file.exists(filename)) {
+      filename = file.path(path,'FisherInformation','correlationEstimatesLin.txt')
+      mlx.version <- 2017
+    }
+  }
   if (file.exists(filename)) {
-    data        = read.table(filename, header = FALSE, sep=";")
+    if (mlx.version==2017)
+      data       = read.csv(filename,  header = FALSE)
+    else 
+      data        = read.table(filename, header = FALSE, sep=";")
     name        = as.character(data[[1]])
     name        = sub(" +", "", name)
     name        = sub(" +$", "", name)
-    ic <- grep("corr_",name)
-    name[ic] <- sub("corr_","r_",name[ic])
+    if (mlx.version==2016) {
+      ic <- grep("corr_",name)
+      #      name[ic] <- sub("corr_","r_",name[ic])
+    }
     data[[1]] <- NULL
     row.names(data) <- name   
-    names(data) <- name   
+    names(data) <- name  
     return(data)
   } else
-    stop(paste("file : ",filename, " does not exist" ))
+    stop(paste0("file: ",filename, " does not exist" ), call.=FALSE)
 }
 
 mergeDataFrame  <- function(p1,p2) {
@@ -745,7 +714,7 @@ splitModel  <-  function(file_model, sections)
     return(terms)
     
   } else
-    stop(paste("file : ",file_model, " does not exist" ))
+    stop(paste0("file: ",file_model, " does not exist" ), call.=FALSE)
   
 }
 
@@ -808,7 +777,7 @@ sectionsModel  <-  function(file_model)
     }
     return(terms)
   } else
-    stop(paste("file : ",file_model, " does not exist" ))
+    stop(paste0("file: ",file_model, " does not exist" ), call.=FALSE)
 }
 
 
@@ -964,3 +933,84 @@ initLatentCov<- function(param,model)
   }
   return(param)
 }
+
+####
+
+myTranslate <- function(project) {
+  con        = file(project, open = "r")
+  lines      = readLines(con, warn=FALSE)
+  close(con)
+  i1 <- grep("<MODEL>", lines) + 1
+  i2 <- grep("<FIT>", lines) - 1
+  lines <- lines[i1:i2]
+  lines <- gsub("b, c","b",lines)
+  vc <- sub("\\=.*","",lines)
+  vc <- gsub(" ","",vc)
+  i.file <- which(vc=="file")
+  if (length(i.file)>0) {
+    l.file <- gsub(" ","",lines[i.file])
+    ig <- gregexpr("'",l.file)
+    struct.model <- substr(l.file,ig[[1]][1]+1,ig[[1]][2]-1)
+    rl <- grep("'lib:",l.file)
+    if (length(rl)==0) {
+      path.model <- dirname(project)
+    } else {
+      struct.model <- sub("lib:","",struct.model)
+      runtime=Sys.getenv("session.simulx")
+      path.dir <- file.path(runtime,"factory/library")
+      dir.lib <- dir(path.dir)
+      for (lib in dir.lib) {
+        path.lib <- file.path(path.dir,lib)
+        if (file.exists(file.path(path.lib,struct.model)))
+          break
+      }
+      path.model <- path.lib
+    }
+    con        = file(file.path(path.model,struct.model), open = "r")
+    struct.lines      = readLines(con, warn=FALSE)
+    close(con)
+    struct.lines <- gsub("\\[LONGITUDINAL\\]", "",struct.lines)
+    struct.lines <- sub("\\;.*","",struct.lines)
+    i.out <- grep("OUTPUT:",struct.lines)
+    if (length(i.out)>0)
+      struct.lines <- struct.lines[1:(i.out-1)]
+    i.def <- grep("DEFINITION:",struct.lines)
+    lines1 <- lines[1:(i.file-1)]
+    if (length(lines)>i.file) {
+      lines2 <- lines[(i.file+1):length(lines)]
+      if (length(i.def)>0)
+        lines2 <- gsub("DEFINITION:","",lines2)
+      lines <- c(lines1,struct.lines,lines2)
+    } else {
+      lines <- c(lines1,struct.lines)
+    }
+  }
+  i.des <- grep("DESCRIPTION:", lines)
+  if (length(i.des)>0) {
+    lines <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", lines, perl=TRUE)
+    lines <- gsub(" =", "=", lines)
+    for (k in (1:length(i.des))) {
+      ls <- sapply(c("DEFINITION:", "EQUATION:", "PK:", "LONGITUDINAL", "INDIVIDUAL", "input="), 
+                   function(x) {grep(x, lines)} )
+      ls <- unlist(ls)
+      ik <- min(ls[ls>i.des[k]])
+      lines <- lines[-(i.des[k]:(ik-1))]
+    }
+  }
+  return(lines)
+}
+
+
+####
+
+transPatch <- function(model) {
+  con        = file(model, open = "r")
+  lines      = readLines(con, warn=FALSE)
+  close(con)
+  gl <- grep("\\[LONGITUDINAL\\]",lines)
+  if (length(gl)>1)
+    lines <- lines[-gl[2:length(gl)]] 
+  write(lines,model)
+}
+
+

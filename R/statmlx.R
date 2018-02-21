@@ -64,7 +64,7 @@ statmlx <- function(r, FUN="mean", probs=c(0.05, 0.5, 0.95), surv.time=NULL)
     type="continuous"
   
   if (any(!(FUN %in% c("mean","sd","median","var","quantile"))))
-    stop("\n\n possible values for 'FUN' are {'mean','sd','median','var','quantile'} ")
+    stop("\n\n possible values for 'FUN' are {'mean','sd','median','var','quantile'} ", call.=FALSE)
   # if (any(!(type %in% c('continuous','event'))))
   # stop("\n\n possible values for 'type' are {'continuous','event'} ")
   # if (any(type=="survival") && is.null(time)) 

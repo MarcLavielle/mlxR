@@ -2,7 +2,7 @@
 #' 
 #' Define a model "inline"
 #' 
-#' A temporary model file \code{filename} is created.  Default name is "temp_model.txt". 
+#' A temporary model file \code{filename} is created.  Default name is \code{"tempModel.txt"}. 
 #' \code{filename="random"} generates a random name.
 #'  
 #' @param str model

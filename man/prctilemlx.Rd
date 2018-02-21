@@ -5,7 +5,7 @@
 \title{Percentiles of the empiricial distribution of longitudinal data}
 \usage{
 prctilemlx(r, col = NULL, number = 8, level = 80, plot = TRUE,
-  color = "purple", group = NULL, facet = TRUE, labels = NULL,
+  color = "#9a35ff", group = NULL, facet = TRUE, labels = NULL,
   band = NULL)
 }
 \arguments{
@@ -21,7 +21,7 @@ The times should be the same for each individual.}
 \item{plot}{if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}
 the values are returned}
 
-\item{color}{a color to be used for the plots (default="purple")}
+\item{color}{a color to be used for the plots (default="#9a35ff")}
 
 \item{group}{variable to be used for defining groups (by default, \samp{group} is used when it exists)}
 

@@ -177,11 +177,11 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
     
     if (!is.null(project)) {
       if (dim(dp.data)[1] != dim(M)[1])
-        stop("Original data and simulated data don't have the same size: the original design should be used for the simulation.")
+        stop("Original data and simulated data don't have the same size: the original design should be used for the simulation.", call.=FALSE)
       i.id <- which(dp.header=="ID")
       dp.data[,i.id] <- uniquemlx(dp.data[,i.id])$sortIndex
       if (any(dp.data[,i.id] != M$id))
-        stop("Original data and simulated data don't have the same size: the original design should be used for the simulation.")
+        stop("Original data and simulated data don't have the same size: the original design should be used for the simulation.", call.=FALSE)
       lo <- dp.names[i.id]
       i <- which(dp.header=="TIME")
       if (length(i)>0) lo <- c(lo, dp.names[i])

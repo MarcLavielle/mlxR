@@ -73,7 +73,7 @@ exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
 {  
   if (!is.null(group)){
     if (!is.null(group$output))
-      stop("\n'output' cannot be defined in 'group' with exposure\n")
+      stop("\n'output' cannot be defined in 'group' with exposure\n", call.=FALSE)
   }
   if (identical(output$time,"steady.state")){
     
@@ -107,7 +107,7 @@ exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
       for (k in seq(1,length(group[[g]]$treatment))){
         trtk <- group[[g]]$treatment[[k]]
         if (is.null(trtk$ii))
-          stop("inter dose interval (ii) should be an element of treatment when exposure at steady state is computed")
+          stop("inter dose interval (ii) should be an element of treatment when exposure at steady state is computed", call.=FALSE)
         pmtau <- ppcm(pmtau,trtk$ii) 
         if(!any("tfd" %in% names(trtk)))
           group[[g]]$treatment[[k]]$tfd <- 0
@@ -163,7 +163,7 @@ exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
             alpha <- min(alpha,-tail(alphai,n=1))
           }else if (min(alphai)>0){
             stop("\n\nSorry... exposure was not able to estimate the rate of convergence to steady state...
-Try increasing ngc, or fix the number of doses")
+Try increasing ngc, or fix the number of doses", call.=FALSE)
           }
         }
       }

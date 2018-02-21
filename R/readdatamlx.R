@@ -37,11 +37,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   if (!is.null(project)) {
     infoProject <- getInfoXml(project)
     r= tryCatch(
-      readPopEstimate(file.path(infoProject$resultFolder,'populationParameters.txt'))
+      readPopEstimate(infoProject$resultFolder)
       , error=function(e) {
-        error<-  geterrmessage()
-        return(readPopEstimate(file.path(infoProject$resultFolder,'estimates.txt'))
-        )
+        error<-  NULL
       }      
     )    
     datas$populationParameters <- r[[1]]
@@ -66,7 +64,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   nlabel = length(header)
   
   icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
-  ievid <- iaddl <- iii <- iss <- NULL
+  ievid <- iaddl <- iii <- iss <- iadm <- irate <- itinf <- NULL
   
   for (i in 1:length(headerList)) {
     hi=headerList[[i]]
@@ -80,7 +78,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   }
   
   if (length(iocc)>1) 
-    stop("Multiple levels of occasions are not supported")
+    stop("Multiple levels of occasions are not supported", call.=FALSE)
   
   # iss <- ists
   
@@ -260,7 +258,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     socc1 <- socc[with(socc, order(id, time,occ)), ]
     socc2 <- socc[with(socc, order(id,occ, time)), ]
     if (!identical(socc1,socc2))
-      stop("Only occasions within a same period of time are supported")
+      stop("Only occasions within a same period of time are supported", call.=FALSE)
   }
   ##************************************************************************
   #       TREATMENT FIELD
@@ -335,7 +333,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     u <- rbind(u,u.ss)
     # u <- u[order(u$id,u$time),]
     if (("evid" %in% names(u)) & any(u$evid==4) )
-      stop("Washout (EVID=4) is not supported")
+      stop("Washout (EVID=4) is not supported", call.=FALSE)
     
     if(nrow(u)) {
       datas   = c(datas,list(treatment = u))

@@ -18,6 +18,9 @@ Otherwise, provide the path of the Mlxlibrary using the directory browser.
 
 You can also run the following R command from the console:
 > setMlxLibraryPath(<Mlxlibrary PATH>) 
+
+e.g.
+> setMlxLibraryPath('C:/ProgramData/Lixoft/MonolixSuite2018R1') 
 "
   
   #--- ensuring mlx library from lixsoft is installed
@@ -52,83 +55,29 @@ You can also run the following R command from the console:
       normalizePath( gsub( rx, "", line[1L] ) )
     }
   }
-   
-  uuidd<-uuid()   
-  lixoftInitFile <-paste0(dirname(lixoft.ini),"/",basename(lixoft.ini))
-  lixoftConn<-paste0(lixoftInitFile,"-copy",uuidd)
-  tryCopy <- 0
-  while(file.exists(lixoftConn)&& tryCopy < 50) {
-    uuidd<-uuid() 
-    lixoftConn<-paste0(lixoftInitFile,"-copy",uuidd)
-    tryCopy <- tryCopy+1
+  
+  lines <- readLines(lixoft.ini) # is blocking lixoft.ini for other threads, and lixoft.ini can be modified by mlxComputeR
+  
+  
+  #---  Mlxlibrary and MlxPlore paths
+  mlxlibrary.path <- get_lixoft_path("monolixSuite")
+  if(is.null(mlxlibrary.path)){
+    mlxlibrary.path <- get_lixoft_path("mlxlibrary")
   }
-  
-  lixoftCopyInitFile<-paste0(lixoftInitFile,"-copy")
-  lixoftInitFileReadme <-paste0(dirname(lixoft.ini),"/","README_mlxR.txt")
-  if(!file.exists(lixoftInitFileReadme))
-  {
-    cat("REMOVE  FILE  lixoft.ini-copy  IF YOU  CHANGE THE  INSTALLATION DIRECTORY OF MLXLIBRARY\n",file=lixoftInitFileReadme)
-    
-  }
-  if(file.exists(lixoftCopyInitFile))
-  { 
-    dateLixoftIniCopy<-strsplit(as.matrix(file.info(lixoftCopyInitFile))[1,4]," ")[[1]][1]
-    if(!identical(as.character(Sys.Date()),dateLixoftIniCopy))
-    {
-      lixoftCopyInitFile0<-paste0(lixoftInitFile,"-copy0")
-      tryCopy <-0
-      mlxlibraryPath<-NULL     
-      while(is.null(mlxlibraryPath)&& tryCopy < 50) {
-        file.copy(lixoftInitFile,lixoftCopyInitFile0)        
-        lines <- readLines(lixoftCopyInitFile0)
-        mlxlibraryPath <- get_lixoft_path("mlxlibrary")
-        tryCopy <- tryCopy+1
-      }
-      file.copy(lixoftCopyInitFile0,lixoftCopyInitFile) 
-      cat("# REMOVE THIS FILE IF THE INSTALLATION DIRECTORY OF MLXLIBRARY CHANGES\n",file=lixoftCopyInitFile,append=TRUE)
-      unlink(lixoftCopyInitFile0)
-    }
-  }
-  if (myOS == "Windows")
-  {
-    if(!file.exists(lixoftCopyInitFile))
-    {
-      cat(" ",file=lixoftCopyInitFile)
-      copyofInitFile<-paste0("xcopy  \"",lixoftInitFile,"\"  \"",lixoftCopyInitFile,"\" /Y /F  /Q")
-      system(copyofInitFile,wait=T,intern=TRUE)
-      cat("# REMOVE THIS FILE IF THE INSTALLATION DIRECTORY OF MLXLIBRARY CHANGES\n",file=lixoftCopyInitFile,append=TRUE)
-    }    
-    cat(" ",file=lixoftConn)
-    copyInitFile<-paste0("xcopy  \"",lixoftCopyInitFile,"\"  \"",lixoftConn,"\" /Y /F  /Q")
-    
-  } else {
-    if(!file.exists(lixoftCopyInitFile))
-    {      
-      copyofInitFile<-paste0("cp  ",lixoftInitFile," ",lixoftCopyInitFile)
-      system(copyofInitFile,wait=T,intern=TRUE)
-      cat("# REMOVE THIS FILE IF THE INSTALLATION DIRECTORY OF MLXLIBRARY CHANGES\n",file=lixoftCopyInitFile,append=TRUE)
-    }    
-    copyInitFile<-paste0("cp  ",lixoftCopyInitFile," ",lixoftConn)    
-  }
-  
-  system(copyInitFile,wait=T,intern=TRUE)
-  #lines <- readLines(lixoft.ini) # is blocking lixoft.ini for other threads, and lixoft.ini can be modified by mlxComputeR
-  
-  lines <- readLines(lixoftConn)
-  
-  
-  #---  Mlxlibrary and MlxPlore paths  
-  mlxlibrary.path <- get_lixoft_path("mlxlibrary")
   if (is.null(mlxlibrary.path) || !file.exists(file.path(mlxlibrary.path,'lib')) ) {
     wm <- paste0("\n",mess.mlxlibrary)
     warning(wm, immediate.=TRUE)
     mlx.path <- setMlxLibraryPath()
-    cat("\nYou can now try to run again your R script\n")
+    cat("\nYou can now restart R and try to run again your R script\n")
     stop("",call.=FALSE)
   }
   Sys.setenv(session.simulx=mlxlibrary.path)
   
-  mlxplore.path   <- get_lixoft_path("mlxplore")
+  mlxplore.path <- get_lixoft_path("monolixSuite")
+  if(is.null(mlxplore.path)){
+    mlxplore.path   <- get_lixoft_path("mlxplore")
+  }
+  
   if (!is.null(mlxplore.path)){
     if (!file.info(mlxplore.path)$isdir){   
       msg <- sprintf("check the path to Mlxplore (%s) if you want to use mxlplore.R", mlxplore.path )
@@ -146,7 +95,6 @@ You can also run the following R command from the console:
   NAMESPACE[["mlx_library_ready"]] <- TRUE
   unlock( "SYS_PATH_mlx_library", NAMESPACE )
   NAMESPACE[["SYS_PATH_mlx_library"]] <-Sys.getenv('PATH')
-  unlink(lixoftConn)
 }
 
 #' Sets the MlxLibrary path in order to tell mlxR where is the MlxLibrary to use
@@ -158,12 +106,17 @@ setMlxLibraryPath <- function(mlxLibraryPath=NULL){
   if (myOS == "Windows"){
     if (is.null(mlxLibraryPath))
       mlxLibraryPath <- tk_choose.dir(caption = 'Select the MlxLibrary folder (usually in "C:/ProgramData/Lixoft") ')
-    lauchCommand<-file.path(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch.exe")
-    
+    lauchCommand<-file.path(mlxLibraryPath,"/lib/mlxSuiteInit.exe")
+    if(!file.exists(lauchCommand)){
+      lauchCommand<-file.path(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch.exe")
+    }
   } else {
     if (is.null(mlxLibraryPath))
       mlxLibraryPath <- tk_choose.dir(caption = 'Select the MlxLibrary folder (usually in user directory) ')
-    lauchCommand<-paste0(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch")
+    lauchCommand<-file.path(mlxLibraryPath,"/lib/mlxSuiteInit")
+    if(!file.exists(lauchCommand)){
+      lauchCommand<-paste0(mlxLibraryPath,"/lib/mlxLibraryFirstLaunch")
+    }
   }
   system(lauchCommand)
   return(mlxLibraryPath)

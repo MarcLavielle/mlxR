@@ -1,55 +1,68 @@
 translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
   
-  if (length(cat0)==0)  cat0 <- NULL
+  if (length(cat0)==0)  
+    cat0 <- NULL
   sections <- sectionsModel(model)
   sm  <-  splitModel(model, sections)
   lines <- c()
-  v.iov <- var.iov <- iov0
+  i.iov <- iov0
+  o.iov <- addiov(i.iov, output)
   
   cat0.name <-  unlist(lapply(cat0, function(x) x$name))
-  if ("OCC" %in% cat0.name)
-    rem.name <- c("occ","socc", "sOCC")
-  else
-    rem.name <- c("occ","socc", "OCC","sOCC")
+  # if ("OCC" %in% cat0.name)
+  #   rem.name <- c("occ","socc", "sOCC")
+  # else
+  rem.name <- c("occ","socc", "OCC","sOCC")
   if (!is.null(cat0))
     rem.name <- unique(c(rem.name,paste0("s",cat0.name)))
   
   i.cov <- which(sapply(sm, function(ch)  ch$name=="[COVARIATE]"))
+  d.iov <- c.iov <- NULL
   if (length(i.cov)>0) {
     sec.cov <- splitSection(sm[[i.cov]])
     #    rem.name <- c(occ.name)
     #    rem.name <- c(occ.name, unlist(lapply(cat0, function(x) x$name)))
-    r0.cov <- iovin(sec.cov$input, v.iov, nocc, sec.cov$name, rem.name=rem.name)
-    v.iov <- r0.cov$iov
+    r0.cov <- iovin(sec.cov$input, NULL, i.iov, nocc, sec.cov$name, cat0, rem.name=rem.name)
+    i.iov <- r0.cov$iov
     lines.cov <- r0.cov$lines
-    var.iov <- v.iov
+    #var.iov <- v.iov
     if (length(sec.cov$blocks)) {
       for (k in (1:length(sec.cov$blocks))) {
-        if (identical(sec.cov$blocks[k],'DEFINITION:'))
-          rk.cov <- iovdef(sec.cov$lines[[k]], v.iov, nocc)
-        else
-          rk.cov <- ioveq(sec.cov$lines[[k]], v.iov, nocc)
-        v.iov <- rk.cov$iov
-        var.iov <- unique(c(var.iov, v.iov))
+        if (identical(sec.cov$blocks[k],'EQUATION:')) {
+          rk.cov <- ioveq(sec.cov$lines[[k]], i.iov, nocc)
+        } else {
+          rk.cov <- iovdef(sec.cov$lines[[k]], i.iov, nocc)
+          d.iov <- rk.cov$d.iov
+        }
+        c.iov <- rk.cov$iov
+        #        var.iov <- unique(c(var.iov, v.iov))
         lines.cov <- c(lines.cov, rk.cov$lines)
       }
     }
     lines <- c(lines,lines.cov)
+    o.iov <- unique(c(o.iov,addiov(c.iov, output)))
   }
   
   i.ind <- which(sapply(sm, function(ch)  ch$name=="[INDIVIDUAL]"))
   if (length(i.ind)>0) {
     sec.ind <- splitSection(sm[[i.ind]])
-    r0.ind <- iovin(sec.ind$input, v.iov, nocc, sec.ind$name, cat0, rem.name=rem.name)
-    v.iov <- r0.ind$iov
+    #    u.iov <- setdiff(unique(c(c.iov, o.iov)), i.iov)
+    u.iov <- c.iov
+    r0.ind <- iovin(sec.ind$input, u.iov, i.iov, nocc, sec.ind$name, cat0, rem.name=rem.name)
+    #    v.iov <- r0.ind$iov
+    v.iov <- unique(c(u.iov, i.iov))
+    o.iov <- unique(c(o.iov,addiov(c.iov, output)))
     lines.ind <- r0.ind$lines
     for (k in (1:length(sec.ind$blocks))) {
-      if (identical(sec.ind$blocks[k],'DEFINITION:'))
+      if (identical(sec.ind$blocks[k],'EQUATION:')) {
+        rk.ind <- ioveq(sec.ind$lines[[k]], v.iov, d.iov, nocc)
+        v.iov <- rk.ind$iov
+      } else {
         rk.ind <- iovdef(sec.ind$lines[[k]], v.iov, nocc)
-      else
-        rk.ind <- ioveq(sec.ind$lines[[k]], v.iov, nocc)
-      v.iov <- rk.ind$iov
-      var.iov <- unique(c(var.iov, v.iov))
+        d.iov <- rk.ind$d.iov
+        v.iov <- rk.ind$iov
+      }
+      #var.iov <- unique(c(var.iov, v.iov))
       lines.ind <- c(lines.ind, rk.ind$lines)
     }
     lines <- c(lines,"",lines.ind)
@@ -57,17 +70,20 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
   
   i.long <- which(sapply(sm, function(ch)  ch$name=="[LONGITUDINAL]"))
   if (length(i.long)>0) {
+    if (!is.null(v.iov)) {
     sec.long <- splitSection(sm[[i.long]])
-    v.iov <- addiov(var.iov, v.iov, output)
-    r0.long <- iovinlong(sec.long$input, v.iov, nocc, sec.long$name, occ.name)
-    r1.long <- iovseclong(sec.long, r0.long$iov, nocc, occ.name)
+    u.iov <- unique(c(i.iov,o.iov))
+    long.lines <- iovinlong(sec.long$input, v.iov, u.iov, nocc, sec.long$name, occ.name)
+    r1.long <- iovseclong(sec.long, v.iov, d.iov, u.iov, nocc, occ.name)
     #    var.iov <- unique(c(var.iov, r0.long$iov))
-    lines <- c(lines,"",r0.long$lines,r1.long$lines)
+    lines <- c(lines,"",long.lines,r1.long$lines)
+    } else {
+      lines <- c(lines,"",sm[[i.long]]$lines)
+    }
   }
   model <- "tempiov_model.txt"
   write(lines,model)
-  #file.edit(model)
-  return(list(model=model, iov=v.iov, occ.name=occ.name, cat=cat0))
+  return(list(model=model, iov=unique(c(o.iov,v.iov,i.iov)), occ.name=occ.name, cat=cat0))
 }
 
 regstr1 <-function(expr,str) {
@@ -93,7 +109,7 @@ repstr1 <-function(expr,x,str) {
 
 line2field <- function(str) {
   if (length(str)>1)
-    str <- strmerge(str)
+    str <- strmerge(str, 0)
   str <- gsub(" ","",str)
   rout <- list()
   for (k in (1:length(str))) {
@@ -103,7 +119,7 @@ line2field <- function(str) {
     i2 <- tail(gregexpr("\\}",strk)[[1]],n=1)
     strk <- substr(strk,i1+1,i2-1)
     sp <- strsplit(strk,",")[[1]]
-    sp <- strmerge(sp)
+    sp <- strmerge(sp, 1)
     fields <- sub("\\=.*","",sp)
     rv <- sub(".*\\=","",sp)
     nv <- lapply(rv, function(x) sum(gregexpr("\\{",x)[[1]]>0))
@@ -162,27 +178,46 @@ field2line <- function(r) {
   return(lines)
 }
 
-strmerge <- function(str1) {
+strmerge <- function(str1, op=0) {
   n <- length(str1)
   str2 <- c()
   idx <- 0
   while (idx<n) {
     idx <- idx + 1
-    s <- str1[idx]
-    n1 <- sum(gregexpr("\\{",s)[[1]]>0)
-    n2 <- sum(gregexpr("\\}",s)[[1]]>0)
+    si <- str1[idx]
+    n1 <- sum(gregexpr("\\{",si)[[1]]>0)
+    n2 <- sum(gregexpr("\\}",si)[[1]]>0)
     while(n1 > n2) {
       idx <- idx+1
-      if (identical(substr(s,nchar(s),nchar(s)),",") | identical(substr(s,nchar(s),nchar(s)),"{"))
-        s <- paste0(s,str1[idx])
+      if (identical(substr(si,nchar(si),nchar(si)),",") | identical(substr(si,nchar(si),nchar(si)),"{"))
+        si <- paste0(si,str1[idx])
       else
-        s <- paste(s,str1[idx],sep=",")
-      n1 <- sum(gregexpr("\\{",s)[[1]]>0)
-      n2 <- sum(gregexpr("\\}",s)[[1]]>0)
+        si <- paste(si,str1[idx],sep=",")
+      n1 <- sum(gregexpr("\\{",si)[[1]]>0)
+      n2 <- sum(gregexpr("\\}",si)[[1]]>0)
     }
-    str2 <- c(str2, s)
+    str2 <- c(str2, si)
   }
-  return(str2)
+  
+  if (op==1) {
+    n <- length(str2)
+    str3 <- c()
+    idx <- 0
+    while (idx<n) {
+      idx <- idx + 1
+      si <- str2[idx]
+      if (!identical(si, "no-variability")) {
+      while (!grepl("=",si)) {
+        idx <- idx + 1
+        si <- paste(si, str2[idx], sep=",")
+      }
+      }
+      str3 <- c(str3, si)
+    }
+    return(str3) 
+  } else {
+    return(str2)
+  }
 }
 
 splitSection  <-  function(section) {
@@ -214,17 +249,21 @@ splitSection  <-  function(section) {
   return(list(name=section$name, input=lines[i.input:(is[1]-1)], blocks=bt, lines=bc))
 }
 
-iovin <- function(lines, v.iov, nocc, name, cat=NULL, rem.name=NULL) {
+iovin <- function(lines, c.iov=NULL, v.iov=NULL, nocc, name, cat=NULL, rem.name=NULL) {
   # duplicates the list of variables with IOV in the input list
   
   if (!is.null(rem.name)) {
     vc <- sub("\\=.*","",lines)
     lines <- lines[!(vc %in% rem.name)]
-    lines <- gsub(paste(paste0(",",rem.name,","),collapse="|"),",",lines)
-    lines <- gsub(paste(paste0("\\{",rem.name,","),collapse="|"),"\\{",lines)
-    lines <- gsub(paste(paste0(",",rem.name,"\\}"),collapse="|"),"\\}",lines)
+    foo <- "foo123456"
+    lines <- gsub(paste0(rem.name,collapse="|"),foo,lines)
+    lines <- gsub(paste0(",",foo),"",lines)
+    lines <- gsub(paste0(foo,","),",",lines)
+    lines <- gsub("\\{,","\\{",lines)
+    lines <- gsub(",\\}","\\}",lines)
     lines <- gsub(paste(paste0("=",rem.name),collapse="|"),"=",lines)
     lines <- lines[lines!="input="]
+    lines <- lines[lines!=paste0("input=",foo)]
     gl <- grep("\\{\\}",lines)
     if (length(gl)>0)
       lines <- lines[-gl]
@@ -238,21 +277,37 @@ iovin <- function(lines, v.iov, nocc, name, cat=NULL, rem.name=NULL) {
   vi <- c()
   v.iov <- setdiff(v.iov,rem.name)
   
+  for (expr in c.iov) {
+    nexpr0 <- paste0(expr,"0")
+    nexpr1 <- paste0("eta_",expr,suffix,1:nocc,collapse=",")
+    nexpr <- paste(nexpr0, nexpr1, sep=",")
+    if (any(regexpr(paste0(sep,expr,sep),lines)>0)) {
+      vi <- c(vi, expr)
+      lines <- gsub(paste0(sep,expr,sep),paste0("\\1",nexpr,"\\2"),lines)
+    } else {
+      lines <- c(lines, paste0("input={",nexpr,"}"))
+    }
+  }
+  
   for (expr in v.iov) {
     nexpr <- paste0(expr,suffix,1:nocc,collapse=",")
     if (any(regexpr(paste0(sep,expr,sep),lines)>0))
       vi <- c(vi, expr)
     lines <- gsub(paste0(sep,expr,sep),paste0("\\1",nexpr,"\\2"),lines)
-    vc <- sub("\\=.*","",lines)
   }
-  if (!is.null(v.iov))
-    lines <- lines[!(vc %in% v.iov)]
+  vc <- sub("\\=.*","",lines)
+  
+  if (!is.null(c(c.iov,v.iov)))
+    lines <- lines[!(vc %in% c(c.iov,v.iov))]
   if (!is.null(cat)) {
     for (k in (1: length(cat))) {
-      lines <- c(lines, paste0("input = {", paste0(cat[[k]]$name,suffix,1:nocc,collapse=","),"}"))
-      for (ko in (1:nocc)) {
-        lo <- paste0(cat[[k]]$name,suffix,ko,"={type=categorical,categories={",paste(cat[[k]]$categories,collapse = ","),"}}")
-        lines <- c(lines, lo)
+      if (!(cat[[k]]$name %in% rem.name)) {
+        if (!(cat[[k]]$name %in% vi))
+          lines <- c(lines, paste0("input = {", paste0(cat[[k]]$name,suffix,1:nocc,collapse=","),"}"))
+        for (ko in (1:nocc)) {
+          lo <- paste0(cat[[k]]$name,suffix,ko,"={type=categorical,categories={",paste(cat[[k]]$categories,collapse = ","),"}}")
+          lines <- c(lines, lo)
+        }
       }
     }
   }
@@ -260,13 +315,23 @@ iovin <- function(lines, v.iov, nocc, name, cat=NULL, rem.name=NULL) {
 }
 
 
-iovinlong <- function(lines, v.iov, nocc, name, occ.name) {
+iovinlong <- function(lines, v.iov, o.iov, nocc, name, occ.name) {
   # adapts the input of section LONGITUDINAL for IOV 
   suffix <- "_iov"
   sep <- "([\\,\\{\\}])"
   #  vi <- c()
   
   for (expr in v.iov) {
+    nexpr0 <- paste0(expr,"0")
+    nexpr1 <- paste0("eta_",expr,suffix,1:nocc,collapse=",")
+    nexpr <- paste(nexpr0, nexpr1, sep=",")
+    if (any(regexpr(paste0(sep,expr,sep),lines)>0))
+      lines <- gsub(paste0(sep,expr,sep),paste0("\\1",nexpr,"\\2"),lines)
+    else
+      lines <- c(lines, paste0("input={",nexpr,"}"))
+    #    vi <- c(vi, expr)
+  }
+  for (expr in o.iov) {
     nexpr <- paste0(expr,suffix,1:nocc,collapse=",")
     if (any(regexpr(paste0(sep,expr,sep),lines)>0))
       lines <- gsub(paste0(sep,expr,sep),paste0("\\1",nexpr,"\\2"),lines)
@@ -275,14 +340,37 @@ iovinlong <- function(lines, v.iov, nocc, name, occ.name) {
     #    vi <- c(vi, expr)
   }
   lines <- c(lines, paste0("input={",occ.name,"}"), paste0(occ.name,"={use=regressor}"))
-  return(list(iov=v.iov, lines=c(name,lines)))
+  return(lines=c(name,lines))
 }
 
 
-ioveq <- function(lines, v.iov, nocc) {
+ioveq <- function(lines, v.iov=NULL, d.iov=NULL, nocc) {
   # duplicates lines in a set of equation creating new variables for each occasion
   
-  suffix <- "_iov"
+  new.lines <- c()
+  if (length(d.iov)>0) {
+    for (i in 1:length(v.iov)) {
+      vi <- v.iov[i]
+      di <- d.iov[i]
+      vi0 <- paste0(vi,"0")
+      vis <- paste0(vi,"_iov")
+      vie <- paste0("eta_",vi,"_iov")
+      for (k in (1:nocc)) {
+        if (tolower(di)=="normal") {
+          nl <- paste0(vis,k," = ",vi0," + ",vie,k)
+        } else if (tolower(di)=="lognormal") {
+          nl <- paste0(vis,k," = ",vi0," * exp(",vie,k,")") 
+        } else if (tolower(di)=="logitnormal") {
+          nl <- paste0(vis,k," = 1/(1+exp(-logit(",vi0,") + ",vie,k,"))")
+        } else {
+          stop("IOV is only possible with distributions normal, lognormal, logitnormal", call.=FALSE)
+        }
+        new.lines <- c(new.lines, nl)
+      }
+    }
+  }
+  
+  
   listc <- c()
   for (kc in (1: length(v.iov))) {
     listk <- testk <- v.iov[kc]
@@ -297,15 +385,15 @@ ioveq <- function(lines, v.iov, nocc) {
   for (ko in (1:nocc)) {
     smek <- lines
     for (exprk in listc) {
-      smek <- repstr1(exprk,paste0(suffix,ko),smek)
+      smek <- repstr1(exprk,paste0("_iov",ko),smek)
     }
     new.eq <- c(new.eq, smek)
   }
   new.eq <- unique(new.eq)
-  return(list(iov=listc,lines=c("EQUATION:",new.eq)))
+  return(list(iov=listc,lines=c("EQUATION:",new.lines,new.eq)))
 }
 
-iovseclong <- function(sec, v.iov, nocc, occ.name) {
+iovseclong <- function(sec, v.iov=NULL, d.iov=NULL, o.iov=NULL, nocc, occ.name) {
   # add a block EQUATION to section LONGITUDINAL for IOV 
   
   suffix <- "_iov"
@@ -314,11 +402,28 @@ iovseclong <- function(sec, v.iov, nocc, occ.name) {
     new.lines <- c("EQUATION:",paste0("if ",occ.name,"==1"))
     for (ko in (1:nocc)) {
       for (vi in v.iov) {
-        new.lines <- c(new.lines, paste0("  ",vi,"=",paste0(vi,suffix,ko)))
+        new.lines <- c(new.lines, paste0("   eta_",vi,"=",paste0("eta_",vi,suffix,ko)))
+      }
+      for (vi in o.iov) {
+        new.lines <- c(new.lines, paste0("   ",vi,"=",paste0(vi,suffix,ko)))
       }
       new.lines <- c(new.lines, paste0("elseif ",occ.name,"==",ko+1))
     }
     new.lines[length(new.lines)] <- "end"
+  }
+  for (i in 1:length(v.iov)) {
+    vi <- v.iov[i]
+    di <- d.iov[i]
+    if (tolower(di)=="normal") {
+      nl <- paste0(vi," = ",vi,"0 + eta_",vi)
+    } else if (tolower(di)=="lognormal") {
+      nl <- paste0(vi," = ",vi,"0 * exp(eta_",vi,")") 
+    } else if (tolower(di)=="logitnormal") {
+      nl <- paste0(vi," = 1/(1+exp(-logit(",vi,"0) + eta_",vi,"))")
+    } else {
+      stop("IOV is only possible with distributions normal, lognormal, logitnormal", call.=FALSE)
+    }
+    new.lines <- c(new.lines, nl)
   }
   for (k in (1:length(sec$blocks))) {
     new.lines <- c(new.lines,sec$blocks[k],sec$lines[[k]])
@@ -326,7 +431,7 @@ iovseclong <- function(sec, v.iov, nocc, occ.name) {
   return(list(lines=new.lines))
 }
 
-iovdef <- function(lines, v.iov, nocc) {
+iovdef <- function(lines, v.iov=NULL, nocc) {
   # define IOV by creating two blocks DEFINITION
   
   suffix <- "_iov"
@@ -346,6 +451,7 @@ iovdef <- function(lines, v.iov, nocc) {
   }
   if (length(i.iov)>0) {
     v.iov <- sapply(fields[i.iov], function(x) x$name)
+    d.iov <- sapply(fields[i.iov], function(x) x$fields$distribution)
     f1 <- fields
     for (iv in i.iov) {
       f1[[iv]]$name <- paste0(f1[[iv]]$name,"0")
@@ -362,7 +468,8 @@ iovdef <- function(lines, v.iov, nocc) {
     f2 <- fields
     for (iv in i.iov) {
       f2[[iv]]$fields$varlevel <- NULL
-      f2[[iv]]$fields$reference <- f1[[iv]]$name
+      f2[[iv]]$fields$reference <- 0
+      f2[[iv]]$fields$distribution <- "normal"
       if (iop.sd)
         f2[[iv]]$fields$sd <- ifelse(is.na(f2[[iv]]$fields$sd[2]),0,f2[[iv]]$fields$sd[2])
       else
@@ -372,7 +479,7 @@ iovdef <- function(lines, v.iov, nocc) {
     f2 <- list()
     for (ko in (1:nocc)) {
       for (k in 1:length(i.iov))  {
-        f2o[[k]]$name <- paste0(v.iov[k],suffix,ko)
+        f2o[[k]]$name <- paste0("eta_",v.iov[k],suffix,ko)
         if (length(vcv)>0) {
           vcvk <- vcv[[i.iov[k]]]
           if (length(vcvk)>0) {
@@ -384,18 +491,19 @@ iovdef <- function(lines, v.iov, nocc) {
         }
       }
       f2 <- c(f2,f2o)
-      line2 <- field2line(f2)
     }
-    new.lines <- c("DEFINITION:",line1,"DEFINITION:",line2)
+    line2 <- field2line(f2)
+    new.lines <- c("DEFINITION:",line1,line2)
   } else {
     new.lines <- c("DEFINITION:", lines)
+    d.iov <- NULL
   }
-  return(list(iov=v.iov,lines=new.lines))
+  new.lines <- gsub("no-variability=no-variability","no-variability",new.lines)
+  return(list(iov=v.iov,d.iov=d.iov,lines=new.lines))
 }
 
-addiov <- function(var.iov, v.iov, output) {
+addiov0 <- function(var.iov, v.iov, output) {
   # add the outputs with IOV in the list of variables with IOV in section LONGITUDINAL
-  
   for (k in 1:length(output)) {
     nk <- output[[k]]$name
     ik <- match(nk, var.iov)
@@ -408,12 +516,27 @@ addiov <- function(var.iov, v.iov, output) {
   return(v.iov)
 }
 
+addiov <- function(v.iov, output) {
+  # add the outputs with IOV in the list of variables with IOV in section LONGITUDINAL
+  o.iov <- NULL
+  for (k in 1:length(output)) {
+    nk <- output[[k]]$name
+    ik <- match(nk, v.iov)
+    nk <- nk[!is.na(ik)]
+    ik <- ik[!is.na(ik)]
+    if (length(ik)>0) {
+      o.iov <- unique(c(o.iov, nk))
+    }
+  }
+  return(o.iov)
+}
+
 outiov <- function(output,v.iov,occ, v.iov0) {
   new.output <- list()
   j <- 0
   for (k in 1:length(output)) {
     nk <- output[[k]]$name
-    ik <- match(nk, v.iov)
+    ik <- match(nk, c(v.iov,v.iov0))
     nk <- nk[!is.na(ik)]
     ik <- ik[!is.na(ik)]
     if (length(ik)>0) {
@@ -475,7 +598,7 @@ param.iov <- function(p, occ) {
       N <- length(unique(pk$id))
       io <- intersect(nk, no)
       if ( (is.data.frame(occ) && (!identical(pk[io],occ[io]))) | (!is.data.frame(occ) && any(pk$time!=rep(occ$time,N))) )  
-        stop("\n occasions defined in the varlevel field and the parameters are different\n")
+        stop("\n occasions defined in the varlevel field and the parameters are different\n", call.=FALSE)
       if (is.data.frame(occ))
         mo <- merge(occ, pk)
       else 

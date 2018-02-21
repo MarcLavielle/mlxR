@@ -35,9 +35,9 @@ hformat  <-  function(list.input)
         if (is.null(group[[k]]$size))
           group[[k]]$size <- 1
         if (length(group$size)>1)
-          stop("Define group$size as a scalar instead of a vector.")
+          stop("Define group$size as a scalar instead of a vector.", call.=FALSE)
         if (!is.null(group[[k]]$level))
-          warning("'level' defined in 'group' is not used with a R model.")
+          warning("'level' defined in 'group' is not used with a R model.", call.=FALSE)
       }
     } else {    
       model.info <- parse.model(model)
@@ -81,10 +81,10 @@ hformat  <-  function(list.input)
         }
       }
     }
-  }
-  else
+  } else {
     N <- nrow(list.input$id)
-  # N=NULL
+    # N=NULL
+  }
   
   Nid<-NULL
   for (k in seq(1,length(lv))) {
@@ -280,13 +280,13 @@ format.treatment <- function(treatment,uN) {
     } else if (!is.data.frame(trtk)) {
       trtk <- as.data.frame(trtk,stringsAsFactors =FALSE)
       if (is.null(trtk$time) | (is.null(trtk$amount) & is.null(trtk$amt)) )
-        stop("\n\nBoth 'time' and 'amount' should be defined in a treatment list\n")
+        stop("\n\nBoth 'time' and 'amount' should be defined in a treatment list\n", call.=FALSE)
       n <- nrow(trtk)
       trtk <- trtk[rep(1:n,each=N),] 
       trtk$id <- rep(uN,n)
     } else {
       if (is.null(trtk$id) & !is.null(trtk$ID) ) {
-        warning("\n'ID' is used instead of 'id' in the treatment list\n")
+        warning("\n'ID' is used instead of 'id' in the treatment list\n", call.=FALSE)
         trtk$id <- trtk$ID
         trtk$ID <- NULL
       }
@@ -294,7 +294,7 @@ format.treatment <- function(treatment,uN) {
       idk <- sort(unique(trtk$id))
     }
     if (is.null(trtk$time) | (is.null(trtk$amount) & is.null(trtk$amt)) )
-      stop("\n\nBoth 'time' and 'amount' should be defined in a treatment list\n")
+      stop("\n\nBoth 'time' and 'amount' should be defined in a treatment list\n", call.=FALSE)
     
     names(trtk)[names(trtk)=="amt"] <- "amount"
     names(trtk)[names(trtk)=="adm"] <- "type"

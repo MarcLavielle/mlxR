@@ -46,7 +46,7 @@ addFieldsFromHeader  <- function(structure)
       structure
   #
   }else{
-      stop('id must be a field')
+      stop('id must be a field', call.=FALSE)
   }
 
 }
