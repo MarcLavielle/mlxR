@@ -187,8 +187,10 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   
   if (!is.null(iid)) {
     iobs1   = findstrcmp(S[[iy]],'.', not=TRUE)
-    if (!is.null(imdv))
-      iobs1 <- iobs1[S[iobs1,imdv]!=1]
+    if (!is.null(imdv)) {
+      for (kmdv in (1: length(imdv)))
+        iobs1 <- iobs1[S[iobs1,imdv[kmdv]]!=1]
+    }
     if (!is.null(ievid))
       iobs1 <- iobs1[S[iobs1,ievid]==0]
     i0 <- c(grep(' .',S[iobs1,iy],fixed=TRUE),grep('. ',S[iobs1,iy],fixed=TRUE))
@@ -344,8 +346,10 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   #       OBSERVATION FIELD
   #**************************************************************************
   iobs1   = findstrcmp(S[[iy]],'.', not=TRUE)
-  if (!is.null(imdv))
-    iobs1 <- iobs1[S[iobs1,imdv]!=1]
+  if (!is.null(imdv)) {
+    for (kmdv in (1: length(imdv)))
+    iobs1 <- iobs1[S[iobs1,imdv[kmdv]]!=1]
+  }
   if (!is.null(ievid))
     iobs1 <- iobs1[S[iobs1,ievid]==0]
   i0 <- c(grep(' .',S[iobs1,iy],fixed=TRUE),grep('. ',S[iobs1,iy],fixed=TRUE))
