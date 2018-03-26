@@ -53,12 +53,12 @@
 kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE, 
                         color="#e05969", group=NULL, facet=TRUE, labels=NULL)
 { 
-  yy <- NULL
+  y <- NULL
   if (is.vector(r))
-    r <- data.frame(time=r, yy=1)
+    r <- data.frame(time=r, y=1)
   if (dim(r)[2] ==1) {
     names(r) <- "time"
-    r['yy'] <- 1
+    r$y <- 1
   }
   r.name <- attr(r,"name")
   if (length(r.name)>1 || !any(names(r)==r.name)) {
@@ -72,7 +72,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
         r.name <- dn
     }
   }
-  names(r)[names(r)==r.name] <- "yy"
+  names(r)[names(r)==r.name] <- "y"
   
   if (!is.null(r$group) & is.null(group)) {
     group <- "group"
@@ -86,7 +86,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
   if (length(unique(r$id)) == dim(r)[1]) {
     r0 <- r
     r0$time <- 0
-    r0$yy <- 0
+    r0$y <- 0
     r <- rbind(r0,r)
   }
   
@@ -133,10 +133,10 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
   nrep <- length(urep)
   
   if (index=="numberEvent") {
-    r0 <- subset(r, yy==0 & time>0)
+    r0 <- subset(r, y==0 & time>0)
     index="numberEvent0"
     if (!is.null(r0) & length(unique(r0$time))>1) {
-      a=aggregate(r$time, list((!r$yy==0),r$id, r$rep), function(x){ if (length(x)==0) -Inf else max(x)}, drop=FALSE)
+      a=aggregate(r$time, list((!r$y==0),r$id, r$rep), function(x){ if (length(x)==0) -Inf else max(x)}, drop=FALSE)
       a0 <- a$x[seq(1,length(a$x),by=2)]
       a1 <- a$x[seq(2,length(a$x),by=2)]
       if (length(unique(a0[which(a0>a1)]))>1)
@@ -156,10 +156,10 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
       r0 <- r1 <- r10 <- NULL
       for (i in seq(1,N)) {
         ri <- rj[rj$id==uid[i],]
-        cyi <- cumsum(ri$yy)
+        cyi <- cumsum(ri$y)
         if (max(cyi)>1)
           test.index <- TRUE
-        ri$yy <- 1
+        ri$y <- 1
         if (any(index<=cyi)) {
           it <- min(which(index<=cyi))
           if (is.null(r1))
@@ -176,11 +176,11 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
         
       }
       if (!is.null(r0)) {
-        names(r0)[names(r0)=="yy"] <- "c"
+        names(r0)[names(r0)=="y"] <- "c"
         r0$d <- 0
       }
       if (!is.null(r1)) {
-        names(r1)[names(r1)=="yy"] <- "d"
+        names(r1)[names(r1)=="y"] <- "d"
         r1$c <- 0
       }
       re <- rbind(r1,r0)
@@ -193,7 +193,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
       S <- Se <- T <- G <- NULL
       S0 <- T0 <- G0 <- NULL
       t0=min(rj$time)
-      if (min(rj$time[rj$yy==1]) < min(rj$time[rj$yy==0]))
+      if (min(rj$time[rj$y==1]) < min(rj$time[rj$y==0]))
         t0 <- 0
       for (kg in ug) {
         rk<-re[g==kg,]
@@ -232,10 +232,10 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
           Tk<-c(t0,rep(tu,each=2))
         } else {
           urt <- sort(unique(r$time))
-          Sku <- approx(x=ru$time,y=Sk,xout=urt,method="constant",rule=2)$yy
-          Sa <- approx(x=urt,y=Sku,xout=time, rule=2)$yy
-          seku <- approx(x=ru$time,y=sek,xout=urt,method="constant",rule=2)$yy
-          sea <- approx(x=urt,y=seku,xout=time, rule=2)$yy
+          Sku <- approx(x=ru$time,y=Sk,xout=urt,method="constant",rule=2)$y
+          Sa <- approx(x=urt,y=Sku,xout=time, rule=2)$y
+          seku <- approx(x=ru$time,y=sek,xout=urt,method="constant",rule=2)$y
+          sea <- approx(x=urt,y=seku,xout=time, rule=2)$y
           S <- c(S,Sa)
           Se <- c(Se,sea)
           Tk<-time
@@ -278,7 +278,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
         cy <- cw <- 0
         for (i in uidk) {
           ri <- rj[rj$id==i,]
-          cyi <- completemlx(xi=cumsum(ri$yy),ti=ri$time,t=ut)
+          cyi <- completemlx(xi=cumsum(ri$y),ti=ri$time,t=ut)
           cy <- cy + cyi$x*cyi$w
           cw <- cw + cyi$w
         } 
@@ -290,7 +290,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
           Tk <- rep(ut,each=2)
           Tk <- Tk[-1]
         } else {
-          Sa <- approx(x=ut,y=cy,xout=time, rule=2)$yy
+          Sa <- approx(x=ut,y=cy,xout=time, rule=2)$y
           S <- c(S,Sa)
           Tk<-time
         }
@@ -307,7 +307,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
     } else if (index=="numberEvent") {
       
       
-      srj <- aggregate(rj$yy, list(rj$id), sum)
+      srj <- aggregate(rj$y, list(rj$id), sum)
       k.max <- max(srj[,2])
       
       urt <- sort(unique(r$time))
@@ -323,8 +323,8 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
         r0 <- r1 <- NULL
         for (i in seq(1,N)) {
           ri <- rj[rj$id==uid[i],]
-          cyi <- cumsum(ri$yy)
-          ri$yy <- 1
+          cyi <- cumsum(ri$y)
+          ri$y <- 1
           if (any(k<=cyi)) {
             it <- min(which(k<=cyi))
             if (is.null(r1))
@@ -339,11 +339,11 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
           }
         }
         if (!is.null(r0)) {
-          names(r0)[names(r0)=="yy"] <- "c"
+          names(r0)[names(r0)=="y"] <- "c"
           r0$d <- 0
         }
         if (!is.null(r1)) {
-          names(r1)[names(r1)=="yy"] <- "d"
+          names(r1)[names(r1)=="y"] <- "d"
           r1$c <- 0
         }
         re <- rbind(r1,r0)
@@ -376,12 +376,12 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
             Sk[j] <- Sk[j-1]*pj
           }
           
-          Sku <- approx(x=ru$time,y=Sk,xout=urt,method="constant",rule=2)$yy
+          Sku <- approx(x=ru$time,y=Sk,xout=urt,method="constant",rule=2)$y
           if (is.null(time)) {
             S <- c(S,rep(Sku,each=2))
             S <- S[-length(S)]
           } else {
-            Sa <- approx(x=urt,y=Sku,xout=time, rule=2)$yy
+            Sa <- approx(x=urt,y=Sku,xout=time, rule=2)$y
             S <- c(S,Sa)
           }
         }
