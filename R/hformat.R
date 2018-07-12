@@ -187,7 +187,7 @@ hformat  <-  function(list.input)
   }
   output <- output$individual
   list.output$output <- output
-  
+
   #---  treatments
   iv <- which(nv=="treatment")
   if (!is.null(lv[[iv]])) {
@@ -399,7 +399,7 @@ format.parameter <- function(parameter,param,uN) {
       }
     }
     for (i in uN) {
-      pki <- paramk[paramk$id==i,]
+      pki <- subset(paramk, id==i)
       pki$id <- i
       if (is.null(parameter[[i]]))
         parameter[[i]] <- pki

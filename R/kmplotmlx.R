@@ -114,7 +114,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
     group <- "group"
     r$group <- ig
   }
-  
+ r$id <- interaction(ig,r[["id"]])
   r$col <- ig
   ug <- levels(ig)
   ng <- length(ug)
@@ -250,7 +250,7 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
         G <- rbind(G,Gk)
         
         if (cens) {
-          i0 <- which(ru$c>0)
+          i0 <- which(ru$c>0 & ru$time>=min(time) & ru$time<=max(time))
           if (length(i0)>0) {
             T0 <- c(T0,ru$time[i0])
             S0 <- c(S0,Sk[i0])

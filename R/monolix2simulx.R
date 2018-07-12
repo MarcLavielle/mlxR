@@ -83,9 +83,9 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
       colnames(treat2)<-treatment$colNames
       treatment <- treat2
     }
-    write.table(treatment,file=file.path(Rproject,"/treatment.txt"),row.names=FALSE,quote=FALSE)
+    write.table(treatment,file=file.path(Rproject,"/treatment.txt"),row.names=FALSE,quote=FALSE, sep=",")
     cat("\n# treatment\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-    cat("trt <- read.table(\"treatment.txt\", header = TRUE) \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    cat("trt <- read.table(\"treatment.txt\", header = TRUE, sep=',') \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   }
   
   param.list <- NULL
@@ -93,9 +93,9 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   if(!(is.null(occasion))) {  
     cat("\n# occasion \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
     outfile = file.path(Rproject,paste0("/occasion.txt"))      
-    write.table(occasion,file=outfile,row.names=FALSE,quote=FALSE)
-    cat(paste0("occasion <-read.table(\"occasion.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
-
+    write.table(occasion,file=outfile,row.names=FALSE,quote=FALSE, sep=",")
+    cat(paste0("occasion <-read.table(\"occasion.txt\", header = TRUE, sep=',')\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+    
     # cat(paste0("cov.occ <- occasion\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
     # cat(paste0("names(cov.occ)[3] <- \"OCC\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
     # cat(paste0("cov.occ[,3]<- as.factor(cov.occ[,3])"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
@@ -108,15 +108,15 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
     
     if (!is.null(ans$id)){
       outfile = file.path(Rproject,paste0("/originalId.txt"))      
-      write.table(ans$id,file=outfile,row.names=FALSE,quote=FALSE)
-      cat(paste0("originalId<- read.table('originalId.txt', header=TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      write.table(ans$id,file=outfile,row.names=FALSE,quote=FALSE, sep=",")
+      cat(paste0("originalId<- read.table('originalId.txt', header=TRUE, sep=',') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
     }
     
     populationParameter <- parameter[[1]]
     if (!is.null(populationParameter)){
       outfile = file.path(Rproject,paste0("/populationParameter.txt"))      
-      cat(paste0("populationParameter<- read.vector('populationParameter.txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-      write.table(populationParameter,file=outfile,col.names=FALSE,quote=FALSE)
+      cat(paste0("populationParameter<- read.vector('populationParameter.txt', sep=',') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      write.table(populationParameter,file=outfile,col.names=FALSE,quote=FALSE, sep=",")
       
       if (!is.null(param.list))
         param.list <- paste(param.list,"populationParameter",sep=",")  
@@ -141,11 +141,11 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
         }
         cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         cat(paste0("colCatType[catNamesCols]<-rep(\"character\",",length(catNames),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-        cat(paste0(indcov," <- read.table('",indcov,".txt', header = TRUE,colClasses = colCatType) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0(indcov," <- read.table('",indcov,".txt', header = TRUE,colClasses = colCatType, sep=',') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       }else{
-        cat(paste0(indcov," <- read.table('",indcov,".txt', header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0(indcov," <- read.table('",indcov,".txt', header = TRUE, sep=',') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       }
-      write.table(individualCovariate,file=outfile,row.names=FALSE,quote=FALSE)
+      write.table(individualCovariate,file=outfile,row.names=FALSE,quote=FALSE, sep=",")
       if (!is.null(param.list))
         param.list <- paste(param.list,indcov,sep=",")  
       else
@@ -169,11 +169,11 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
           }
           cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
           cat(paste0("colCatType[catNamesCols]<-rep(\"character\",",length(catNames.iov),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-          cat(paste0("individualCovariateIOV <- read.table('individualCovariateIOV.txt', header = TRUE,colClasses = colCatType) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+          cat(paste0("individualCovariateIOV <- read.table('individualCovariateIOV.txt', header = TRUE,colClasses = colCatType, sep=',') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
         }else{
-          cat(paste0("individualCovariateIOV <- read.table('individualCovariateIOV.txt', header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+          cat(paste0("individualCovariateIOV <- read.table('individualCovariateIOV.txt', header = TRUE, sep=',') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
         }
-        write.table(individualCovariate.iov,file=outfile,row.names=FALSE,quote=FALSE)
+        write.table(individualCovariate.iov,file=outfile,row.names=FALSE,quote=FALSE, sep=",")
         param.list <- paste(param.list,"individualCovariateIOV",sep=",")  
         i.factor <- which(sapply(individualCovariate.iov[-1], is.factor))
         if (length(i.factor)>0){
@@ -185,8 +185,8 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
     individualParameter <- parameter[[3]]
     if (!is.null(individualParameter)){
       outfile = file.path(Rproject,paste0("/individualParameter.txt"))      
-      cat(paste0("individualParameter<- read.table('individualParameter.txt', header = TRUE) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
-      write.table(individualParameter,file=outfile,row.names=FALSE,quote=FALSE)
+      cat(paste0("individualParameter<- read.table('individualParameter.txt', header = TRUE, sep=',') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      write.table(individualParameter,file=outfile,row.names=FALSE,quote=FALSE, sep=",")
       if (!is.null(param.list))
         param.list <- paste(param.list,"individualParameter",sep=",")  
       else
@@ -200,7 +200,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   
   # write f.i.m
   if(!(is.null(fim))) 
-    write.table(fim,file=file.path(Rproject,"/fim.txt"),row.names=FALSE,quote=FALSE) 
+    write.table(fim,file=file.path(Rproject,"/fim.txt"),row.names=FALSE,quote=FALSE, sep=",") 
   
   # write  requested output 
   if(!(is.null(output)))
@@ -212,20 +212,20 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
       out1 <- output[[1]]
       out1.name <- out1$name 
       cat(paste0("name<-\"",out1.name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      cat(paste0("time<-read.table(\"output.txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      cat(paste0("time<-read.table(\"output.txt\",header=TRUE, sep=',')\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       cat(paste0("out<-list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       outfile = file.path(Rproject,"/output.txt")
-      write.table(out1$time,file=outfile,row.names=FALSE,quote=FALSE) 
+      write.table(out1$time,file=outfile,row.names=FALSE,quote=FALSE, sep=",") 
     } else {    # many types of output could exist
       for(i in seq(1:length(output))) {
         outi <- output[[i]]
         outi.name <- outi$name
         cat(paste0("name<-\"",outi.name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         if(is.data.frame(outi$time)) {
-          cat(paste0("time<-read.table(\"output",i,".txt\",header=TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+          cat(paste0("time<-read.table(\"output",i,".txt\",header=TRUE, sep=',')\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
           cat(paste0("out",i,"<-list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
           outfile = paste0(file.path(Rproject,paste0("/output",i)),".txt")
-          write.table(outi$time,file=outfile,row.names=FALSE,quote=FALSE) 
+          write.table(outi$time,file=outfile,row.names=FALSE,quote=FALSE, sep=",") 
         } else {
           cat(paste0("out",i,"<-list(name=name) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         }
@@ -243,8 +243,8 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   if(!(is.null(regressor))) {  
     cat("\n# regressor \n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
     outfile = file.path(Rproject,paste0("/regressor.txt"))    
-    write.table(regressor,file=outfile,row.names=FALSE,quote=FALSE)
-    cat(paste0("regressor <-read.table(\"regressor.txt\", header = TRUE)\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+    write.table(regressor,file=outfile,row.names=FALSE,quote=FALSE, sep=",")
+    cat(paste0("regressor <-read.table(\"regressor.txt\", header = TRUE, sep=',')\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
   }
   
   
@@ -279,4 +279,35 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   }
   return(projectExe)
 }
+
+# ----------------------------------
+clean.id <- function(x) {
+  if (!is.null(x$id$oriId)) {
+    if (length(grep(" ",levels(x$id$oriId)))>0) {
+      x$id$oriId <- gsub(" ","_",x$id$oriId)
+      for (k in (1:length(x))) {
+        xk <- x[[k]]
+        if (is.data.frame(xk) && !is.null(xk$id)) {
+          x[[k]]$id <- gsub(" ","_",xk$id)
+        } else {
+          for (j in (1:length(xk))) {
+            xkj <- xk[[j]]
+            if (is.data.frame(xkj) && !is.null(xkj$id)) {
+              x[[k]][[j]]$id <- gsub(" ","_",xkj$id)
+            } else {
+              for (l in (1:length(xkj))) {
+                xkjl <- xkj[[l]]
+                if (is.data.frame(xkjl) && !is.null(xkjl$id)) {
+                  x[[k]][[j]][[l]]$id <- gsub(" ","_",xkjl$id)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return(x)
+}
+
 

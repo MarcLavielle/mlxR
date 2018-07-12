@@ -18,6 +18,9 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   if (!file.exists(project)) 
     stop(paste0("The Monolix project ", project, " does not exists..."), call.=FALSE)
   
+  if (grepl(" ", project))
+    stop("Please, remove the spaces in the project name...", call.=FALSE)
+  
   infoProject <- getInfoXml(project)
   n.output <- length(infoProject$output)
   param <- parameter

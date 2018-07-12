@@ -467,26 +467,26 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
         # nreg <- length(group[[1]]$regressor)
         # lv$regressor <- list()
         # for (jr in 1:nreg) {
-          tr <- NULL
-          i2 <- 0
-          for (k in (1:ng)) {
-            i1 <- i2+1
-            i2 <- i2 + group[[k]]$size
-#            grk <- group[[k]]$regressor[[jr]]
-            grk <- group[[k]]$regressor
-            tk <- as.data.frame(grk[c('time','value')])
-            names(tk)[2] <- grk$name
-            ntk <- nrow(tk)
-            tk <- tk[rep(seq.int(1,ntk), group[[k]]$size), ]
-            tk$id <- rep(seq(i1,i2),each=ntk)
-            if (is.null(tr))
-              tr <- tk
-            else
-              tr <- merge(tr,tk, all=TRUE, sort=FALSE)
-          }
-          tr[is.na(tr)]='.'
-#          lv$regressor[[jr]] <- tr
-          lv$regressor <- tr
+        tr <- NULL
+        i2 <- 0
+        for (k in (1:ng)) {
+          i1 <- i2+1
+          i2 <- i2 + group[[k]]$size
+          #            grk <- group[[k]]$regressor[[jr]]
+          grk <- group[[k]]$regressor
+          tk <- as.data.frame(grk[c('time','value')])
+          names(tk)[2] <- grk$name
+          ntk <- nrow(tk)
+          tk <- tk[rep(seq.int(1,ntk), group[[k]]$size), ]
+          tk$id <- rep(seq(i1,i2),each=ntk)
+          if (is.null(tr))
+            tr <- tk
+          else
+            tr <- merge(tr,tk, all=TRUE, sort=FALSE)
+        }
+        tr[is.na(tr)]='.'
+        #          lv$regressor[[jr]] <- tr
+        lv$regressor <- tr
       }
       # }
       gr.ori <- NULL
@@ -527,7 +527,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     for (irep in (1:nrep)) {
       irw <- irw + 1
       settings$seed <- settings$seed +12345
-      
       if (disp.iter==TRUE && nrep>1)  
         cat("replicate: ",irw,"\n")
       if (test.rep == TRUE) {
@@ -537,7 +536,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           lv <- resample.data(data=lv0,idOri=id,N=sum(g.size),replacement=replacement)
         if (test.N==FALSE)  
           lv$group <- group
-        
         r <- simulxunit(model=model,lv=lv,settings=settings, out.trt=out.trt,riov=riov)
       }
       
@@ -614,12 +612,13 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
                      sep=sep,digits=digits,app.dir=app,app.file=app)
         
       } 
+      
       if (irep==1) {
         res <- rs
       } else {
-        for(k in (1:length(rs)))
-          if (is.data.frame(rs[[k]]))
-            res[[k]] <- rbind(res[[k]],rs[[k]])
+        for(nk in (names(rs)))
+          if (is.data.frame(rs[[nk]])) 
+            res[[nk]] <- rbind(res[[nk]],rs[[nk]])
           else
             res[[k]] <- rs[[k]]
       }  

@@ -61,6 +61,11 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   header=unlist(strsplit(header, ",")) 
   header <- toupper(header)
   header[header=="DPT"]="ADM"
+  header[header=="AMOUNT"]="AMT"
+  header[header=="OBSERVATION"]="Y"
+  header[header=="OBSID"]="YTYPE"
+  header[header=="CONTCOV"]="COV"
+  header[header=="CATCOV"]="CAT"
   nlabel = length(header)
   
   icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
@@ -191,8 +196,11 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
       for (kmdv in (1: length(imdv)))
         iobs1 <- iobs1[S[iobs1,imdv[kmdv]]!=1]
     }
-    if (!is.null(ievid))
+    if (!is.null(ievid)) {
+      levels(S[,ievid])[levels(S[,ievid])=="."] <- "0"  
+      S[,ievid] <- as.numeric(as.character(S[,ievid]))
       iobs1 <- iobs1[S[iobs1,ievid]==0]
+    }
     i0 <- c(grep(' .',S[iobs1,iy],fixed=TRUE),grep('. ',S[iobs1,iy],fixed=TRUE))
     if (length(i0)>0)
       iobs1 <- iobs1[-i0]
@@ -270,7 +278,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   if (!is.null(iamt)) {
     i1 = findstrcmp(S[[iamt]],'.', not=TRUE)
     if (!is.null(ievid)) {
-      i1 <- i1[S[i1,ievid]!=0]
+      i1 <- i1[S[i1,ievid]!=0 & S[i1,ievid]!=2]
       #      i1.evid <- i1[S[i1,ievid]==4]
     }
     i0 <- c(grep(' .',S[i1,iamt],fixed=TRUE),grep('. ',S[i1,iamt],fixed=TRUE))
@@ -281,7 +289,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     if (!is.null(iadm)) si1[[iadm]] <- as.numeric(as.character(si1[[iadm]]))
     if (!is.null(ievid)) si1[[ievid]] <- as.numeric(as.character(si1[[ievid]]))
     ixdose <- c(iamt, irate, itinf, iadm, ievid)
-    si1dose <- si1[,ixdose]
+    si1dose <- data.frame(sapply(si1[,ixdose], function(x) as.numeric(as.character(x))))
     if (length(ixdose)==1)
       u=data.frame(idnum[i1], t[i1], si1dose)
     else
