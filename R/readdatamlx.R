@@ -52,7 +52,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   } 
   
   headerList      = c('ID','TIME','AMT','ADM','RATE','TINF','Y','YTYPE',
-                      'X','COV','CAT','OCC','MDV','EVID','ADDL','SS','II')
+                      'X','COV','CAT','OCC','MDV','EVID','ADDL','SS','II',
+                      'CENS', 'LIMIT', 'DATE')
   newList         = tolower(headerList)
   newList[3:4] <- c('amount','type')
   newHeader       = vector(length=length(header))
@@ -61,18 +62,21 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   header=unlist(strsplit(header, ",")) 
   header <- toupper(header)
   header[header=="DPT"]="ADM"
+  header[header=="ADMID"]="ADM"
   header[header=="AMOUNT"]="AMT"
   header[header=="OBSERVATION"]="Y"
   header[header=="OBSID"]="YTYPE"
   header[header=="CONTCOV"]="COV"
   header[header=="CATCOV"]="CAT"
+  header[header=="REGRESSOR"]="X"
   nlabel = length(header)
   
-  icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
-  ievid <- iaddl <- iii <- iss <- iadm <- irate <- itinf <- NULL
+  # icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
+  # ievid <- iaddl <- iii <- iss <- iadm <- irate <- itinf <- icens <- NULL
   
   for (i in 1:length(headerList)) {
     hi=headerList[[i]]
+    eval(parse(text= paste0("i",hi," <- NULL")))
     ih <- which(header %in% hi)
     if (length(ih)==0)
       ih=NULL
@@ -299,7 +303,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     u.addl <- NULL
     u.ss <- NULL
     if (!is.null(iaddl)) {
+      levels(S[,iaddl])[levels(S[,iaddl])=="."] <- "0"  
       addl <- as.numeric(as.character(S[i1,iaddl]))
+      levels(S[,iii])[levels(S[,iii])=="."] <- "0"  
       ii <- as.numeric(as.character(S[i1,iii]))
       j.addl <- which(addl>0)
       if (length(j.addl)>0) {
@@ -334,7 +340,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
           uk <- u[rep(k, addl.ss),]
           uk$time <- u$time[k] - ii[k]*seq(1:addl.ss)
           u.ss <- rbind(u.ss,uk)
-          u.evid <- rbind(u.evid,uk[addl.ss,c(1,2)])
+#          u.evid <- rbind(u.evid,uk[addl.ss,c(1,2)])
         }
       }
     }
@@ -365,6 +371,10 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     iobs1 <- iobs1[-i0]
   
   yvalues = data.frame(id=idnum[iobs1], time=t[iobs1], y=as.numeric(as.character(S[iobs1,iy])))
+  if (!is.null(icens))
+    yvalues['cens'] <- S[iobs1,icens]
+  if (!is.null(ilimit))
+    yvalues['limit'] <- S[iobs1,ilimit]
   if (!is.null(iytype)){ 
     ytype <- factor(S[iobs1,iytype])
     l.ytype <- levels(ytype)

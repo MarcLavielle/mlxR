@@ -104,14 +104,9 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
       
       if (id.out==TRUE){
         if (is.null(dk$id)){
-          dk$id <- 1
-          nk <- length(dk)
-          dk <- dk[,c(nk,(1:(nk-1)))]
-        }
+          dk <- data.frame(id = factor(1), dk)        }
         if (is.null(dk$group)){
-          dk$group <- 1
-          nk <- length(dk)
-          dk <- dk[,c(1,nk,(2:(nk-1)))]
+          dk <- data.frame(group = factor(1), dk)
         }
       }
       if (iop.tk==0){

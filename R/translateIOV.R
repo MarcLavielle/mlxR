@@ -29,7 +29,7 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
     if (length(sec.cov$blocks)) {
       for (k in (1:length(sec.cov$blocks))) {
         if (identical(sec.cov$blocks[k],'EQUATION:')) {
-          rk.cov <- ioveq(sec.cov$lines[[k]], i.iov, nocc)
+          rk.cov <- ioveq(sec.cov$lines[[k]], i.iov, d.iov, nocc)
         } else {
           rk.cov <- iovdef(sec.cov$lines[[k]], i.iov, nocc)
           d.iov <- rk.cov$d.iov
@@ -48,6 +48,7 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
     sec.ind <- splitSection(sm[[i.ind]])
     #    u.iov <- setdiff(unique(c(c.iov, o.iov)), i.iov)
     u.iov <- c.iov
+    u.iov <- setdiff(c.iov, cat0.name)
     r0.ind <- iovin(sec.ind$input, u.iov, i.iov, nocc, sec.ind$name, cat0, rem.name=rem.name)
     #    v.iov <- r0.ind$iov
     v.iov <- unique(c(u.iov, i.iov))

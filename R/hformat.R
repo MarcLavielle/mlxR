@@ -187,7 +187,7 @@ hformat  <-  function(list.input)
   }
   output <- output$individual
   list.output$output <- output
-
+  
   #---  treatments
   iv <- which(nv=="treatment")
   if (!is.null(lv[[iv]])) {
@@ -212,8 +212,7 @@ hformat  <-  function(list.input)
   
   #---  regressor
   iv <- which(nv=="regressor")
-  if (!is.null(lv[[iv]]))
-  {
+  if (!is.null(lv[[iv]])) {
     r <- format.regressor(lv[[iv]],seq(1,N))
     if (length(r$id)>0) 
       id.ori=c(id.ori,r$id)
@@ -506,6 +505,9 @@ format.regressor <- function(reg, uN) {
         mk <- regk$value
         colNames=regk$colNames
       } else {
+        if (length(regk$time)==1) {
+          regk$time <- c(regk$time, regk$time)
+        }
         nk <- length(regk$time)
         idk <- rep(uN,each=nk)
         mk <- cbind(regk$time,regk$value)
@@ -522,7 +524,7 @@ format.regressor <- function(reg, uN) {
       regk <- mk
     }
     regk <- regk[order(regk$id,regk$time),]
-    regressor[[k]] <- regk
+    regressor[[k]] <- unique(regk)
   }
   r <- list(regressor=regressor, id=unique(id.ori))
   return(r)

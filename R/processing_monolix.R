@@ -39,7 +39,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
     for (iy in (1:length(j.long))) {
       yi <- datas[[j.long[iy]]]
       niy <- names(yi)
-      yk <- list(ylabel="observation", colNames=niy, name=niy[length(niy)], value=yi )
+      yk <- list(ylabel="observation", colNames=niy, name=names(j.long[iy]), value=yi )
       datas$observation[[iy]] <- yk
     }    
     if (!is.null(datas$treatment)) {

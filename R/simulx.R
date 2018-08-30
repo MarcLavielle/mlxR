@@ -538,7 +538,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           lv$group <- group
         r <- simulxunit(model=model,lv=lv,settings=settings, out.trt=out.trt,riov=riov)
       }
-      
       if (length(loq.n) > 0) {
         for (k in (1:length(loq.n))) {
           rnk <- loq.n[k]
@@ -620,7 +619,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           if (is.data.frame(rs[[nk]])) 
             res[[nk]] <- rbind(res[[nk]],rs[[nk]])
           else
-            res[[k]] <- rs[[k]]
+            res[[nk]] <- rs[[nk]]
       }  
     } # irep
     
