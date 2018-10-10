@@ -65,8 +65,9 @@
 #' @importFrom grDevices hsv rgb2hsv col2rgb 
 #' @export         
 catplotmlx <- function(r, col=NULL, breaks=NULL, plot=TRUE, color="#194280", 
-                       group=NULL, facet=TRUE, labels=NULL)
-{
+                       group=NULL, facet=TRUE, labels=NULL) {
+  if (is.null(r))
+    stop("input of catplotmlx is empty!", call.=FALSE)
   
   if (is.null(col)) {
     r.names <- names(r)

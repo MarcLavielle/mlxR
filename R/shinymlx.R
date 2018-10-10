@@ -13,7 +13,7 @@
 #' value for \code{numeric}.
 #'
 #' See http://simulx.webpopix.org/mlxr/shinymlx/ for more details.      
-#' @param model a \code{Mlxtran} or \code{PharmML} model used for the simulation
+#' @param model a \code{Mlxtran} model used for the simulation
 #' @param output a list - or a list of lists - with fields: 
 #' \itemize{
 #'   \item \code{name}: a vector of output names

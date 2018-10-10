@@ -8,7 +8,7 @@ mlxplore(model, parameter = NULL, output = NULL, group = NULL,
   treatment = NULL)
 }
 \arguments{
-\item{model}{a \code{Mlxtran} or \code{PharmML} model}
+\item{model}{a \code{Mlxtran} model}
 
 \item{parameter}{a vector of parameters with their names and values}
 
@@ -33,7 +33,7 @@ mlxplore(model, parameter = NULL, output = NULL, group = NULL,
 }}
 }
 \description{
-Explore and visualize \samp{Mlxtran} and \samp{pharmML} models 
+Explore and visualize \samp{Mlxtran} models 
 with the \samp{Mlxplore} software.
 }
 \details{

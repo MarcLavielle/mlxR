@@ -81,9 +81,10 @@
 #' @importFrom stats quantile 
 #' @export         
 prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="#9a35ff",
-                       group=NULL, facet=TRUE, labels=NULL, band=NULL)
-{
+                       group=NULL, facet=TRUE, labels=NULL, band=NULL) {
   
+  if (is.null(r))
+    stop("input of prctilemlx is empty!", call.=FALSE)
   if (!is.null(band)) {
     level <- band$level
     number <- band$number

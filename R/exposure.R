@@ -27,7 +27,7 @@
 #'   \item \code{target} : the target compartment (default=NULL). 
 #' }
 #' 
-#' @param model a \code{Mlxtran} or \code{PharmML} model used for the simulation
+#' @param model a \code{Mlxtran} model used for the simulation
 #' @param group a list, or a list of lists, with fields: 
 #' \itemize{
 #'   \item \code{size} : size of the group (default=1),
@@ -42,7 +42,7 @@
 #' @param project the name of a Monolix project
 #' @param settings a list of optional settings
 #' \itemize{
-#'   \item \code{record.file} : name of the datafile where the simulated data is written (string),
+#'   \item \code{result.file} : name of the datafile where the simulated data is written (string),
 #'   \item \code{seed} : initialization of the random number generator (integer),
 #'   \item \code{load.design} : TRUE/FALSE (if load.design is not defined, a test is automatically performed to check if a new design has been defined),
 #'   \item \code{data.in} : TRUE/FALSE (default=FALSE)
@@ -68,7 +68,7 @@
 #' @importFrom utils tail
 #' @importFrom stats sd
 #' @export
-exposure <- function(model,output, group=NULL,treatment=NULL,parameter=NULL,
+exposure <- function(model=NULL,output=NULL, group=NULL,treatment=NULL,parameter=NULL,
                      data=NULL, project=NULL, settings=NULL, regressor=NULL, varlevel=NULL)
 {  
   if (!is.null(group)){

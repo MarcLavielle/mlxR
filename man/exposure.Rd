@@ -4,12 +4,12 @@
 \alias{exposure}
 \title{Computation of AUC, Cmax and Cmin}
 \usage{
-exposure(model, output, group = NULL, treatment = NULL, parameter = NULL,
-  data = NULL, project = NULL, settings = NULL, regressor = NULL,
-  varlevel = NULL)
+exposure(model = NULL, output = NULL, group = NULL, treatment = NULL,
+  parameter = NULL, data = NULL, project = NULL, settings = NULL,
+  regressor = NULL, varlevel = NULL)
 }
 \arguments{
-\item{model}{a \code{Mlxtran} or \code{PharmML} model used for the simulation}
+\item{model}{a \code{Mlxtran} model used for the simulation}
 
 \item{output}{a list  with fields: 
 \itemize{
@@ -49,7 +49,7 @@ exposure(model, output, group = NULL, treatment = NULL, parameter = NULL,
 
 \item{settings}{a list of optional settings
 \itemize{
-  \item \code{record.file} : name of the datafile where the simulated data is written (string),
+  \item \code{result.file} : name of the datafile where the simulated data is written (string),
   \item \code{seed} : initialization of the random number generator (integer),
   \item \code{load.design} : TRUE/FALSE (if load.design is not defined, a test is automatically performed to check if a new design has been defined),
   \item \code{data.in} : TRUE/FALSE (default=FALSE)

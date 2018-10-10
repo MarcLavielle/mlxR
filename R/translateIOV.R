@@ -453,6 +453,14 @@ iovdef <- function(lines, v.iov=NULL, nocc) {
   if (length(i.iov)>0) {
     v.iov <- sapply(fields[i.iov], function(x) x$name)
     d.iov <- sapply(fields[i.iov], function(x) x$fields$distribution)
+    for (iv in i.iov) {
+      if (identical(fields[[iv]]$fields$varlevel,"id*occ")) {
+      if (iop.sd)
+        fields[[iv]]$fields$sd <- c(0,fields[[iv]]$fields$sd)
+      else
+        fields[[iv]]$fields$var <- c(0,fields[[iv]]$fields$var)
+      }
+    }
     f1 <- fields
     for (iv in i.iov) {
       f1[[iv]]$name <- paste0(f1[[iv]]$name,"0")

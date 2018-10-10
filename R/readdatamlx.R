@@ -35,6 +35,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   datas=NULL
   
   if (!is.null(project)) {
+    if (!file.exists(project)) 
+      stop(paste0("The Monolix project ", file.path(getwd(),project), " does not exists..."), call.=FALSE)
     infoProject <- getInfoXml(project)
     r= tryCatch(
       readPopEstimate(infoProject$resultFolder)

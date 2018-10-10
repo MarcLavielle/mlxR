@@ -9,7 +9,7 @@ shinymlx(model, parameter = NULL, output = NULL, treatment = NULL,
   settings = NULL, title = " ")
 }
 \arguments{
-\item{model}{a \code{Mlxtran} or \code{PharmML} model used for the simulation}
+\item{model}{a \code{Mlxtran} model used for the simulation}
 
 \item{parameter}{a vector, or a list of shiny widgets}
 

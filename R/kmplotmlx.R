@@ -51,8 +51,9 @@
 #' @importFrom stats qnorm approx
 #' @export         
 kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE, 
-                        color="#e05969", group=NULL, facet=TRUE, labels=NULL)
-{ 
+                        color="#e05969", group=NULL, facet=TRUE, labels=NULL) { 
+  if (is.null(r))
+    stop("input of kmplotmlx is empty!", call.=FALSE)
   y <- NULL
   if (is.vector(r))
     r <- data.frame(time=r, y=1)

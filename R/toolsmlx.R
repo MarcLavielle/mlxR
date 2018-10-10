@@ -415,3 +415,44 @@ repCategories <- function(r, model) {
 }
 
 
+simulx.check <- function(project=NULL, model=NULL, parameter=NULL, output=NULL, treatment=NULL, 
+                         data=NULL, regressor=NULL, varlevel=NULL, group=NULL, settings=NULL) {
+  
+  #---  settings
+  if (is.null(settings$seed))
+    settings$seed <-  round(as.numeric(Sys.time())*1000*runif(1))%%1e11/100
+  if (is.null(settings$sep)) settings$sep <- ","
+  if (is.null(settings$digits)) settings$digits <- 5
+  if (is.null(settings$kw.max)) settings$kw.max <- 500
+  if (is.null(settings$replacement)) settings$replacement <- FALSE
+  if (is.null(settings$out.trt))  settings$out.trt <- TRUE
+  if (isfield(settings,"record.file")) {
+    settings$result.file <- settings$record.file
+    settings$record.file <- NULL
+    warning("\n\n 'record.file' is a deprecated option. Use 'result.file' instead.", call.=FALSE)
+  }
+  
+  # --- MODEL ->  PROJECT
+  if (identical(file_ext(model),"mlxtran")) {
+    lines <- readLines(model)
+    data.test <-  grep('<DATAFILE>', lines, fixed=TRUE, value=TRUE)
+    if (length(data.test)) {
+      project <- model
+      model <- NULL
+      warning(paste0("\n\n'",project,"' was recognized as a Monolix project. Use \n","> simulx(project = '",project,"',...)"))
+    }
+  }
+  
+  # --- outputs
+  if (is.null(project) && is.null(data)) {
+    if (is.null(output) & !("output" %in% names(group)) & !("output" %in% unlist(lapply(group, names))))
+      stop(" The output is not defined", call.=FALSE)
+    
+    if (!is.null(regressor) && !("time" %in% names(regressor)) & !("time" %in% unlist(lapply(regressor, names))))
+      stop("time is missing in regressor", call.=FALSE)
+  }
+  
+  return(list(model=model,parameter=parameter,output=output,treatment=treatment,regressor=regressor, 
+              varlevel=varlevel,group=group,data=data,project=project,settings=settings))
+}
+

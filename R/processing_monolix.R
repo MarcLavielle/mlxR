@@ -16,7 +16,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   #       XML FILENUL
   #*************************************************************************
   if (!file.exists(project)) 
-    stop(paste0("The Monolix project ", project, " does not exists..."), call.=FALSE)
+    stop(paste0("The Monolix project ", file.path(getwd(),project), " does not exists..."), call.=FALSE)
   
   if (grepl(" ", project))
     stop("Please, remove the spaces in the project name...", call.=FALSE)
@@ -292,7 +292,19 @@ getInfoXml  <- function (project) {
     xmlfile <- project
   }
   
-  infoResultFolder         = myparseXML(xmlfile, mlxtranpath, "resultFolder")
+    con        = file(xmlfile, open = "r")
+    lines      = readLines(con, warn=FALSE)
+    close(con)
+    if (length(lines)==0)
+      stop("It seems that there is a problem with the Monolix project... Check if the data file and the model file exist",call. = FALSE)
+    
+  infoResultFolder <- tryCatch(
+    myparseXML(xmlfile, mlxtranpath, "resultFolder")
+    , error=function(e) {
+      stop("It seems that there is a problem with the Monolix project...",call. = FALSE)
+    }      
+  )   
+#  infoResultFolder         = myparseXML(xmlfile, mlxtranpath, "resultFolder")
   infoProject$resultFolder = infoResultFolder[[1]]$uri
   ##************************************************************************
   #       GET DATA INFO

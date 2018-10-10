@@ -278,8 +278,10 @@ format.treatment <- function(treatment,uN) {
       trtk=pp
     } else if (!is.data.frame(trtk)) {
       trtk <- as.data.frame(trtk,stringsAsFactors =FALSE)
-      if (is.null(trtk$time) | (is.null(trtk$amount) & is.null(trtk$amt)) )
-        stop("\n\nBoth 'time' and 'amount' should be defined in a treatment list\n", call.=FALSE)
+      if (is.null(trtk$time))
+        stop("'time' should be defined in a treatment list\n", call.=FALSE)
+      if (is.null(trtk$amount) & is.null(trtk$amt))
+        trtk$amt <- 0
       n <- nrow(trtk)
       trtk <- trtk[rep(1:n,each=N),] 
       trtk$id <- rep(uN,n)
@@ -516,6 +518,7 @@ format.regressor <- function(reg, uN) {
         colNames <- c("id","time",regk$name)
       }
       regk <- data.frame(mk)
+#      regk <- regk[1,]
       names(regk) <- colNames
     } else {
       mk <- regk

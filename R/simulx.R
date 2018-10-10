@@ -1,6 +1,6 @@
 #' Simulation of mixed effects models and longitudinal data
 #'
-#' Compute predictions and sample data from \code{Mlxtran}, \code{R} and \code{PharmML} models
+#' Compute predictions and sample data from \code{Mlxtran} and \code{R} models
 #' 
 #' simulx takes advantage of the modularity of hierarchical models for simulating 
 #' different components of a model: models for population parameters, individual 
@@ -9,14 +9,14 @@
 #' Furthermore, \code{simulx} allows to draw different types of longitudinal data, 
 #' including continuous, count, categorical, and time-to-event data.
 #' 
-#' The models are encoded using either the model coding language \samp{Mlxtran}, \samp{R} or the 
-#' markup language \samp{PharmML}. \samp{Mlxtran} models are automatically converted into C++ codes, 
+#' The models are encoded using either the model coding language \samp{Mlxtran}, or \samp{R}. 
+#' \samp{Mlxtran} models are automatically converted into C++ codes, 
 #' compiled on the fly and linked to R using the \samp{Rcpp} package. 
 #' That allows one to implement very easily complex models and to take advantage 
 #' of the numerical sovers used by the C++ \samp{mlxLibrary}.
 #' 
 #' See http://simulx.webpopix.org for more details.      
-#' @param model a \code{Mlxtran}, \code{R} or \code{PharmML} model used for the simulation
+#' @param model a \code{Mlxtran}, or \code{R} model used for the simulation
 #' @param parameter a vector of parameters with their names and values
 #' @param output a list (or list of lists) with fields: 
 #' \itemize{
@@ -140,22 +140,19 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   # }
   Sys.setenv(LIXOFT_HOME=session)
   
-  if (is.null(settings$seed))
-    settings$seed <-  round(as.numeric(Sys.time())*1000*runif(1))%%1e11/100
+  r <- simulx.check(model=model,parameter=parameter,output=output,treatment=treatment,regressor=regressor, 
+                    varlevel=varlevel, group=group, data=data,project=project,settings=settings)
+
+  for (r.field in names(r)) {eval(parse(text=paste0(r.field,"=r$",r.field)))}
   
   set.seed(settings$seed)
   disp.iter <- ifelse((!is.null(settings$disp.iter) && settings$disp.iter==TRUE), TRUE, FALSE)
   sep <- settings$sep
-  if (is.null(settings$sep)) sep <- ","
   digits <- settings$digits
-  if (is.null(settings$digits)) digits <- 5
   kw.max <- settings$kw.max
-  if (is.null(settings$kw.max)) kw.max <- 500
   replacement <- settings$replacement
-  if (is.null(settings$replacement)) replacement <- FALSE
   out.trt <- settings$out.trt
-  if (is.null(settings$out.trt))  out.trt <- TRUE
-  
+
   if (!is.null(data)) {
     imodel.inline <- FALSE
     if (is.list(data$model)) {
@@ -171,9 +168,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     return(r)
   }
   
-  if (isfield(settings,"record.file"))  
-    warning("\n\n 'record.file' is a deprecated option. Use 'result.file' instead.")
-  
   
   #--------------------------------------------------
   #    MODEL
@@ -183,8 +177,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   imodel.inline <- FALSE
   if (is.list(model)) {
     imodel.inline <- TRUE
-    # if (!is.null(settings$data.in) && settings$data.in)
-    #   imodel.inline <- FALSE
     if (imodel.inline==TRUE) {
       write(model$str, model$filename)
       model <- model$filename
@@ -202,20 +194,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   }
   
   #--------------------------------------------------
-  # MODEL ->  PROJECT
-  if (identical(file_ext(model),"mlxtran")) {
-    lines <- readLines(model)
-    data.test <-  grep('<DATAFILE>', lines, fixed=TRUE, value=TRUE)
-    if (length(data.test)) {
-      project <- model
-      model <- NULL
-      warning(paste0("\n\n'",project,"' was recognized as a Monolix project. Use \n","> simulx(project = '",project,"',...)"))
-    }
-  }
-  
-  #--------------------------------------------------
   #     reshape inputs
-  #--------------------------------------------------
   group     <- mklist(group)
   parameter <- mklist(parameter, add.name = FALSE)
   treatment <- mklist(treatment)
@@ -341,14 +320,17 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       pk<- dpopid(pk,lk)
       if (!is.null(pk$N)) {
         test.N <- TRUE
-        if (!is.null(pk$id)) 
+        if (!is.null(pk$id)) {
+          if (!is.null(id)  && !identical(id, pk$id))
+            stop('Different numbers of individuals are defined in different inputs', call.=FALSE)
           id <- unique(c(id, pk$id))
+        }
       }
       if (!is.null(pk$npop)) {
         test.pop <- TRUE
         npop <- unique(c(npop,pk$npop))
         if (length(npop)>1)
-          stop('\n\nDifferent numbers of populations are defined in different inputs', call.=FALSE)
+          stop('Different numbers of populations are defined in different inputs', call.=FALSE)
       }
       popid[[k]] <- pk
     }
@@ -394,7 +376,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       paramk <- parameter[[k]]
       if (isfield(paramk,"pop")) {
         if (isfield(paramk,"id"))
-          stop("\n\n Both 'id' and 'pop' cannot be defined in the same data frame", call.=FALSE)
+          stop("Both 'id' and 'pop' cannot be defined in the same data frame", call.=FALSE)
         npop <- nrow(paramk)
         paramk$pop <- NULL
         parameter[[k]] <- paramk[1,]
@@ -430,15 +412,15 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       stop("'size' is missing in group", call.=FALSE)
     g.size <- sapply(group, function(x) x$size)
     if (any(sapply(group, function(x) !is.null(x$level))))
-      warning("\n\n'level' in group is ignored when id's are defined in the inputs of simulx", call.=FALSE)
+      warning("'level' in group is ignored when id's are defined in the inputs of simulx", call.=FALSE)
     ng <- length(group)
     if (ng==1) {
       if (!identical(names(group[[1]]),'size'))
-        stop("\n\nOnly 'size' can be defined in group when a single group is created and when id's are defined in the inputs of simulx", call.=FALSE)
+        stop("Only 'size' can be defined in group when a single group is created and when id's are defined in the inputs of simulx", call.=FALSE)
     } else {
       u.name <- unique(unlist(sapply(group, function(x) names(x))))
       if (!all(u.name %in% c("size","treatment", "regressor")))
-        stop("\n\nOnly 'size', 'treatment' and 'regressor' can be defined in group when several groups are created and when id's are defined in the inputs of simulx", call.=FALSE)
+        stop("Only 'size', 'treatment' and 'regressor' can be defined in group when several groups are created and when id's are defined in the inputs of simulx", call.=FALSE)
       if ("treatment" %in% u.name) {
         tr <- NULL
         i2 <- 0
