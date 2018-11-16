@@ -6,7 +6,7 @@
 #' @return  the vector
 #' @export
 #' 
-read.vector <- function(f, header=FALSE, sep="", quote = "\"'") 
+read.vector <- function(f, header=FALSE, sep=",", quote = "\"'") 
 {
   t <- read.table(f,header=header,sep=sep,quote=quote)
   v <- t[,2]

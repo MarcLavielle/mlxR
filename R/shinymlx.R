@@ -233,14 +233,16 @@ ftreatment <- function(trt){
   return(trt)
 }
 
-fparameter <- function(param) 
-{
-  if (!is.null(names(param))){  
-    param=list(param) 
-  } 
+fparameter <- function(param) {
+  if (!is.null(names(param))) {
+    if (!any(names(param) %in% c("numeric", "slider",  "none" )))
+      param=list(param) 
+  }
+  if (is.null(names(param)))  names(param) <- "slider"
+  names(param)[which(names(param)=="")] <- "slider"
   for (k in seq(1,length(param))){
     paramk <- param[[k]]
-    if (is.list(paramk)){
+    if (is.list(paramk)) {
       if (!is.null(paramk$value)){
         pk <- paramk$value
         names(pk) <- paramk$name
@@ -249,19 +251,24 @@ fparameter <- function(param)
     }
     if (!is.list(paramk)){
       paramk <- as.list(paramk)
-      for (j in (1:length(paramk)))
-        paramk[[j]] <- c(1,0.5,2,0.1)*paramk[[j]]
+      if (identical(names(param)[k], "slider")) {
+        for (j in (1:length(paramk)))
+          paramk[[j]] <- c(1,0.5,2,0.1)*paramk[[j]]
+      }
     }
-    for (j in (1: length(paramk))){
+    for (j in (1: length(paramk))) {
       pj <- paramk[[j]]
       if (!is.list(pj)){
-        if (length(pj)==1){
+        if (identical(names(param)[k], "slider")) {
+          if (length(pj)==4) 
+            paramk[[j]] <- list(value=pj[1], min=pj[2], max=pj[3], step=pj[4], widget="slider")
+          else 
+            stop("Error:  length of a parameter defined as a vector should be 4 (slider), or 1 (constant)")
+        } else if (identical(names(param)[k], "numeric")) {
+          paramk[[j]] <- list(value=pj, widget="numeric")
+        } else {      
           paramk[[j]] <- list(value=pj, widget="none")
-        }else if (length(pj)==4){
-          paramk[[j]] <- list(value=pj[1], min=pj[2], max=pj[3], step=pj[4], widget="slider")
-        }else{
-          stop("Error:  length of a parameter defined as a vector should be 4 (slider), or 1 (constant)")
-        }        
+        }
       }
     }
     param[[k]] <- paramk

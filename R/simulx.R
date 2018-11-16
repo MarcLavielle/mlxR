@@ -142,7 +142,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   
   r <- simulx.check(model=model,parameter=parameter,output=output,treatment=treatment,regressor=regressor, 
                     varlevel=varlevel, group=group, data=data,project=project,settings=settings)
-
+  
   for (r.field in names(r)) {eval(parse(text=paste0(r.field,"=r$",r.field)))}
   
   set.seed(settings$seed)
@@ -152,7 +152,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   kw.max <- settings$kw.max
   replacement <- settings$replacement
   out.trt <- settings$out.trt
-
+  
   if (!is.null(data)) {
     imodel.inline <- FALSE
     if (is.list(data$model)) {
@@ -167,6 +167,12 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     Sys.setenv('PATH'=myOldENVPATH);
     return(r)
   }
+  
+  # if (any(sapply(parameter,is.character))) {
+  #   iop_indiv=1
+  # } else {
+  #   iop_indiv=0
+  # }
   
   
   #--------------------------------------------------
@@ -253,7 +259,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   names(stat.a)=stat.n
   names(loq.a)=loq.n
   
-  
+  iop_indiv <- 0
   #--------------------------------------------------
   #     Monolix project
   #--------------------------------------------------
@@ -287,6 +293,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     varlevel  <- ans$occasion
     fim       <- ans$fim
     infoParam <- ans$infoParam
+    iop_indiv <- ans$iop_indiv
     id        <- as.factor(ans$id$oriId)
     N         <- nlevels(id)
     test.pop <- FALSE
@@ -338,6 +345,13 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       id <- as.factor(id)
     N <- length(id)
   }
+  
+  if (!Rmodel ) {
+    r <- commentModel(model, parameter, test.project)
+    model <- r$model
+    test.project <- r$test.project
+  }
+  
   #--------------------------------------------------
   #     variability levels
   #--------------------------------------------------
@@ -359,11 +373,18 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     parameter <- parameter[sapply(parameter,length)>0]
     r <- param.iov(parameter, varlevel)
     parameter <- r$param
-    riov <- translateIOV(model, names.varlevel, nocc, output, r$iov, r$cat)
-    if (test.project)
+    if (iop_indiv==0) {
+      riov <- translateIOV(model, names.varlevel, nocc, output, r$iov, r$cat)
+      if (test.project)
+        file.remove(model)
+      model <- riov$model
+      output <- outiov(output,riov$iov,varlevel,r$iov)
+    } else {
+      riov <- translateIOVind(model, names.varlevel, nocc, r$iov)
       file.remove(model)
-    model <- riov$model
-    output <- outiov(output,riov$iov,varlevel,r$iov)
+      model <- riov$model
+      riov <- NULL
+    }
     regressor <- c(regressor, varlevel)
     varlevel <- NULL
   } else 
@@ -388,7 +409,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       }
     } 
   }
-  
   #--------------------------------------------------
   #     Add equations in the Mlxtran model code
   #--------------------------------------------------
@@ -634,8 +654,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   pop <- NULL
   if (test.pop == TRUE) {
     pop <- as.data.frame(pop.mat)
-    pop <- format(pop, digits = 5, justify = "left")
-    pop <- cbind(pop=(1:npop),pop)
+    #pop <- format(pop, digits = 5, justify = "left")
+    pop <- cbind(pop=as.factor(1:npop),pop)
   } else if (!(is.null(project))) {
     pop <- parameter[[1]]
   }

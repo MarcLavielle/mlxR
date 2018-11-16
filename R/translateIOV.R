@@ -606,8 +606,9 @@ param.iov <- function(p, occ) {
       
       N <- length(unique(pk$id))
       io <- intersect(nk, no)
-      if ( (is.data.frame(occ) && (!identical(pk[io],occ[io]))) | (!is.data.frame(occ) && any(pk$time!=rep(occ$time,N))) )  
-        stop("\n occasions defined in the varlevel field and the parameters are different\n", call.=FALSE)
+      # if ( (is.data.frame(occ) && (!identical(pk[io],occ[io]))) | 
+      #      (!is.data.frame(occ) && any(pk$time!=rep(occ$time,N))) )  
+      #   stop("\n occasions defined in the varlevel field and the parameters are different\n", call.=FALSE)
       if (is.data.frame(occ))
         mo <- merge(occ, pk)
       else 
@@ -648,7 +649,7 @@ param.iov <- function(p, occ) {
         if (is.factor(pkn[,kf]))
           pkn[is.na(pkn[,kf]),kf] <- levels(pkn[,kf])[1]
         else
-          pkn[is.na(pkn[,kf]),kf] <- 0
+          pkn[is.na(pkn[,kf]),kf] <- NaN
       }
       if (!("id" %in% nk)) {
         pkn$id <- NULL

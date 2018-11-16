@@ -48,15 +48,28 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       datas$treatment <- NULL
     }
     
-    if (any(sapply(param,is.character))) {
-      datas$parameter = readIndEstimate(infoProject$resultFolder,param[which(sapply(param,is.character))])
+    if (any(sapply(param,is.character))) 
+      datas$parameter <- readIndEstimate(infoProject$resultFolder,param[which(sapply(param,is.character))])
+    else if (any(sapply(param,is.data.frame))) {
+      datas$parameter <- param[[which(sapply(param,is.data.frame))]]
+      n.diff <- setdiff(names(datas$covariate), names(datas$parameter))
+      if (length(n.diff)>0)
+        datas$covariate <- datas$covariate[c('id', n.diff)]
+      else
+        datas$covariate <- NULL
+      param[[which(sapply(param,is.data.frame))]] <- NULL
+    }
+    
+    if (!is.null(datas$parameter)) {
+      if (is.null(datas$parameter$time)  && !is.null(datas$occasion)  && nrow(datas$occasion)==nrow(datas$parameter))
+        datas$parameter$time <- datas$occasion$time
       iop_indiv=1
     } else {
       iop_indiv=0
     }
     
     datas$id <- data.frame(newId=seq(1:datas$N),oriId=datas$id)
-    if  (!is.null(param)) {
+    if  (length(param)>0) {
       for (k in (1:length(param))) {
         if (isfield(param[[k]],"id")) {
           did <- unique(param[[k]]$id)
@@ -98,12 +111,12 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   r <- readPopEstimate(infoProject$resultFolder,fim)
   
   pop_param <- r[[1]]
-  if (!is.null(datas$covariate.iiv))
-    paramp <- list(pop_param,datas$covariate.iiv,datas$parameter,datas$covariate.iov)
-  else
-    paramp <- list(pop_param,datas$covariate,datas$parameter)
-  
-  if  (!is.null(param)) 
+    if (!is.null(datas$covariate.iiv) | !is.null(datas$covariate.iov))
+      paramp <- list(pop_param,datas$covariate.iiv,datas$parameter,datas$covariate.iov)
+    else
+      paramp <- list(pop_param,datas$covariate,datas$parameter)
+ 
+  if  (length(param)>0)
     paramp <- mergeDataFrame(paramp, param)
   
   ##************************************************************************
@@ -169,11 +182,6 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
         str=paste0(str,' --output-file=',model,' --input-file=',project,' --option=with-observation-model') 
         system(str, wait=T)
         transPatch(model)
-      }
-      if (iop_indiv==1) {      
-        # create a submodel file of model_file corresponding to the specified sections specified 
-        sections       = c("LONGITUDINAL")    
-        myparseModel(model, sections, model )
       }
       
     }
@@ -262,7 +270,8 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
              occasion=occ,
              fim=fim,
              infoParam=infoProject$parameter,
-             catNames=datas$catNames)
+             catNames=datas$catNames,
+             iop_indiv = iop_indiv)
   
   return(ans)
 }
@@ -292,19 +301,19 @@ getInfoXml  <- function (project) {
     xmlfile <- project
   }
   
-    con        = file(xmlfile, open = "r")
-    lines      = readLines(con, warn=FALSE)
-    close(con)
-    if (length(lines)==0)
-      stop("It seems that there is a problem with the Monolix project... Check if the data file and the model file exist",call. = FALSE)
-    
+  con        = file(xmlfile, open = "r")
+  lines      = readLines(con, warn=FALSE)
+  close(con)
+  if (length(lines)==0)
+    stop("It seems that there is a problem with the Monolix project... Check if the data file and the model file exist",call. = FALSE)
+  
   infoResultFolder <- tryCatch(
     myparseXML(xmlfile, mlxtranpath, "resultFolder")
     , error=function(e) {
       stop("It seems that there is a problem with the Monolix project...",call. = FALSE)
     }      
   )   
-#  infoResultFolder         = myparseXML(xmlfile, mlxtranpath, "resultFolder")
+  #  infoResultFolder         = myparseXML(xmlfile, mlxtranpath, "resultFolder")
   infoProject$resultFolder = infoResultFolder[[1]]$uri
   ##************************************************************************
   #       GET DATA INFO
@@ -448,11 +457,13 @@ readIndEstimate  <-  function(resultFolder, estim=NULL) {
   if(length(idx)){
     name         = header[idx]
     name         = gsub(paste0("_", estim),"", name)
-    header       = c( 'id', name)
-    header       = gsub("\\.","",header)
-    value        = as.matrix(data[, c(1, idx)])
-    param <- data.frame(value)
-    names(param) <- header
+    headn       = c( 'id', name)
+    headn       = gsub("\\.","",headn)
+    value        = (as.matrix(data[,  idx]))
+    param <- data.frame(id=data[,1], data.frame(value))
+    names(param) <- headn
+    param$id <- as.factor(param$id)
+    #    param[,name] <- as.numeric(param[,name])
   }
   if (is.null(param))
     stop(paste0("
@@ -503,7 +514,8 @@ mergeDataFrame  <- function(p1,p2) {
     p2 <- list(p2)
   for (k in (1:length(p2))) {
     paramk <- p2[[k]]  
-    if (is.list(paramk)) {
+    # if (is.list(paramk)) {
+    if (is.list(paramk) & !is.data.frame(paramk)) {
       if (is.null(paramk$id)) {
         if (is.vector(paramk$value)) {
           p.temp <- as.vector(paramk$value)
@@ -520,30 +532,44 @@ mergeDataFrame  <- function(p1,p2) {
   n1 = length(p1)
   i1 <- which(!unlist(lapply(p1, is.null)))
   n2 = length(p2)
+  p.i2 <- NULL
   for (i in 1:n2) {
     p2i=p2[[i]]
     testi  = 0
     namei2 = names(p2i)
     if ("id" %in% namei2) {
+      p2i[['id']] <- as.factor(p2i[['id']])
+      test.i2 <- TRUE
       for (j in i1) {
         p1j = p1[[j]]
         i12 <- which(namei2 %in% names(p1j))
         if (length(i12)>1) {
+          test.i2 <- FALSE
+#          fact1 <- which(sapply(p1j[namei2], class)=="factor")
+          fact1 <- which(sapply(p1j[namei2], class)=="factor")
+          fact2 <- which(sapply(p2i[namei2], class)=="factor")
+          if (!identical(fact1,fact2))
+            stop("The parameters defined as input of SIMULX don't have the original types", call.=FALSE)
           p1j=p2i
           p1[[j]] = p1j
         }
-      }      
+      }     
+      if (test.i2 == TRUE)
+        p.i2 <- c(p.i2, i)
+      
     } else {
       for (j in i1) {
         p1j = p1[[j]]
         i12 <- which(namei2 %in% names(p1j))
         namei2=namei2[namei2!="id"]
-        if (!is.null(namei2[i12]))
+        if (length(namei2[i12])>0)
           p1j[namei2[i12]]=p2i[namei2[i12]]
         p1[[j]] = p1j
       }
     }
   }
+  if (length(p.i2)>0)
+    p1 <- c(p1, p2[p.i2])
   return(p1)
 }
 
@@ -665,8 +691,7 @@ myparseModel  <-  function(model_file, sections, submodel_file)
   write(str,submodel_file)
 }
 
-splitModel  <-  function(file_model, sections)
-{
+splitModel  <-  function(file_model, sections) {
   #   splitModel split a model file_model into multiple terms corresponding to the specified sections 
   #
   #   terms = splitModel(file_model, sections)

@@ -342,7 +342,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
           uk <- u[rep(k, addl.ss),]
           uk$time <- u$time[k] - ii[k]*seq(1:addl.ss)
           u.ss <- rbind(u.ss,uk)
-#          u.evid <- rbind(u.evid,uk[addl.ss,c(1,2)])
+          #          u.evid <- rbind(u.evid,uk[addl.ss,c(1,2)])
         }
       }
     }
@@ -364,7 +364,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   iobs1   = findstrcmp(S[[iy]],'.', not=TRUE)
   if (!is.null(imdv)) {
     for (kmdv in (1: length(imdv)))
-    iobs1 <- iobs1[S[iobs1,imdv[kmdv]]!=1]
+      iobs1 <- iobs1[S[iobs1,imdv[kmdv]]!=1]
   }
   if (!is.null(ievid))
     iobs1 <- iobs1[S[iobs1,ievid]==0]
@@ -458,15 +458,15 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
             occ[i] <- 1
         }     
       }
-      ov.io$occ <- occ
-      datas$occasion <- ov.io
-      iocc <- length(names(data))+1
+        ov.io$occ <- occ
+        datas$occasion <- ov.io
+        iocc <- length(names(data))+1
     }
   }
   
   if (!is.null(datas$occasion)) {
     if (length(unique(datas$occasion$occ)) == 1)
-      datas$occasion <- NULL
+      datas$occasion <- iocc <- ov.io$occ <- NULL
   }
   
   ##************************************************************************

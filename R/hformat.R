@@ -518,7 +518,6 @@ format.regressor <- function(reg, uN) {
         colNames <- c("id","time",regk$name)
       }
       regk <- data.frame(mk)
-#      regk <- regk[1,]
       names(regk) <- colNames
     } else {
       mk <- regk
