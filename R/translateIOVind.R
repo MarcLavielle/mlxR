@@ -12,7 +12,7 @@ translateIOVind <- function(model, occ.name, nocc, o.iov) {
     lines <- c(lines,"",long.lines,r1.long$lines)
   model <- "tempiov_model.txt"
   write(lines,model)
-  return(list(model=model))
+  return(list(model=model, iov=o.iov, occ.name=occ.name))
 }
 
 iovinlongind <- function(lines, o.iov, nocc, name, occ.name) {

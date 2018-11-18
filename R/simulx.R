@@ -383,7 +383,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       riov <- translateIOVind(model, names.varlevel, nocc, r$iov)
       file.remove(model)
       model <- riov$model
-      riov <- NULL
+      output <- outiov(output,r$iov,varlevel,r$iov)
+     # riov <- NULL
     }
     regressor <- c(regressor, varlevel)
     varlevel <- NULL
@@ -773,8 +774,8 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
         id.ori <- data.frame(newId=(1:length(id.ori)), oriId=id.ori)
       dataOut$originalId <- id.ori
     }
-    
-    if (!is.null(riov)) dataOut <- dataOutiov(dataOut,riov)
+    if (!is.null(riov)) 
+      dataOut <- dataOutiov(dataOut,riov)
     return(dataOut)
   }
 }
