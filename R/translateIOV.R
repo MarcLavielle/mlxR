@@ -215,8 +215,10 @@ strmerge <- function(str1, op=0) {
       }
       str3 <- c(str3, si)
     }
+    str3 <- gsub(",}","}",str3)
     return(str3) 
   } else {
+    str2 <- gsub(",}","}",str2)
     return(str2)
   }
 }
