@@ -18,6 +18,7 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
   
   i.cov <- which(sapply(sm, function(ch)  ch$name=="[COVARIATE]"))
   d.iov <- c.iov <- v.iov <- NULL
+  add.iov <- FALSE
   if (length(i.cov)>0) {
     sec.cov <- splitSection(sm[[i.cov]])
     #    rem.name <- c(occ.name)
@@ -39,7 +40,13 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
         lines.cov <- c(lines.cov, rk.cov$lines)
       }
     }
-    lines <- c(lines,lines.cov)
+    if (!is.null(d.iov)) {
+      add.iov <- TRUE
+      lines <- c(lines,"",lines.cov)
+    } else {
+      lines <- c(lines,"",sm[[i.icov]]$lines)
+    }
+    
     o.iov <- unique(c(o.iov,addiov(c.iov, output)))
   }
   
@@ -51,23 +58,24 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
     u.iov <- setdiff(c.iov, cat0.name)
     r0.ind <- iovin(sec.ind$input, u.iov, i.iov, nocc, sec.ind$name, cat0, rem.name=rem.name)
     #    v.iov <- r0.ind$iov
-    if (!is.null(r0.ind$iov)) {
-      v.iov <- unique(c(u.iov, i.iov))
-      o.iov <- unique(c(o.iov,addiov(c.iov, output)))
-      lines.ind <- r0.ind$lines
-      for (k in (1:length(sec.ind$blocks))) {
-        if (identical(sec.ind$blocks[k],'EQUATION:')) {
-          rk.ind <- ioveq(sec.ind$lines[[k]], v.iov, d.iov, nocc)
-          v.iov <- rk.ind$iov
-        } else {
-          rk.ind <- iovdef(sec.ind$lines[[k]], v.iov, nocc)
-          d.iov <- rk.ind$d.iov
-          v.iov <- rk.ind$iov
-        }
-        #var.iov <- unique(c(var.iov, v.iov))
-        lines.ind <- c(lines.ind, rk.ind$lines)
-        lines <- c(lines,"",lines.ind)
+    v.iov <- unique(c(u.iov, i.iov))
+    o.iov <- unique(c(o.iov,addiov(c.iov, output)))
+    lines.ind <- r0.ind$lines
+    for (k in (1:length(sec.ind$blocks))) {
+      if (identical(sec.ind$blocks[k],'EQUATION:')) {
+        rk.ind <- ioveq(sec.ind$lines[[k]], v.iov, d.iov, nocc)
+        v.iov <- rk.ind$iov
+      } else {
+        rk.ind <- iovdef(sec.ind$lines[[k]], v.iov, nocc)
+        d.iov <- rk.ind$d.iov
+        v.iov <- rk.ind$iov
       }
+      #var.iov <- unique(c(var.iov, v.iov))
+      lines.ind <- c(lines.ind, rk.ind$lines)
+    }
+    if (!is.null(d.iov)) {
+      add.iov <- TRUE
+      lines <- c(lines,"",lines.ind)
     } else {
       lines <- c(lines,"",sm[[i.ind]]$lines)
     }
@@ -75,7 +83,7 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
   
   i.long <- which(sapply(sm, function(ch)  ch$name=="[LONGITUDINAL]"))
   if (length(i.long)>0) {
-    if (!is.null(v.iov) & !is.null(r0.ind$iov)) {
+    if (!is.null(v.iov) & add.iov) {
       sec.long <- splitSection(sm[[i.long]])
       u.iov <- unique(c(i.iov,o.iov))
       long.lines <- iovinlong(sec.long$input, v.iov, u.iov, nocc, sec.long$name, occ.name)
