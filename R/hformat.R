@@ -124,7 +124,8 @@ hformat  <-  function(list.input)
         if (isfield(lvkj,'colNames')) {
           Nid=c(Nid,lvkj$value[,1]) #assuming that first column = id
         }
-        lv[[k]][[j]]=lvkj
+        if (!is.null(lvkj))
+          lv[[k]][[j]]=lvkj
       }
     }
   }    

@@ -22,6 +22,7 @@ commentModel  <-  function(model, parameters, test.project) {
     ik <- which(nmod %in% nk)
     if (length(ik)>0) {
       lines[i1[ik]] <- paste0(";",lines[i1[ik]])
+      lines[i1] <- gsub("correlation=",";correlation=",lines[i1])
       test.comment <- TRUE
     }
   }

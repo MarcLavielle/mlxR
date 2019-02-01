@@ -17,7 +17,7 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
     rem.name <- unique(c(rem.name,paste0("s",cat0.name)))
   
   i.cov <- which(sapply(sm, function(ch)  ch$name=="[COVARIATE]"))
-  d.iov <- c.iov <- NULL
+  d.iov <- c.iov <- v.iov <- NULL
   if (length(i.cov)>0) {
     sec.cov <- splitSection(sm[[i.cov]])
     #    rem.name <- c(occ.name)
@@ -51,33 +51,37 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
     u.iov <- setdiff(c.iov, cat0.name)
     r0.ind <- iovin(sec.ind$input, u.iov, i.iov, nocc, sec.ind$name, cat0, rem.name=rem.name)
     #    v.iov <- r0.ind$iov
-    v.iov <- unique(c(u.iov, i.iov))
-    o.iov <- unique(c(o.iov,addiov(c.iov, output)))
-    lines.ind <- r0.ind$lines
-    for (k in (1:length(sec.ind$blocks))) {
-      if (identical(sec.ind$blocks[k],'EQUATION:')) {
-        rk.ind <- ioveq(sec.ind$lines[[k]], v.iov, d.iov, nocc)
-        v.iov <- rk.ind$iov
-      } else {
-        rk.ind <- iovdef(sec.ind$lines[[k]], v.iov, nocc)
-        d.iov <- rk.ind$d.iov
-        v.iov <- rk.ind$iov
+    if (!is.null(r0.ind$iov)) {
+      v.iov <- unique(c(u.iov, i.iov))
+      o.iov <- unique(c(o.iov,addiov(c.iov, output)))
+      lines.ind <- r0.ind$lines
+      for (k in (1:length(sec.ind$blocks))) {
+        if (identical(sec.ind$blocks[k],'EQUATION:')) {
+          rk.ind <- ioveq(sec.ind$lines[[k]], v.iov, d.iov, nocc)
+          v.iov <- rk.ind$iov
+        } else {
+          rk.ind <- iovdef(sec.ind$lines[[k]], v.iov, nocc)
+          d.iov <- rk.ind$d.iov
+          v.iov <- rk.ind$iov
+        }
+        #var.iov <- unique(c(var.iov, v.iov))
+        lines.ind <- c(lines.ind, rk.ind$lines)
+        lines <- c(lines,"",lines.ind)
       }
-      #var.iov <- unique(c(var.iov, v.iov))
-      lines.ind <- c(lines.ind, rk.ind$lines)
+    } else {
+      lines <- c(lines,"",sm[[i.ind]]$lines)
     }
-    lines <- c(lines,"",lines.ind)
   }
   
   i.long <- which(sapply(sm, function(ch)  ch$name=="[LONGITUDINAL]"))
   if (length(i.long)>0) {
-    if (!is.null(v.iov)) {
-    sec.long <- splitSection(sm[[i.long]])
-    u.iov <- unique(c(i.iov,o.iov))
-    long.lines <- iovinlong(sec.long$input, v.iov, u.iov, nocc, sec.long$name, occ.name)
-    r1.long <- iovseclong(sec.long, v.iov, d.iov, u.iov, nocc, occ.name)
-    #    var.iov <- unique(c(var.iov, r0.long$iov))
-    lines <- c(lines,"",long.lines,r1.long$lines)
+    if (!is.null(v.iov) & !is.null(r0.ind$iov)) {
+      sec.long <- splitSection(sm[[i.long]])
+      u.iov <- unique(c(i.iov,o.iov))
+      long.lines <- iovinlong(sec.long$input, v.iov, u.iov, nocc, sec.long$name, occ.name)
+      r1.long <- iovseclong(sec.long, v.iov, d.iov, u.iov, nocc, occ.name)
+      #    var.iov <- unique(c(var.iov, r0.long$iov))
+      lines <- c(lines,"",long.lines,r1.long$lines)
     } else {
       lines <- c(lines,"",sm[[i.long]]$lines)
     }
@@ -208,10 +212,10 @@ strmerge <- function(str1, op=0) {
       idx <- idx + 1
       si <- str2[idx]
       if (!identical(si, "no-variability")) {
-      while (!grepl("=",si)) {
-        idx <- idx + 1
-        si <- paste(si, str2[idx], sep=",")
-      }
+        while (!grepl("=",si)) {
+          idx <- idx + 1
+          si <- paste(si, str2[idx], sep=",")
+        }
       }
       str3 <- c(str3, si)
     }
@@ -457,10 +461,10 @@ iovdef <- function(lines, v.iov=NULL, nocc) {
     d.iov <- sapply(fields[i.iov], function(x) x$fields$distribution)
     for (iv in i.iov) {
       if (identical(fields[[iv]]$fields$varlevel,"id*occ")) {
-      if (iop.sd)
-        fields[[iv]]$fields$sd <- c(0,fields[[iv]]$fields$sd)
-      else
-        fields[[iv]]$fields$var <- c(0,fields[[iv]]$fields$var)
+        if (iop.sd)
+          fields[[iv]]$fields$sd <- c(0,fields[[iv]]$fields$sd)
+        else
+          fields[[iv]]$fields$var <- c(0,fields[[iv]]$fields$var)
       }
     }
     f1 <- fields
