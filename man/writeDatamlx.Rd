@@ -5,7 +5,8 @@
 \title{Write formatted data file}
 \usage{
 writeDatamlx(r, result.file = NULL, result.folder = NULL, sep = ",",
-  ext = NULL, digits = 5, app.file = F, app.dir = F, project = NULL)
+  ext = NULL, digits = 5, app.file = F, app.dir = F,
+  project = NULL)
 }
 \arguments{
 \item{r}{a list of dataframes}

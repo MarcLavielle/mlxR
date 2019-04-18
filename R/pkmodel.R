@@ -82,6 +82,7 @@ pkmodel <- function(time,treatment,parameter){
   
   pn[which(pn=="V1")]="V"
   pn[which(pn=="Q")]="Q2"
+  names(parameter) <- pn
   
   if ("V2" %in% pn){
     parameter["V2"] <- parameter["Q2"]/parameter["V2"]

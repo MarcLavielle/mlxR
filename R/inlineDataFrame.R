@@ -8,6 +8,6 @@
 #' @param \dots see \code{\link{read.table}}
 #' @importFrom utils read.table
 #' @export
-inlineDataFrame <- function(str,header=TRUE,colClasses=NA, ...){
-  read.table( text = str, header=header, colClasses=colClasses, ... )
+inlineDataFrame <- function(str, header = TRUE, colClasses = NA, ...){
+  lixoft.read.table( file = NULL, text = str, header = header, colClasses = colClasses, ... )
 }

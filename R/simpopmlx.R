@@ -19,6 +19,11 @@
 #' @export
 simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.max=100) {
   
+  # !! RETRO-COMPTATIBILITY ========================================================== !!
+  if (.useLixoftConnectors() && !.checkLixoftConnectorsAvailibility())
+    return()
+  # !! =============================================================================== !!  
+  
   mu <- parameter$pop.param
   sd <- parameter$sd
   trans <- parameter$trans

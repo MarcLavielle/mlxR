@@ -6,9 +6,9 @@
 #' @return  the vector
 #' @export
 #' 
-read.vector <- function(f, header=FALSE, sep=",", quote = "\"'") 
+read.vector <- function(f, header=FALSE, sep="", quote = "\"'") 
 {
-  t <- read.table(f,header=header,sep=sep,quote=quote)
+  t <- lixoft.read.table(file = f, header = header, sep = sep, quote = quote)
   v <- t[,2]
   names(v) <- t[,1]
   return(v)

@@ -4,11 +4,12 @@
 \alias{simulx}
 \title{Simulation of mixed effects models and longitudinal data}
 \usage{
-simulx(model = NULL, parameter = NULL, output = NULL, treatment = NULL,
-  regressor = NULL, varlevel = NULL, group = NULL, data = NULL,
-  project = NULL, nrep = 1, npop = NULL, fim = NULL,
-  result.folder = NULL, result.file = NULL, stat.f = "statmlx",
-  addlines = NULL, settings = NULL)
+simulx(model = NULL, parameter = NULL, output = NULL,
+  treatment = NULL, regressor = NULL, varlevel = NULL,
+  group = NULL, data = NULL, project = NULL, nrep = 1,
+  npop = NULL, fim = NULL, result.folder = NULL,
+  result.file = NULL, stat.f = "statmlx", addlines = NULL,
+  settings = NULL)
 }
 \arguments{
 \item{model}{a \code{Mlxtran}, or \code{R} model used for the simulation}
@@ -92,6 +93,7 @@ simulx(model = NULL, parameter = NULL, output = NULL, treatment = NULL,
   \item \code{disp.iter} : TRUE/FALSE (default = FALSE) display replicate and population numbers
   \item \code{replacement} : TRUE/FALSE (default = FALSE) sample id's with/without replacement
   \item \code{out.trt} : TRUE/FALSE (default = TRUE) output of simulx includes treatment
+  \item \code{format.original} : TRUE/FALSE (default = FALSE) with a Monolix project, write data in result.file using the original format of the data file
 }}
 }
 \value{

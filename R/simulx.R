@@ -81,6 +81,7 @@
 #'   \item \code{disp.iter} : TRUE/FALSE (default = FALSE) display replicate and population numbers
 #'   \item \code{replacement} : TRUE/FALSE (default = FALSE) sample id's with/without replacement
 #'   \item \code{out.trt} : TRUE/FALSE (default = TRUE) output of simulx includes treatment
+#'   \item \code{format.original} : TRUE/FALSE (default = FALSE) with a Monolix project, write data in result.file using the original format of the data file
 #' }       
 #' 
 #' @return A list of data frames. Each data frame is an output of simulx
@@ -128,17 +129,28 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   #  the CeCILL license as circulated by CEA, CNRS and INRIA at the following URL
   #  http://www.cecill.info/index.en.html
   #
-  #  simulx.R was developed by Marc Lavielle and the Inria popix team for the DDMoRe project. 
+  #  simulx.R was developed by Marc Lavielle and the Inria popix and Xpop teams. 
   #--------------------------------------------------
   
-  myOldENVPATH = Sys.getenv('PATH');
-  initMlxLibrary()
-  session=Sys.getenv("session.simulx")
-  # if (!is.null(varlevel) && grepl('MonolixSuite2016R1',session)) {
-  #   cat("\nvarlevel is not supported with this version of mlxLibrary\n")
-  #   return()
-  # }
-  Sys.setenv(LIXOFT_HOME=session)
+  # !! RETRO-COMPTATIBILITY ========================================================== !!
+  if (!.useLixoftConnectors()) # < 2019R1
+    myOldENVPATH = Sys.getenv('PATH')
+  else if (!.checkLixoftConnectorsAvailibility()) # >= 2019R1
+    return()
+  # !! =============================================================================== !!
+  
+  if (!initMlxR())
+    return()
+  
+  # !! RETRO-COMPTATIBILITY ========================================================== !!
+  useLixoftConnectors <- .useLixoftConnectors()
+  
+  if (!useLixoftConnectors){ # < 2019R1
+    session = Sys.getenv("session.simulx")
+    Sys.setenv(LIXOFT_HOME = session)
+  }
+  # !! =============================================================================== !!  
+  
   
   r <- simulx.check(model=model,parameter=parameter,output=output,treatment=treatment,regressor=regressor, 
                     varlevel=varlevel, group=group, data=data,project=project,settings=settings)
@@ -160,12 +172,21 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       data$model <- data$model$filename
       imodel.inline <- TRUE
     }
+    if (!is.null(data$individual_parameters))
+      data$individual_parameters$value <- matrix(data$individual_parameters$value, nrow=nrow(data$individual_parameters$value))
     r <- simulxunit(data=data,settings=settings,riov=NULL)
     if (imodel.inline==TRUE)
       file.remove(data$model)
-    Sys.setenv(LIXOFT_HOME="")
-    Sys.setenv('PATH'=myOldENVPATH);
+    
+    # !! RETRO-COMPTATIBILITY ======================================================== !!
+    if (!useLixoftConnectors){ # < 2019R1
+      Sys.setenv(LIXOFT_HOME = "")
+      Sys.setenv('PATH' = myOldENVPATH); 
+    }
+    # !! ============================================================================= !!    
+    
     return(r)
+    
   }
   
   # if (any(sapply(parameter,is.character))) {
@@ -281,8 +302,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
                                regressor=regressor,
                                output=output,
                                group=group,
-                               fim=fim
-    )
+                               fim=fim,
+                               format.original=settings$format.original)
     ans <- select.data(ans)
     model     <- ans$model
     treatment <- ans$treatment
@@ -294,6 +315,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     fim       <- ans$fim
     infoParam <- ans$infoParam
     iop_indiv <- ans$iop_indiv
+    format.original  <- ans$format.original
     id        <- as.factor(ans$id$oriId)
     N         <- nlevels(id)
     test.pop <- FALSE
@@ -321,25 +343,34 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     id <- NULL
     test.N <- FALSE
     test.pop <- FALSE
+    if (!is.null(group)) {
+      fy <- function(y) any(unlist(lapply(y, function(x) {'id' %in% names(x)})))
+      if (any(unlist(lapply(group, fy))))  test.N <- TRUE
+    }
     for (k in (1:length(l.input))) {
       lk <- l.input[k]
       eval(parse(text=paste0('pk <- ',lk))) 
       pk<- dpopid(pk,lk)
       if (!is.null(pk$N)) {
         test.N <- TRUE
-        if (!is.null(pk$id)) {
-          if (!is.null(id)  && !identical(id, pk$id))
-            stop('Different numbers of individuals are defined in different inputs', call.=FALSE)
+        if (!is.null(pk$id))
           id <- unique(c(id, pk$id))
-        }
       }
       if (!is.null(pk$npop)) {
         test.pop <- TRUE
         npop <- unique(c(npop,pk$npop))
-        if (length(npop)>1)
-          stop('Different numbers of populations are defined in different inputs', call.=FALSE)
       }
       popid[[k]] <- pk
+    }
+    if (!is.null(id)) {
+      l.input <- c('parameter', 'regressor', 'varlevel')
+      for (k in (1:length(l.input))) {
+        lk <- l.input[k]
+        eval(parse(text=paste0('pk <- ',lk))) 
+        pk<- dpopid(pk,lk)
+        if (!is.null(pk$id) & !identical(id, pk$id))
+          stop(paste0("Some id's are missing in '",lk,"'"), call.=FALSE)
+      }
     }
     if (test.N==TRUE)
       id <- as.factor(id)
@@ -410,6 +441,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       }
     } 
   }
+  
   #--------------------------------------------------
   #     Add equations in the Mlxtran model code
   #--------------------------------------------------
@@ -530,6 +562,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     for (irep in (1:nrep)) {
       irw <- irw + 1
       settings$seed <- settings$seed +12345
+      
       if (disp.iter==TRUE && nrep>1)  
         cat("replicate: ",irw,"\n")
       if (test.rep == TRUE) {
@@ -539,8 +572,10 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           lv <- resample.data(data=lv0,idOri=id,N=sum(g.size),replacement=replacement)
         if (test.N==FALSE)  
           lv$group <- group
+        
         r <- simulxunit(model=model,lv=lv,settings=settings, out.trt=out.trt,riov=riov)
       }
+      
       if (length(loq.n) > 0) {
         for (k in (1:length(loq.n))) {
           rnk <- loq.n[k]
@@ -610,11 +645,13 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           app <- FALSE
         else
           app <- TRUE
+        if (settings$format.original) 
+          r[['format.original']] <- format.original
+        
         writeDatamlx(r,result.folder=result.folder,result.file=result.file,
                      sep=sep,digits=digits,app.dir=app,app.file=app)
         
       } 
-      
       if (irep==1) {
         res <- rs
       } else {
@@ -652,6 +689,11 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     } 
   }
   
+  if (settings$format.original) {
+    R.complete$result.file <- result.file
+    R.complete$headerTypes <- format.original$infoProject$dataheader
+  }
+  
   pop <- NULL
   if (test.pop == TRUE) {
     pop <- as.data.frame(pop.mat)
@@ -668,8 +710,14 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     R.complete$population <- pop
   }
   
-  Sys.setenv(LIXOFT_HOME="")
-  Sys.setenv('PATH'=myOldENVPATH);
+  # !! RETRO-COMPTATIBILITY - < 2019R1 =============================================== !!
+  if (!useLixoftConnectors){
+    Sys.setenv(LIXOFT_HOME = "")
+    Sys.setenv('PATH' = myOldENVPATH);  
+  }
+  # !! =============================================================================== !!  
+  
+  
   # For categorical output, returns the categories defined in the model, instead of {0, 1, ...}
   if (!Rmodel)
     R.complete <- repCategories(R.complete, model)
@@ -706,16 +754,8 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
     #--------------------------------------------------
     #    MODEL
     #--------------------------------------------------
-    if (!(is.null(model))) {
-      if(model=="pkmodel") {
-        model = generateModelFromPkModel(lv$parameter[[1]],lv$output[[1]]) 
-      } else {
-        model_ext <- file_ext(model)
-        if(model_ext=="xml"){
-          model = pharmml2mlxtran(model)
-        }
-      }
-    }
+    if (model=="pkmodel")
+      model = generateModelFromPkModel(lv$parameter[[1]],lv$output[[1]])
     
     dataIn <- list()    
     
@@ -758,12 +798,21 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
   }
   if (identical(file_ext(model),"R")) {Rfile <- TRUE} else {Rfile <- FALSE}
   if ( !is.null(model) && exists(model, mode="function") ){Rsource <- TRUE} else {Rsource <- FALSE}
+  
+  dataOut <- NULL
   if (Rfile || Rsource){
+    
     dataOut <- simulR(argList)
     return(dataOut)
-  }else{
-    dot_call <- .Call
-    dataOut  <- dot_call( "mlxComputeR", argList, PACKAGE = "mlxComputeR" )
+    
+  } else {
+
+    if (.useLixoftConnectors()) # >= 2019R1
+      .hiddenCall('dataOut <- lixoftConnectors::computeSimulations(dataIn, s)')
+    else # < 2019R1 ================================================================== !!
+      .hiddenCall('dataOut <- .Call("mlxComputeR", argList, PACKAGE = "mlxComputeR")')
+    # !! ============================================================================= !!
+    
     if(data.in==TRUE)
       return(dataIn)
     if (!exists("gr.ori"))
@@ -777,7 +826,9 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
     if (!is.null(riov)) 
       dataOut <- dataOutiov(dataOut,riov)
     return(dataOut)
+  
   }
+  
 }
 
 dataOutiov <- function(d,r) {

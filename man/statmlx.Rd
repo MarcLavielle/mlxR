@@ -4,7 +4,8 @@
 \alias{statmlx}
 \title{Summary of data}
 \usage{
-statmlx(r, FUN = "mean", probs = c(0.05, 0.5, 0.95), surv.time = NULL)
+statmlx(r, FUN = "mean", probs = c(0.05, 0.5, 0.95),
+  surv.time = NULL)
 }
 \arguments{
 \item{r}{a data frame}

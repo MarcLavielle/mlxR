@@ -36,20 +36,31 @@ mlxplore <- function(model,parameter=NULL,output=NULL,group=NULL,treatment=NULL)
   #
   #  mlxplore.R was developed by Marc Lavielle and the Inria Popix team for the DDMoRe project. 
   # ########################################################################################  
-  initMlxLibrary()
-  session=Sys.getenv("session.simulx")
-  if (is.na(file.info(session)$isdir))
-    stop("You need to provide the path of Mlxplore in the file \"initMlR.R\"", call.=FALSE)
+  if (!initMlxR())
+    return()
+  
+  # !! RETRO-COMPTATIBILITY ========================================================== !!
+  useLixoftConnectors <- .useLixoftConnectors()
+
+  lixoftDirectory <- ""
+  if (useLixoftConnectors) # >= 2019R1
+    .hiddenCall('lixoftDirectory <- lixoftConnectors::getLixoftConnectorsState()$path')
+  else # < 2019R1
+    lixoftDirectory <- Sys.getenv("session.simulx")
+  # !! =============================================================================== !!  
+  
+  if (is.na(file.info(lixoftDirectory)$isdir))
+    stop("You need to provide the path of Mlxplore in the file \"initMlxR.R\"", call. = FALSE)
+  
+  # !! RETRO-COMPTATIBILITY - < 2019R1 =============================================== !!
+  if (!useLixoftConnectors)
+    Sys.setenv(LIXOFT_HOME = lixoftDirectory)
+  # !! =============================================================================== !!
   
   
-  Sys.setenv(LIXOFT_HOME=session)
   model <- tools::file_path_as_absolute(model)
   tmproject <- paste0(dirname(model),"/temp_mlxplore.txt")  
   tmpmodel  <- "temp_model.txt"  
-  model_ext <- file_ext(model)
-  if(model_ext=="xml"){
-    model = pharmml2mlxtran(model)
-  }  
   
   str <- "<MODEL>"
   
@@ -151,8 +162,8 @@ mlxplore <- function(model,parameter=NULL,output=NULL,group=NULL,treatment=NULL)
   
   #--------------------------------------------------------
   
-  str=paste0('"',session,'/lib/mlxPlore" --project=',tmproject)  
-  #str=paste0('"',session,'/lib/mlxPlore" --multiple-windows=true --project=',tmproject)  
+  str=paste0('"',lixoftDirectory,'/lib/mlxplore" --project=',tmproject)  
+  #str=paste0('"',lixoftDirectory,'/lib/mlxplore" --multiple-windows=true --project=',tmproject)  
   system(str, wait=F, invisible=F)
 #   system(str, wait=F)
   

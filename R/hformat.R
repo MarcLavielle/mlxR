@@ -103,7 +103,8 @@ hformat  <-  function(list.input)
         else if(isfield(lvkj,"design")) {
           lvkj$design$id <- match(lvkj$design$id, id)
           Nid <- c(Nid,lvkj$design$id)
-          lv[[k]][[j]]=lvkj
+          if (!is.null(lvkj))
+            lv[[k]][[j]]=lvkj
         }
         else if(isfield(lvkj,"time")) {
           if (!isfield(lvkj$time,"id") & isfield(lvkj$time,"ID") ) {
@@ -302,16 +303,21 @@ format.treatment <- function(treatment,uN) {
     names(trtk)[names(trtk)=="adm"] <- "type"
     
     if (!is.null(trtk$rate)) {
-      trtkrate=rep(Inf,length(trtk$rate))
-      irate <- (trtk$rate!=".")
-      trtkrate[irate]=as.numeric(as.character(trtk$rate[irate]))
+      irate <- !is.na(trtk$rate)
+      jrate <- trtk$rate[irate] !="."
+      
+      trtkrate = rep(Inf,length(trtk$rate))
+      trtkrate[irate][jrate] = as.numeric(as.character(trtk$rate[irate][jrate]))
       trtk$rate <- trtkrate
     }
     if (!is.null(trtk$tinf)) {
       names(trtk)[names(trtk)=="tinf"] <- "rate"
-      trtkrate=rep(Inf,length(trtk$rate))
-      irate <- trtk$rate!="."
-      trtkrate[irate]=trtk$amount[irate]/as.numeric(as.character(trtk$rate[irate]))
+      
+      irate <- !is.na(trtk$rate)
+      jrate <- trtk$rate[irate] !="."
+      
+      trtkrate=  rep(Inf,length(trtk$rate))
+      trtkrate[irate][jrate] = trtk$amount[irate][jrate] / as.numeric(as.character(trtk$rate[irate][jrate]))
       trtk$rate <- trtkrate
     }
     if (is.null(trtk$rate))
@@ -398,6 +404,11 @@ format.parameter <- function(parameter,param,uN) {
           id.ori<-c(id.ori,idk) 
           paramk$id <- match(paramk$id, idk)
         }
+        p.chr <- which(unlist(lapply(paramk,is.character)))
+        for (jch in seq_len(length(p.chr)))
+          paramk[[p.chr[jch]]] <- as.factor(paramk[[p.chr[jch]]])
+        if (length(p.chr) >0)
+          warning(paste0(c("parameters/covariates ", names(p.chr), " have been converted to factors"), collapse = " "), call. = FALSE)
       }
     }
     for (i in uN) {
@@ -406,7 +417,8 @@ format.parameter <- function(parameter,param,uN) {
       if (is.null(parameter[[i]]))
         parameter[[i]] <- pki
       else
-        parameter[[i]] <- merge(parameter[[i]],pki)
+        parameter[[i]][names(pki)]=pki
+#        parameter[[i]] <- merge(parameter[[i]],pki)
     }
   }
   r <- list(parameter=parameter, id=unique(id.ori))

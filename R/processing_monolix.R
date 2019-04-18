@@ -1,10 +1,6 @@
-#' @importFrom XML xmlParse
-#' @importFrom XML getNodeSet
-#' @importFrom XML xmlAttrs
-NULL
-
+#' @importFrom tools file_path_sans_ext
 processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL,regressor=NULL,
-                                output=NULL,group=NULL,r.data=TRUE,fim=NULL,create.model=TRUE)
+                                output=NULL,group=NULL,r.data=TRUE,fim=NULL,create.model=TRUE, format.original=FALSE)
 {
   ### processing_monolix
   #     takes a monolix project and extract information from
@@ -21,7 +17,31 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   if (grepl(" ", project))
     stop("Please, remove the spaces in the project name...", call.=FALSE)
   
-  infoProject <- getInfoXml(project)
+  id <- NULL
+  id1 <- lapply(treatment,function(x) {if (is.data.frame(x)) as.character(x$id) else NULL})
+  id2 <- lapply(parameter,function(x) {if (is.data.frame(x)) as.character(x$id) else NULL})
+  id3 <- lapply(regressor,function(x) {if (is.data.frame(x)) as.character(x$id) else NULL})
+  id4 <- lapply(output,   function(x) {if (is.data.frame(x)) as.character(x$id) else NULL})
+  idt <- c(id1,id2,id3,id4)
+  id.input <- unique(unlist(idt))
+  #id.input <- NULL
+  # for (j in seq_len(length(idt)))
+  #   id.input <- c(id.input, idt[[j]])
+  # id.input <- as.factor(id.input)
+  # id.input <- as.factor(unique(unlist(idt[which(!unlist(lapply(idt, is.null)))])))
+  for (k2 in seq_len(length(id2))) {
+    if (!is.null(id2[[k2]]) & !identical(id.input, id2[[k2]]))
+      stop(paste0("Some id's are missing in 'parameter'"), call.=FALSE)
+  }
+  for (k3 in seq_len(length(id3))) {
+    if (!is.null(id3[[k3]]) & !identical(id.input, id3[[k3]]))
+      stop(paste0("Some id's are missing in 'regressor'"), call.=FALSE)
+  }
+  
+  infoProject <- getProjectInformation(project)
+  if (is.null(infoProject))
+    stop("", call=FALSE)
+  
   n.output <- length(infoProject$output)
   param <- parameter
   
@@ -29,9 +49,16 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   ##************************************************************************
   #       DATA FILE
   #**************************************************************************
+  names.proj <- NULL
   if (r.data==TRUE) {
-    datas <- readDatamlx(infoProject=infoProject)
-    
+    #    datas <- readDatamlx(infoProject=infoProject)
+    datas <- readDatamlx(project=project, obs.rows=format.original)
+    if (format.original) {
+      datao <- readDatamlx(project=project, out.data=TRUE)
+      datao$obsRows <- datas$obsRows
+      datas$format.original <- datao
+    }
+    names.proj <- names(datas$covariate)
     y.attr <- sapply(datas,attr,"type")
     j.long <- which(y.attr=="longitudinal")
     datas$observation=list()
@@ -53,10 +80,17 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
     else if (any(sapply(param,is.data.frame))) {
       datas$parameter <- param[[which(sapply(param,is.data.frame))]]
       n.diff <- setdiff(names(datas$covariate), names(datas$parameter))
-      if (length(n.diff)>0)
-        datas$covariate <- datas$covariate[c('id', n.diff)]
-      else
+      if (length(n.diff)>0) {
+        if (is.null(datas$parameter$id))
+          datas$covariate <- datas$covariate[unique(c('id', n.diff))]
+        else 
+          if (length(n.diff)>0 && identical(datas$covariate$id,datas$parameter$id))
+            datas$covariate <- datas$covariate[c('id', n.diff)]
+          else
+            datas$covariate <- NULL
+      } else {
         datas$covariate <- NULL
+      }
       param[[which(sapply(param,is.data.frame))]] <- NULL
     }
     
@@ -66,6 +100,25 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       iop_indiv=1
     } else {
       iop_indiv=0
+    }
+    
+    if (length(id.input)>0) {
+      if (!is.null(datas$parameter$id)) {
+        datas$parameter <- subset(datas$parameter, id %in% id.input)
+        if (nrow(datas$parameter) == 0) datas$parameter <- NULL
+      }
+      if (!is.null(datas$covariate$id)) {
+        datas$covariate <- subset(datas$covariate, id %in% id.input)
+        if (nrow(datas$covariate) == 0) datas$covariate <- NULL
+      }
+      if (!is.null(datas$sources$value$id)) {
+        datas$sources$value <- subset(datas$sources$value, id %in% id.input)
+        if (nrow(datas$sources$value) == 0) datas$sources <- NULL
+      }
+      if (!is.null(datas$regressor$id)) {
+        datas$regressor <- subset(datas$regressor, id %in% id.input)
+        if (nrow(datas$regressor$value) == 0) datas$regressor <- NULL
+      }
     }
     
     datas$id <- data.frame(newId=seq(1:datas$N),oriId=datas$id)
@@ -109,31 +162,39 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   #**************************************************************************
   
   r <- readPopEstimate(infoProject$resultFolder,fim)
+  names.proj <- unique(c(names.proj, unlist(lapply(r,names))))
+  names.param <- unique(setdiff(unlist(lapply(parameter,names)),c("id", "time", "occ", "pop")))
+  test2 <- !(names.param %in% names.proj)
+  if (any(test2))
+    warning(paste0("Parameter ",names.param[test2]," is not used in the project\n"), call.=FALSE)
   
-  pop_param <- r[[1]]
-    if (!is.null(datas$covariate.iiv) | !is.null(datas$covariate.iov))
-      paramp <- list(pop_param,datas$covariate.iiv,datas$parameter,datas$covariate.iov)
-    else
-      paramp <- list(pop_param,datas$covariate,datas$parameter)
- 
-  if  (length(param)>0)
+  pop_param <- r$param
+  if (!is.null(datas$covariate.iiv) | !is.null(datas$covariate.iov))
+    paramp <- list(pop_param,datas$covariate.iiv,datas$parameter,datas$covariate.iov)
+  else
+    paramp <- list(pop_param,datas$covariate,datas$parameter)
+  
+  if (length(param)>0)
     paramp <- mergeDataFrame(paramp, param)
   
   ##************************************************************************
   #       FIM
   #**************************************************************************
-  fim <- r[[3]]
+  fim <- r$fim
   if (!is.null(fim)) {
-    pop_se <- r[[2]]
+    pop_se <- r$se
     fm = readFIM(infoProject$resultFolder, fim)
-    ifm <- match(names(fm), names(pop_param))
-    f.mat <- matrix(NaN, length(pop_param), length(pop_param))
-    f.mat[ifm,ifm] <- as.matrix(fm)
-    colnames(f.mat) <- row.names(f.mat) <- names(pop_param)
-    if0 <- which(names(f.mat) %in% names(unlist(param)))
-    f.mat[if0,] <- f.mat[,if0] <- NaN
-    pop_se[if0] <- 0
-    fim <- list(mat=f.mat,se=pop_se)
+    
+    if (!is.null(fm)){
+      ifm <- match(names(fm), names(pop_param))
+      f.mat <- matrix(NaN, length(pop_param), length(pop_param))
+      f.mat[ifm,ifm] <- as.matrix(fm)
+      colnames(f.mat) <- row.names(f.mat) <- names(pop_param)
+      if0 <- which(names(f.mat) %in% names(unlist(param)))
+      f.mat[if0,] <- f.mat[,if0] <- NaN
+      pop_se[if0] <- 0
+      fim <- list(mat=f.mat,se=pop_se)
+    }
   }  
   
   #   M1 = readFIM(file.path(infoProject$resultFolder,'correlationEstimates_sa.txt'))
@@ -143,7 +204,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   #   M1 <- as.matrix(M1)
   #   M2 <- as.matrix(M2)
   #   M3 <- as.matrix(M3)
-  #   se=r[[2]]
+  #   se=r$se
   #   C <- diag(se)%*%M1%*%diag(se)
   #   M3%*%M2%*%M3
   
@@ -152,42 +213,73 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   #**************************************************************************
   
   outputp = datas$observation
+  #  if (!is.null(id.input)) {
+  if (length(id.input)>0) {
+    for (k in seq_len(length(outputp))) {
+      ik <- which(unlist(lapply(outputp[[k]], function(x) {"id" %in% names(x)})))
+      outputp[[k]][[ik]] <- subset(outputp[[k]][[ik]], id %in% id.input)
+      # if (nrow(outputp[[k]][[ik]])==0)
+      #   outputp[[k]] <- NULL
+    }
+  }
   if (is.null(output)) {
     output = outputp
   } else {
     output <- formato(output)
+    # if (!is.null(outputp))
     output <- mergeArg(outputp,output)
   }
   
   ##************************************************************************
   #       MODEL
   #**************************************************************************
-  if (create.model==TRUE) {
+  if (create.model) {
+    
     if (is.null(model)) {
+      
       # generate model from mlxtran file 
       use.translate <- TRUE
-      if (use.translate == FALSE) {
+      
+      if (!use.translate) {
+        
         lines <- myTranslate(project)
         mlxtranfile = file_path_sans_ext(basename(project))
         mlxtranpath <- dirname(project)
         model = file.path(mlxtranpath,paste0(mlxtranfile,"_simulxModel.txt"))
         write(lines,model)
-      } else {
+        
+      } else if (initMlxR()){ # init mlxR package if needed
+        
         mlxtranfile = file_path_sans_ext(basename(project))
         mlxtranpath <- dirname(project)
-        model = file.path(mlxtranpath,paste0(mlxtranfile,"_simulxModel.txt"))
-        session<-Sys.getenv("session.simulx")              
-        zz=file.path(session,'lib','lixoftLanguageTranslator')
-        str=paste0('"',zz,'" --from=mlxproject --to=mlxtran')  
-        str=paste0(str,' --output-file=',model,' --input-file=',project,' --option=with-observation-model') 
-        system(str, wait=T)
-        transPatch(model)
+        
+        if (.useLixoftConnectors()){ # >= 2019R1
+          
+          model = file.path(normalizePath(mlxtranpath),paste0(mlxtranfile,"_simulxModel.txt"))
+          .hiddenCall('lixoftConnectors::writeProjectModelSection(project, model)')
+          
+        } else { # !! < 2019R1 ======================================================= !!
+          
+          session <- Sys.getenv("session.simulx")
+          
+          model = file.path(mlxtranpath, paste0(mlxtranfile, "_simulxModel.txt"))
+          zz = file.path(session,'lib','lixoftLanguageTranslator')
+          str = paste0('"',zz,'" --from=mlxproject --to=mlxtran')
+          str = paste0(str,' --output-file=',model,' --input-file=',project,' --option=with-observation-model')
+          system(str, wait=T)
+          
+        }
+        # !! ========================================================================= !!
+        
+        transPatch(model)          
+        
       }
       
     }
     
     #change regressor names and use these defined in the model in the same order 
     if (!is.null(datas$regressor)) {
+      
       namesReg<-names(datas$regressor)
       nbModelreg<-0
       lines <- readLines(model)
@@ -219,7 +311,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
             nbregOrig <- nbregOrig +1
           }
         }
-        if(nbregOrig +1 !=  iregModel)
+        if (nbregOrig+1 != iregModel)
           stop("inconsistent number of regressors between model and regressor field", call.=FALSE)
         
         names(datas$regressor)<-namesReg
@@ -230,6 +322,8 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       } else {
         for (kr in (1:length(regressor))) {
           if (is.data.frame(regressor[[kr]])) {
+            if (!all(names(regressor[[kr]]) %in% namesReg))
+              stop(paste0("Column names of 'regressor' should be ", paste0(namesReg,collapse=', ')), call.=FALSE )
             nrk <- setdiff(names(regressor[[kr]]),c("id","time"))
           } else {
             nrk <- regressor[[kr]]$name
@@ -247,9 +341,9 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
     paramp[[1]]<-setErrorModelName(paramp[[1]],model)
     ##initialize latent covariates defined in the model but not used,  in parameter
     paramp[[1]]<-initLatentCov(paramp[[1]],model)
-  } else {
+    
+  } else
     model <- NULL
-  }
   
   # gr <- group
   gr    <- mklist(group)
@@ -271,122 +365,15 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
              fim=fim,
              infoParam=infoProject$parameter,
              catNames=datas$catNames,
-             iop_indiv = iop_indiv)
+             iop_indiv = iop_indiv,
+             format.original = datas$format.original)
   
-  return(ans)
-}
-
-getInfoXml  <- function (project) {
-  ### getInfoXml
-  #
-  #   getInfoXml(project)
-  #     return infoProject which contains informations about the given mlxtran project
-  #
-  
-  infoProject = list(datafile=NULL, dataformat=NULL, dataheader=NULL, output=NULL, resultFolder=NULL, mlxtranpath=NULL );
-  # get path and name of monolix project
-  mlxtranpath      = dirname(project);
-  mlxtranpathfile = file_path_sans_ext(project)
-  mlxtranfile = file_path_sans_ext(basename(project))
-  infoProject$mlxtranpath = mlxtranpath
-  if(file_ext(project) == "mlxtran") {
-    #  project<-mlxProject2xml(project)
-    session<-Sys.getenv("session.simulx")
-    xmlfile <- file.path(mlxtranpath,paste0(mlxtranfile,"_tr.xmlx"))
-    zz=file.path(session,'lib','lixoftLanguageTranslator')
-    str=paste0('"',zz,'" --from=mlxproject --to=xmlx')  
-    str=paste0(str,' --output-file=',xmlfile,' --input-file=',project,' --option=with-observation-model') 
-    system(str, wait=T)
-  } else {
-    xmlfile <- project
-  }
-  
-  con        = file(xmlfile, open = "r")
-  lines      = readLines(con, warn=FALSE)
-  close(con)
-  if (length(lines)==0)
-    stop("It seems that there is a problem with the Monolix project... Check if the data file and the model file exist",call. = FALSE)
-  
-  infoResultFolder <- tryCatch(
-    myparseXML(xmlfile, mlxtranpath, "resultFolder")
-    , error=function(e) {
-      stop("It seems that there is a problem with the Monolix project...",call. = FALSE)
-    }      
-  )   
-  #  infoResultFolder         = myparseXML(xmlfile, mlxtranpath, "resultFolder")
-  infoProject$resultFolder = infoResultFolder[[1]]$uri
-  ##************************************************************************
-  #       GET DATA INFO
-  #*************************************************************************
-  #  get data format and data header used in the current project
-  #   Exemple : 
-  #
-  #   infoProject = 
-  #           datafile         : './warfarin_data.txt'
-  #           dataformat       : '\t'
-  #           dataheader       : {'ID'  'TIME'  'AMT'  'Y'  'YTYPE'  'COV'  'IGNORE'  'IGNORE'}
-  #
-  #
-  infoData                = myparseXML(xmlfile, mlxtranpath, "data")
-  infoProject$datafile    = infoData[[1]]$uri
-  infoProject$dataformat  = infoData[[1]]$columnDelimiter
-  # regressor in monolixC+++ are now named REG
-  headers <- gsub("REG","X",infoData[[1]]$headers)
-  infoProject$dataheader  = headers
-  infoOutput              = myparseXML(xmlfile, mlxtranpath, 'observationModel')
-  
-  for (k in 1:length(infoOutput))
-    infoProject$output[[k]] = infoOutput[[k]]$name
-  
-  infoParam <- myparseXML(xmlfile, mlxtranpath, "parameter")
-  #   info.length <- unlist(lapply(infoParam,length))
-  #   infoParam <- infoParam[info.length==2]
-  i.trans <- which(!unlist(lapply(lapply(infoParam, "[[", "transformation"),is.null)))
-  infoParam <- infoParam[i.trans]
-  p.names <- do.call("rbind", lapply(infoParam, "[[", "name"))[,1]
-  p.trans <- do.call("rbind", lapply(infoParam, "[[", "transformation"))[,1]
-  infoProject$parameter <- list(name=p.names, trans=p.trans)
-  
-  if(file_ext(project) == "mlxtran")
-    unlink(xmlfile, recursive=T)
-  
-  return(infoProject)
-}
-
-myparseXML  <- function (filename, mlxtranpath, node) {
-  ### myparseXML
-  #
-  #  myparseXML(filename, node)
-  #     return information of mentioned node contained in the xmlx file (filename)
-  #
-  tree    = xmlParse(filename)
-  set     = getNodeSet(tree,paste0("//", node))
-  tmp=list(name=NULL)
-  ans=list()
-  if(length(set)){
-    for (i in 1 : length(set)) {
-      attributs      = xmlAttrs(set[[i]])
-      namesAttributs = names(attributs)
-      tmp['name']= node
-      for (j in 1 : length(namesAttributs)) {      
-        tmp[namesAttributs[[j]]]=attributs[[j]]
-        # replace '%MLXPROJECT%' by the symbol of current folder "."
-        if (namesAttributs[[j]] == "uri")
-          tmp[namesAttributs[[j]]]=sub("%MLXPROJECT%", mlxtranpath, tmp[namesAttributs[[j]]]) 
-        # repalce '\\t' by "tab"
-        if (namesAttributs[[j]] == "columnDelimiter") {
-          if (tmp[namesAttributs[[j]]] == '\\t' )
-            tmp[namesAttributs[[j]]]= "tab"
-        }
-      } 
-      ans= c(ans, list(tmp))
-    }
-  }
   return(ans)
 }
 
 ##
-readPopEstimate  <-  function(resultFolder, fim=NULL) {
+readPopEstimate <- function(resultFolder, fim = NULL) {
+  
   file.pop <- file.path(resultFolder,'populationParameters.txt')
   if (!file.exists(file.pop)) 
     file.pop <- file.path(resultFolder,'estimates.txt')
@@ -395,47 +382,47 @@ readPopEstimate  <-  function(resultFolder, fim=NULL) {
 Sorry but the file with the estimated population parameters does not exist. Are you sure you estimated the population parameters?" ), call.=FALSE)
   
   
-  data        = read.table(file.pop, header = TRUE, sep=";", fill=TRUE)
-  if (ncol(data)==1)
-    data        = read.table(file.pop, header = TRUE, sep=",", fill=TRUE)
-  if (ncol(data)==1)
-    data        = read.table(file.pop, header = TRUE, sep="\t", fill=TRUE)
-  if (ncol(data)==1)
-    data        = read.table(file.pop, header = TRUE, sep=" ", fill=TRUE)
+  res <- list(param = NULL, se = NULL, fim = fim)
+  
+  data = lixoft.read.table(file = file.pop, header = TRUE, fill = TRUE)
+  if (is.null(data)){
+    .warning("Error while reading estimated population parameters file.")
+    return(res)
+  }
+  
   name        = as.character(data[[1]])
   name        = sub(" +", "", name)
   name        = sub(" +$", "", name)
   
   if(is.element("value",names(data))) {
-    param <- as.numeric(as.character(data[['value']]))
+    res$param <- as.numeric(as.character(data[['value']]))
   } else {
-    param <- as.numeric(as.character(data[['parameter']]))
+    res$param <- as.numeric(as.character(data[['parameter']]))
   }
-  names(param) <- name
+  names(res$param) <- name
   if (!is.null(fim)) {
     if (fim=='lin') {
-      se <- as.numeric(as.character(data[['s.e._lin']]))
-      if (length(se)==0)
-        se <- as.numeric(as.character(data[['se_lin']]))
-      if (length(se)==0)
+      res$se <- as.numeric(as.character(data[['s.e._lin']]))
+      if (length(res$se)==0)
+        res$se <- as.numeric(as.character(data[['se_lin']]))
+      if (length(res$se)==0)
         stop("Fisher Information matrix estimated by linearization is not available", call.=FALSE)
-      names(se) <- name
+      names(res$se) <- name
     } else if (fim=='sa') {
-      se <- as.numeric(as.character(data[['s.e._sa']]))
-      if (length(se)==0)
-        se <- as.numeric(as.character(data[['se_sa']]))
-      if (length(se)==0)
+      res$se <- as.numeric(as.character(data[['s.e._sa']]))
+      if (length(res$se)==0)
+        res$se <- as.numeric(as.character(data[['se_sa']]))
+      if (length(res$se)==0)
         stop("Fisher Information matrix estimated by stochastic approximation is not available", call.=FALSE)
-      names(se) <- name
+      names(res$se) <- name
     }
-  } else 
-    se <- NULL
+  }
   
-  return(list(param,se,fim))
+  return(res)
 }
 
 ##
-readIndEstimate  <-  function(resultFolder, estim=NULL) {
+readIndEstimate  <-  function(resultFolder, estim = NULL) {
   
   mlx.version <- 2017
   file.ind <- file.path(resultFolder,'IndividualParameters','estimatedIndividualParameters.txt') 
@@ -447,13 +434,18 @@ readIndEstimate  <-  function(resultFolder, estim=NULL) {
     stop(("
   Sorry but the file with the individual estimates does not exist. Are you sure you estimated the individual parameters?" ), call.=FALSE)
   
-  if (mlx.version==2017)
-    data       = read.csv(file.ind,  header = TRUE)
-  else
-    data       = read.table(file.ind,  header = TRUE)
+  
+  param <- NULL
+  
+  data <- lixoft.read.table(file = file.ind, header = TRUE)
+  if (is.null(data)){
+    .warning("Error while reading estimated individual parameters file.")
+    return(param)
+  }
+  
   header       = names(data)
   idx          = grep(paste0("_", estim), header)
-  param<-NULL
+  
   if(length(idx)){
     name         = header[idx]
     name         = gsub(paste0("_", estim),"", name)
@@ -490,10 +482,12 @@ readFIM  <-  function(path, fim){
     }
   }
   if (file.exists(filename)) {
-    if (mlx.version==2017)
-      data       = read.csv(filename,  header = FALSE)
-    else 
-      data        = read.table(filename, header = FALSE, sep=";")
+    data <- lixoft.read.table(file = filename, header = FALSE)
+    if (is.null(data)){
+      .warning("Error while reading fisher estimation results file.")
+      return()
+    }
+    
     name        = as.character(data[[1]])
     name        = sub(" +", "", name)
     name        = sub(" +$", "", name)
@@ -545,7 +539,7 @@ mergeDataFrame  <- function(p1,p2) {
         i12 <- which(namei2 %in% names(p1j))
         if (length(i12)>1) {
           test.i2 <- FALSE
-#          fact1 <- which(sapply(p1j[namei2], class)=="factor")
+          #          fact1 <- which(sapply(p1j[namei2], class)=="factor")
           fact1 <- which(sapply(p1j[namei2], class)=="factor")
           fact2 <- which(sapply(p2i[namei2], class)=="factor")
           if (!identical(fact1,fact2))
@@ -654,6 +648,8 @@ mergeArg  <- function(p1,p2)
   for (k in (1:length(p))) {
     pk <- p[[k]]
     if (!is.null(pk$time) && pk$time=="none")
+      ik <- c(ik,k)
+    if (!is.null(pk$value) && nrow(pk$value)==0)
       ik <- c(ik,k)
   }
   p[ik] <- NULL
@@ -1054,3 +1050,213 @@ transPatch <- function(model) {
 }
 
 
+getProjectInformation <- function(project){
+  
+  if (!initMlxR())
+    return(NULL)
+  
+  projectInfo = list(datafile = NULL, dataformat = NULL, dataheader = NULL, output = NULL, resultFolder = NULL, mlxtranpath = NULL);
+  
+  
+  if (.useLixoftConnectors()) { # >= 2019R1
+    
+    dataOut <- NULL
+    .hiddenCall('dataOut <- lixoftConnectors::getProjectInformation(project)')
+    
+    # get path and name of monolix project
+    mlxtranpath      = dirname(project);
+    mlxtranpathfile = file_path_sans_ext(project)
+    mlxtranfile = file_path_sans_ext(basename(project))
+    projectInfo$mlxtranpath = mlxtranpath
+    
+    projectInfo$resultFolder = dataOut$resultFolder
+    ##************************************************************************
+    #       GET DATA INFO
+    #*************************************************************************
+    #  get data format and data header used in the current project
+    #   Exemple :
+    #
+    #   infoProject =
+    #           datafile         : './warfarin_data.txt'
+    #           dataformat       : '\t'
+    #           dataheader       : {'ID'  'TIME'  'AMT'  'Y'  'YTYPE'  'COV'  'IGNORE'  'IGNORE'}
+    #
+    #
+    
+    projectInfo$datafile = dataOut$dataFile
+    projectInfo$dataformat = dataOut$columnDelimiter
+    
+    dataHeaders <-paste(toupper(dataOut$headerTypes), collapse =",")
+    # regressor in monolixC+++ are now named REG
+    dataHeaders <- gsub("REG","X",dataHeaders)
+    projectInfo$dataheader =  dataHeaders
+    
+    ##************************************************************************
+    #       GET OUTPUT INFO
+    #*************************************************************************
+    #   Exemple :
+    #
+    #   infoProject =
+    #           output           : {'conc'  'pca'}
+    for (k in 1:length(dataOut$observationNames))
+      projectInfo$output[[k]] = dataOut$observationNames[k]
+    
+    paramNames <-names(dataOut$individualParameters)
+    paramTrans <-as.vector(dataOut$individualParameters)
+    paramTrans <- transformationsAlias(paramTrans)
+    projectInfo$parameter <- list(name=paramNames, trans=paramTrans)
+    
+  }
+  
+  # !! < 2019R1 ====================================================================== !!
+  else {
+    
+    if (requireNamespace("XML", quietly = TRUE)){
+      
+      session = Sys.getenv("session.simulx")
+      Sys.setenv(LIXOFT_HOME = session)
+      projectInfo = getInfoXmlFromTranslator(project)
+      
+    } else
+      warning("Impossible to read project information for \"XML\" package is not installed.")
+    
+  }
+  # !! =============================================================================== !!
+  
+  return(projectInfo)
+  
+}
+
+nameToAlias <- function(paramVect, name, alias)
+{
+  params<-paramVect
+  for (k in 1:length(params)){
+    if(identical(params[k], name)){
+      params[k] <- alias
+    }
+  }
+  return(params)
+}
+
+transformationsAlias <- function(paramTrans)
+{
+  params <- nameToAlias(paramTrans, "logNormal", "L")
+  params <- nameToAlias(params, "logitNormal", "G")
+  params <- nameToAlias(params, "normal", "N")
+  params <- nameToAlias(params, "probitNormal", "P")
+  params <- nameToAlias(params, "user", "U")
+  return(params)
+}
+
+# !! RETRO-COMPTATIBILITY - < 2019R1 ================================================= !!
+myparseXML <- function (filename, mlxtranpath, node) {
+  
+  ### myparseXML
+  #
+  #  myparseXML(filename, node)
+  #     return information of mentioned node contained in the xmlx file (filename)
+  #
+  tree    = XML::xmlParse(filename)
+  set     = XML::getNodeSet(tree,paste0("//", node))
+  tmp=list(name=NULL)
+  ans=list()
+  if(length(set)){
+    for (i in 1 : length(set)) {
+      attributs      = XML::xmlAttrs(set[[i]])
+      namesAttributs = names(attributs)
+      tmp['name']= node
+      for (j in 1 : length(namesAttributs)) {
+        tmp[namesAttributs[[j]]]=attributs[[j]]
+        # replace '%MLXPROJECT%' by the symbol of current folder "."
+        if (namesAttributs[[j]] == "uri")
+          tmp[namesAttributs[[j]]]=sub("%MLXPROJECT%", mlxtranpath, tmp[namesAttributs[[j]]])
+        # repalce '\\t' by "tab"
+        if (namesAttributs[[j]] == "columnDelimiter") {
+          if (tmp[namesAttributs[[j]]] == '\\t' )
+            tmp[namesAttributs[[j]]]= "tab"
+        }
+      }
+      ans= c(ans, list(tmp))
+    }
+  }
+  
+  return(ans)
+  
+}
+
+getInfoXmlFromTranslator <- function(project){
+  
+  infoProject = list(datafile = NULL, dataformat = NULL, dataheader = NULL, output = NULL, resultFolder = NULL, mlxtranpath = NULL)
+  
+  # get path and name of monolix project
+  mlxtranpath = dirname(project);
+  mlxtranpathfile = file_path_sans_ext(project)
+  mlxtranfile = file_path_sans_ext(basename(project))
+  infoProject$mlxtranpath = mlxtranpath
+  if(file_ext(project) == "mlxtran") {
+    #  project<-mlxProject2xml(project)
+    session<-Sys.getenv("session.simulx")
+    xmlfile <- file.path(mlxtranpath,paste0(mlxtranfile,"_tr.xmlx"))
+    zz=file.path(session,'lib','lixoftLanguageTranslator')
+    str=paste0('"',zz,'" --from=mlxproject --to=xmlx')  
+    str=paste0(str,' --output-file=',xmlfile,' --input-file=',project,' --option=with-observation-model') 
+    system(str, wait=T)
+  } else {
+    xmlfile <- project
+  }
+  
+  infoResultFolder         = myparseXML(xmlfile, mlxtranpath, "resultFolder")
+  infoProject$resultFolder = infoResultFolder[[1]]$uri
+  ##************************************************************************
+  #       GET DATA INFO
+  #*************************************************************************
+  #  get data format and data header used in the current project
+  #   Exemple : 
+  #
+  #   infoProject = 
+  #           datafile         : './warfarin_data.txt'
+  #           dataformat       : '\t'
+  #           dataheader       : {'ID'  'TIME'  'AMT'  'Y'  'YTYPE'  'COV'  'IGNORE'  'IGNORE'}
+  #
+  #
+  infoData                = myparseXML(xmlfile, mlxtranpath, "data")
+  infoProject$datafile    = infoData[[1]]$uri
+  infoProject$dataformat  = infoData[[1]]$columnDelimiter
+  # regressor in monolixC+++ are now named REG
+  headers <- gsub("REG","X",infoData[[1]]$headers)
+  infoProject$dataheader  = headers
+  ##************************************************************************
+  #       GET OUTPUT INFO
+  #*************************************************************************
+  #   Exemple : 
+  #
+  #   infoProject = 
+  #           output           : {'conc'  'pca'}
+  infoOutput         = myparseXML(xmlfile, mlxtranpath, 'observationModel')
+  
+  for (k in 1:length(infoOutput)) 
+    infoProject$output[[k]] = infoOutput[[k]]$name
+  
+  infoParam = myparseXML(xmlfile, mlxtranpath, "parameter")
+  info.length <- unlist(lapply(infoParam,length))
+  infoParam <- infoParam[info.length==2]
+  p.names <- do.call("rbind", lapply(infoParam, "[[", 1))[,1]
+  p.trans <- do.call("rbind", lapply(infoParam, "[[", 2))[,1]
+  infoProject$parameter <- list(name=p.names, trans=p.trans)
+  
+  infoFixedParam = myparseXML(xmlfile, mlxtranpath, "fixedParameter")
+  info.length <- unlist(lapply(infoFixedParam,length))
+  infoFixedParam <- infoFixedParam[info.length==2]
+  fixp.names <- do.call("rbind", lapply(infoFixedParam, "[[", "name"))[,1]
+  fixp.values <- do.call("rbind", lapply(infoFixedParam, "[[", "value"))[,1]
+  fixedParamValues <-as.numeric(fixp.values)
+  names(fixedParamValues) = fixp.names
+  infoProject$fixedParameters <- fixedParamValues
+  
+  if(file_ext(project) == "mlxtran")
+    unlink(xmlfile, recursive=T)
+  
+  return(infoProject)
+  
+}
+# !! ================================================================================= !!

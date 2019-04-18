@@ -50,15 +50,17 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
       tk=numeric(0)
       gk=numeric(0)
       for(i in seq(1,nk)){
-        vki = ak$value[[i]]
-        vk=c(vk, vki)
+        vki = as.numeric(ak$value[[i]])
         nki=length(vki)
+        if (nki>0)
+          vk=c(vk, vki)
         idk=c(idk, rep(i,nki))
         if(iop.group==1)
           gk=c(gk, rep(gr[i],nki))
         
-        tki = ak$time[[i]]
-        tk=c(tk, tki)
+        tki = as.numeric(ak$time[[i]])
+        if (length(tki)>0)
+          tk=c(tk, tki)
       }
       ick <- which(ak$name==cv$name)
       if (length(ick)>0){

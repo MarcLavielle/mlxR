@@ -40,11 +40,11 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
         lines.cov <- c(lines.cov, rk.cov$lines)
       }
     }
-    if (!is.null(d.iov)) {
+    if (!is.null(d.iov) | !is.null(i.iov)) {
       add.iov <- TRUE
       lines <- c(lines,"",lines.cov)
     } else {
-      lines <- c(lines,"",sm[[i.icov]]$lines)
+      lines <- c(lines,"",sm[[i.cov]]$lines)
     }
     
     o.iov <- unique(c(o.iov,addiov(c.iov, output)))
@@ -177,7 +177,7 @@ line2field <- function(str) {
 field2line <- function(r) {
   #write line(s) with fields
   nr <- length(r)
-  if (nr==1) r <- list(r)
+  #if (nr==1) r <- list(r)
   lines <- vector(length=nr)
   for (k in (1:nr)) {
     rk <- r[[k]]
@@ -455,6 +455,8 @@ iovdef <- function(lines, v.iov=NULL, nocc) {
   lines <- gsub(",typical=",",reference=",lines)
   iop.sd <- (length(grep("sd=",lines))>0) 
   fields <- line2field(lines)
+  if (length(lines)==1) fields <- list(fields)
+    
   i.iov <- which(sapply(fields, function(x) !is.null(x$fields$varlevel)))
   vcv <- list()
   for (k in (1:length(fields))) {
@@ -620,8 +622,7 @@ param.iov <- function(p, occ) {
       
       N <- length(unique(pk$id))
       io <- intersect(nk, no)
-      # if ( (is.data.frame(occ) && (!identical(pk[io],occ[io]))) | 
-      #      (!is.data.frame(occ) && any(pk$time!=rep(occ$time,N))) )  
+      # if ( (is.data.frame(occ) && (!identical(pk[io],occ[io]))) | (!is.data.frame(occ) && any(pk$time!=rep(occ$time,N))) )  
       #   stop("\n occasions defined in the varlevel field and the parameters are different\n", call.=FALSE)
       if (is.data.frame(occ))
         mo <- merge(occ, pk)
@@ -633,8 +634,12 @@ param.iov <- function(p, occ) {
         pkj <- mo[c("id",so[j])]
         dk[j] <- (dim(unique(pkj))[1] == N) 
       }
-      pk[so[!dk]] <- NULL
-      pk[c("time",occ.name)] <- NULL
+      for (j in (1:length(dk))){
+        if (!dk[j])
+          pk[so[j]] <- NULL
+      }
+      pk$time <- NULL
+      pk[occ.name] <- NULL
       if (!("id" %in% nk)) 
         pk$id <- NULL
       if (dim(pk)[2]>1)
@@ -674,6 +679,11 @@ param.iov <- function(p, occ) {
     }
   }
   p2 <- p2[sapply(p2,length)>0]
+  for (j in seq_len(length(cat))) {
+    cj <- grep("[\\+\\-\\*<>]",cat[[j]]$categories)
+      if (length(cj)>0)
+        cat[[j]]$categories[cj] <- paste0("'",cat[[j]]$categories[cj],"'")
+  }
   return(list(param=p2, iov=v.iov, cat=cat))
 }
 

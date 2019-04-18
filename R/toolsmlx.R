@@ -246,10 +246,11 @@ select.data  <- function(data)
   select.id <- NULL
   for  (j in (1:length(data))) {
     dataj <- data[[j]]
-    for  (k in (1:length(dataj))) {
+    for  (k in seq_len(length(dataj))) {
       datak <- dataj[[k]]
       if (is.data.frame(datak)) {
         if (!is.null(datak$id)) {
+          datak$id <- as.character(datak$id)
           if (is.null(select.id)) {
             select.id <- unique(datak$id)
           } else {
@@ -257,10 +258,11 @@ select.data  <- function(data)
           }
         } 
       } else {
-        for  (m in (1:length(datak))) {
+        for  (m in seq_len(length(datak))) {
           datam <- datak[[m]]
           if (is.data.frame(datam)) {
             if (!is.null(datam$id)) {
+              datam$id <- as.character(datam$id)
               if (is.null(select.id)) {
                 select.id <- unique(datam$id)
               } else {
@@ -426,6 +428,7 @@ simulx.check <- function(project=NULL, model=NULL, parameter=NULL, output=NULL, 
   if (is.null(settings$kw.max)) settings$kw.max <- 500
   if (is.null(settings$replacement)) settings$replacement <- FALSE
   if (is.null(settings$out.trt))  settings$out.trt <- TRUE
+  if (is.null(settings$format.original))  settings$format.original <- FALSE
   if (isfield(settings,"record.file")) {
     settings$result.file <- settings$record.file
     settings$record.file <- NULL
@@ -447,10 +450,9 @@ simulx.check <- function(project=NULL, model=NULL, parameter=NULL, output=NULL, 
   if (is.null(project) && is.null(data)) {
     if (is.null(output) & !("output" %in% names(group)) & !("output" %in% unlist(lapply(group, names))))
       stop(" The output is not defined", call.=FALSE)
-    
+  }
     if (!is.null(regressor) && !("time" %in% names(regressor)) & !("time" %in% unlist(lapply(regressor, names))))
       stop("time is missing in regressor", call.=FALSE)
-  }
   
   return(list(model=model,parameter=parameter,output=output,treatment=treatment,regressor=regressor, 
               varlevel=varlevel,group=group,data=data,project=project,settings=settings))

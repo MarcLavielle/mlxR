@@ -137,10 +137,10 @@ kmplotmlx  <-  function(r, index=1, level=NULL, time=NULL, cens=TRUE, plot=TRUE,
     r0 <- subset(r, y==0 & time>0)
     index="numberEvent0"
     if (!is.null(r0) & length(unique(r0$time))>1) {
-      a=aggregate(r$time, list((!r$y==0),r$id, r$rep), function(x){ if (length(x)==0) -Inf else max(x)}, drop=FALSE)
+      a=aggregate(r$time, list((!r$y==0),r$id, r$rep), function(x){ if (length(x)==0) -Inf else max(x)})
       a0 <- a$x[seq(1,length(a$x),by=2)]
       a1 <- a$x[seq(2,length(a$x),by=2)]
-      if (length(unique(a0[which(a0>a1)]))>1)
+      if (length(unique(a0[which(a0[1:length(a1)]>a1)]))>1)
         index="numberEvent"
     }
   }

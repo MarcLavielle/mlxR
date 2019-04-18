@@ -85,7 +85,16 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
     }
   }
   
-  if (!is.null(result.file)){
+  if (!is.null(r['format.original'])) {
+    format.original <- r[['format.original']]
+    r['format.original'] <- NULL
+  } else {
+    format.original <- NULL
+  }
+  if (!is.null(result.file) && is.null(format.original)){
+    ir <- which(names(r)=="regressor")
+    if (length(ir)>0)
+      attr(r[[ir]],"type") <- "regressor"
     y.attr <- sapply(r,attr,"type")
     j.long <- which(y.attr=="longitudinal")
     y <- NULL
@@ -142,6 +151,15 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
       }
       M[,(n1+1):n2] <- occ
     }
+    
+    if (!is.null(M$occ)){
+      n <- nrow(M)
+      for (i in (2:n)){
+        if (is.na(M$occ[i]))
+          M$occ[i] <- M$occ[i-1]
+      }
+    }
+    
     
     if (!is.null(r$covariate)){
       n1 <- ncol(M)
@@ -214,4 +232,49 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
         write.table(M,result.file,row.names=FALSE,col.names=FALSE,quote=FALSE,sep=sep,append=T)
     }
   } 
+  if (!is.null(result.file) && !is.null(format.original)){
+    iy <- which(format.original$infoProject$dataheader=="Y")
+    itime <- which(format.original$infoProject$dataheader=="TIME")
+    ilimit <- which(format.original$infoProject$dataheader=="LIMIT")
+    icens <- which(format.original$infoProject$dataheader=="CENS")
+    
+    format.original$data[,iy] <- as.character(format.original$data[,iy])
+    for (j in (1:length(format.original$obsRows))) {
+      nj <- names(format.original$obsRows)[j]
+      rowj <- format.original$obsRows[[j]]
+      if (length(itime)>0) {
+        if (identical(r[[nj]][['time']], format.original$data[rowj,itime])) {
+          format.original$data[rowj,iy] <- r[[nj]][[nj]]
+        } else {
+          iid <- which(format.original$infoProject$dataheader=="ID")
+          id <- r[[nj]][['id']]
+          data.j <- format.original$data[rowj,]
+          D <- NULL
+          for (i in (1:nlevels(id))) {
+            dij <- data.j[data.j[,iid]==r$originalId$oriId[i],]
+            rij <- subset(r[[nj]],id==r$originalId$newId[i] )
+            dijt <- dij[,itime]
+            sij <- sapply(rij$time, function(x) {which.min(abs(dijt-x))})
+            D <- rbind(D, dij[sij,])
+          }
+          D[,itime] <- r[[nj]][['time']]
+          D[,iy] <- r[[nj]][[nj]]
+          format.original$data <- format.original$data[-rowj,]
+          format.original$data <- rbind(format.original$data, D)
+        }
+      } else {
+        format.original$data[rowj,iy] <- r[[nj]][[nj]]
+      }
+      if (length(icens)>0) {
+        if ("cens" %in% names(r[[nj]]))
+          format.original$data[format.original$obsRows[[j]],icens] <- r[[nj]]$cens
+        else
+          format.original$data[format.original$obsRows[[j]],icens] <- 0
+      }
+      if ( (length(ilimit)>0) && ("limit" %in% names(r[[nj]])))
+        format.original$data[format.original$obsRows[[j]],ilimit] <- r[[nj]]$limit
+    }
+    sep <- format.original$infoProject$delimiter
+    write.table(format.original$data,result.file,row.names=FALSE,quote=FALSE,sep=sep,append=F)
+  }
 }

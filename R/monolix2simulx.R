@@ -24,16 +24,32 @@
 #' monolix2simulx(project=project.file,open=TRUE)
 #' monolix2simulx(project=project.file,parameter=list("mean",c(a=0, b=0)),open=TRUE)
 #' }
+#' @importFrom tools file_path_sans_ext
 #' @export
 
-monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TRUE,fim=NULL)
-{ 
+monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TRUE,fim=NULL){ 
+  
+  # !! RETRO-COMPTATIBILITY ========================================================== !!
+  if (!.useLixoftConnectors()) # < 2019R1
+    myOldENVPATH = Sys.getenv('PATH')
+  else if (!.checkLixoftConnectorsAvailibility()) # >= 2019R1
+    return()
+  # !! =============================================================================== !!
+  
+  if (!initMlxR())
+    return()
+  
+  # !! RETRO-COMPTATIBILITY ========================================================== !!
+  if (!.useLixoftConnectors()){ # < 2019R1
+    session = Sys.getenv("session.simulx")
+    Sys.setenv(LIXOFT_HOME = session)
+  }
+  # !! =============================================================================== !!  
+  
+  
+  
   #------- project to be converted into Simulx project
-  myOldENVPATH = Sys.getenv('PATH');
-  initMlxLibrary()
-  session=Sys.getenv("session.simulx")
-  Sys.setenv(LIXOFT_HOME=session)
-  if  (!is.null(names(group)))
+  if (!is.null(names(group)))
     group <- list(group)
   ans <- processing_monolix(project=project,
                             model=NULL,
@@ -121,7 +137,7 @@ list.out$treatment <- file.path(Rproject,"/treatment.txt")
     populationParameter <- parameter[[1]]
     if (!is.null(populationParameter)){
       outfile = file.path(Rproject,paste0("/populationParameter.txt"))      
-      cat(paste0("populationParameter<- read.vector('populationParameter.txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      cat(paste0("populationParameter <- read.vector('populationParameter.txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       list.out$populationParameter <- outfile
       write.table(populationParameter,file=outfile,col.names=FALSE,quote=FALSE, sep=",")
       
@@ -140,17 +156,17 @@ list.out$treatment <- file.path(Rproject,"/treatment.txt")
       outfile = file.path(Rproject,paste0("/",indcov,".txt"))  
       if(!is.null(catNames)){
         
-        cat(paste0("colCatType<-rep(NA,",ncol(individualCovariate),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0("colCatType <- rep(NA,",ncol(individualCovariate),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
         catNamesCols <-which(colnames(individualCovariate)%in%catNames)
-        cat(paste0("catNamesCols<-c(",catNamesCols[1]),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0("catNamesCols <- c(",catNamesCols[1]),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
         for(i in seq(2,length(catNames))){
           cat(paste0(",",catNamesCols[i]), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
         }
         cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-        cat(paste0("colCatType[catNamesCols]<-rep(\"character\",",length(catNames),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-        cat(paste0(indcov," <- read.table('",indcov,".txt', header = TRUE,colClasses = colCatType, sep=',') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0("colCatType[catNamesCols] <- rep(\"character\",",length(catNames),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        cat(paste0(indcov," <- lixoft.read.table(file='",indcov,".txt', header = TRUE, colClasses = colCatType) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       }else{
-        cat(paste0(indcov," <- read.csv('",indcov,".txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0(indcov," <- read.csv(file='",indcov,".txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       }
       write.table(individualCovariate,file=outfile,row.names=FALSE,quote=FALSE, sep=",")
       list.out$covariate <- outfile
@@ -160,7 +176,7 @@ list.out$treatment <- file.path(Rproject,"/treatment.txt")
         param.list <- indcov
       i.factor <- which(sapply(individualCovariate[-1], is.factor))
       if (length(i.factor)>0)
-        cat(paste0(indcov,"[,",i.factor+1,"]<- as.factor(",indcov,"[,",i.factor+1,"]) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0(indcov,"[,",i.factor+1,"] <- as.factor(",indcov,"[,",i.factor+1,"]) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
     } 
     
     if (length(parameter)>=4) {
@@ -169,17 +185,17 @@ list.out$treatment <- file.path(Rproject,"/treatment.txt")
         outfile = file.path(Rproject,paste0("/individualCovariateIOV.txt"))  
         if(!is.null(catNames.iov)){
           
-          cat(paste0("colCatType<-rep(NA,",ncol(individualCovariate.iov),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+          cat(paste0("colCatType <- rep(NA,",ncol(individualCovariate.iov),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
           catNamesCols.iov <-which(colnames(individualCovariate.iov)%in%catNames.iov)
-          cat(paste0("catNamesCols<-c(",catNamesCols.iov[1]),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+          cat(paste0("catNamesCols <- c(",catNamesCols.iov[1]),file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
           for(i in seq(2,length(catNames.iov))){
             cat(paste0(",",catNamesCols.iov[i]), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
           }
           cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-          cat(paste0("colCatType[catNamesCols]<-rep(\"character\",",length(catNames.iov),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-          cat(paste0("individualCovariateIOV <- read.table('individualCovariateIOV.txt', header = TRUE,colClasses = colCatType, sep=',') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+          cat(paste0("colCatType[catNamesCols] <- rep(\"character\",",length(catNames.iov),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+          cat(paste0("individualCovariateIOV <- lixoft.read.table(file='individualCovariateIOV.txt', header = TRUE,colClasses = colCatType) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
         }else{
-          cat(paste0("individualCovariateIOV <- read.csv('individualCovariateIOV.txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+          cat(paste0("individualCovariateIOV <- read.csv(file='individualCovariateIOV.txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
         }
         write.table(individualCovariate.iov,file=outfile,row.names=FALSE,quote=FALSE, sep=",")
         list.out$covariate.iov <- outfile
@@ -194,7 +210,7 @@ list.out$treatment <- file.path(Rproject,"/treatment.txt")
     individualParameter <- parameter[[3]]
     if (!is.null(individualParameter)){
       outfile = file.path(Rproject,paste0("/individualParameter.txt"))      
-      cat(paste0("individualParameter<- read.csv('individualParameter.txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+      cat(paste0("individualParameter <- read.csv('individualParameter.txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       write.table(individualParameter,file=outfile,row.names=FALSE,quote=FALSE, sep=",")
       list.out$individualParameter <- outfile
       if (!is.null(param.list))
@@ -222,9 +238,9 @@ list.out$treatment <- file.path(Rproject,"/treatment.txt")
     {
       out1 <- output[[1]]
       out1.name <- out1$name 
-      cat(paste0("name<-\"",out1.name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      cat(paste0("time<-read.csv(\"output.txt\",header=TRUE, sep=',')\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-      cat(paste0("out<-list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      cat(paste0("name <- \"",out1.name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      cat(paste0("time <- read.csv(\"output.txt\",header=TRUE, sep=',')\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+      cat(paste0("out <- list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
       outfile = file.path(Rproject,"/output.txt")
       write.table(out1$time,file=outfile,row.names=FALSE,quote=FALSE, sep=",") 
       list.out$output <- outfile
@@ -233,15 +249,15 @@ list.out$treatment <- file.path(Rproject,"/treatment.txt")
       for(i in seq(1:length(output))) {
         outi <- output[[i]]
         outi.name <- outi$name
-        cat(paste0("name<-\"",outi.name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+        cat(paste0("name <- \"",outi.name,"\"\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         if(is.data.frame(outi$time)) {
-          cat(paste0("time<-read.csv(\"output",i,".txt\",header=TRUE, sep=',')\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-          cat(paste0("out",i,"<-list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+          cat(paste0("time <- read.csv(\"output",i,".txt\",header=TRUE, sep=',')\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+          cat(paste0("out",i," <- list(name=name,time=time) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
           outfile = paste0(file.path(Rproject,paste0("/output",i)),".txt")
           write.table(outi$time,file=outfile,row.names=FALSE,quote=FALSE, sep=",") 
           list.out$output <- c(list.out$output, outfile)
         } else {
-          cat(paste0("out",i,"<-list(name=name) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+          cat(paste0("out",i," <- list(name=name) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         }
       }
       
@@ -259,7 +275,7 @@ list.out$treatment <- file.path(Rproject,"/treatment.txt")
     outfile = file.path(Rproject,paste0("/regressor.txt"))    
     write.table(regressor,file=outfile,row.names=FALSE,quote=FALSE, sep=",")
     list.out$regressor <- outfile
-    cat(paste0("regressor <-read.csv(\"regressor.txt\")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
+    cat(paste0("regressor <- read.csv(\"regressor.txt\")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)             
   }
   
   
@@ -286,12 +302,18 @@ list.out$treatment <- file.path(Rproject,"/treatment.txt")
   
   cat(")\n",file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
   
-  Sys.setenv('PATH'=myOldENVPATH);
-  if( (Sys.getenv("RSTUDIO")=="1") & (open==TRUE) ) {
+  
+  # !! RETRO-COMPTATIBILITY - < 2019R1 =============================================== !!
+  if (!.useLixoftConnectors())
+    Sys.setenv('PATH' = myOldENVPATH)
+  # !! =============================================================================== !!
+  
+  if ( (Sys.getenv("RSTUDIO")=="1") & (open==TRUE) ) {
     eval(parse(text='file.edit(projectExe)'))
     # file.edit(projectExe) 
     setwd(mypath)
   }
+  
   return(list.out)
 }
 

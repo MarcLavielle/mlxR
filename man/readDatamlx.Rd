@@ -4,21 +4,32 @@
 \alias{readDatamlx}
 \title{Read formatted data file}
 \usage{
-readDatamlx(project = NULL, datafile = NULL, header = NULL,
-  infoProject = NULL, out.data = FALSE, addl.ss = 10)
+readDatamlx(project = NULL, data = NULL, out.data = FALSE,
+  nbSSDoses = 10, obs.rows = FALSE, datafile = NULL, header = NULL,
+  infoProject = NULL, addl.ss = NULL)
 }
 \arguments{
 \item{project}{a Monolix project}
 
-\item{datafile}{a formatted data file}
-
-\item{header}{a vector of strings (mandatory if \code{datafile} is used)}
-
-\item{infoProject}{an xmlfile}
+\item{data}{a list with fields
+\itemize{
+  \item \code{dataFile}: path of a formatted data file
+  \item \code{headerTypes}: a vector of strings
+}}
 
 \item{out.data}{TRUE/FALSE (default=FALSE) returns the original data as a table and some information about the Monolix project}
 
-\item{addl.ss}{number of additional doses to use for steady-state  (default=10)}
+\item{nbSSDoses}{number of additional doses to use for steady-state (default=10)}
+
+\item{obs.rows}{a list of observation indexes}
+
+\item{datafile}{(deprecated) a formatted data file}
+
+\item{header}{(deprecated) a vector of strings}
+
+\item{infoProject}{(deprecated) an xmlfile}
+
+\item{addl.ss}{(deprecated) number of additional doses to use for steady-state  (default=10)}
 }
 \value{
 A list of data frames
@@ -31,15 +42,16 @@ See http://simulx.webpopix.org/mlxr/readdatamlx/ for more details.
 }
 \examples{
 \dontrun{
-d <- readDatamlx(project='monolixRuns/warfarin_project.mlxtran')
-names(d)
-head(d$treatment)
-head(d$covariate)
-head(d$y1)
+# using a Monolix project:
+d <- readDatamlx(project='projects/warfarinPK.mlxtran')
 
-#-- reserved key-words for the header:
-#   ID,TIME,AMT,ADM,RATE,TINF,Y,YTYPE,X,COV,CAT,OCC,MDV,EVID,ADDL,SS,II,IGNORE
-d <- readDatamlx(datafile='monolixRuns/warfarin_data.txt', 
-                 header=c('id','time','amt','y','ytype','cov','cov','cat'))
+
+# using a data file:
+warfarinPK <- list(dataFile = "data/warfarinPK.csv",
+                   headerTypes = c("id", "time", "observation", "amount", 
+                                   "contcov", "contcov", "catcov"),
+                   administration = "oral")
+d <- readDatamlx(data=warfarinPK)
+
 }
 }

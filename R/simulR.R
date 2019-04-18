@@ -1,3 +1,4 @@
+#' @importFrom tools file_path_sans_ext
 simulR <- function(argList)
 {
   model <- argList$DATA$model

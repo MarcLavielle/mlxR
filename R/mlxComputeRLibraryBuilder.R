@@ -1,5 +1,4 @@
-#' @importFrom utils install.packages
-#' @importFrom utils installed.packages
+#' @importFrom utils installed.packages install.packages
 mlxComputeRLibraryBuilder <- function (lixoftHOME)
 {
   
@@ -7,18 +6,22 @@ mlxComputeRLibraryBuilder <- function (lixoftHOME)
   lixoftHOME=normalizePath(lixoftHOME);
   
   #--- install "Rcpp" or check "Rcpp" version
-  if (!is.element("Rcpp", installed.packages()[,1])){
-    stop("Please install Rcpp \n",call.="FALSE")
+  packinfo <- installed.packages()
+  if (!is.element("Rcpp", packinfo[,1])){
+    .error("Please install Rcpp")
+    return(invisible(FALSE))
   }
   
   # --- Check the Rcpp version installed is the correct one
-  packinfo <- installed.packages ();
   installedRcppVersion = packinfo[c("Rcpp"), c("Version")]
   requiredRcppVersion = "0.11.0";
   myOS <- Sys.info()['sysname'];
   if (myOS == "Windows") {
-    if (installedRcppVersion < requiredRcppVersion)
-      stop("Either install version 0.11.0 or delete file runtime/lib/mlxComputeR.dll, install Rtools and recompile") }
+    if (installedRcppVersion < requiredRcppVersion){
+      .error("Either install version 0.11.0 or delete file runtime/lib/mlxComputeR.dll, install Rtools and recompile")
+      return(invisible(FALSE))
+    }
+  }
   
   
   
@@ -74,7 +77,7 @@ mlxComputeRLibraryBuilder <- function (lixoftHOME)
     # STEP 03.3: Launch compilation
     pckName = sprintf("%s/lib/mlxComputeR", lixoftHOME);
     libArgument = sprintf("--library=%s", tempCompilationDirectory);
-    install.packages(pckName, tempCompilationDirectory, repos = NULL,INSTALL_opts = c("--no-multiarch", "--no-test-load"), type="source");
+    install.packages(pckName, tempCompilationDirectory, repos = NULL, INSTALL_opts = c("--no-multiarch", "--no-test-load"), type = "source");
     
     # STEP 03.4: Copy mlxComputeR.so / mlxComputeR.dll from mlxLibrary/.../runtime/lib/temp/mlxComputeR/libs to  mlxLibrary/.../runtime/lib
     fromFile = sprintf("%s/mlxComputeR/libs/mlxComputeR.so", tempCompilationDirectory);
@@ -113,7 +116,10 @@ mlxComputeRLibraryBuilder <- function (lixoftHOME)
   }
   
   # STEP 04: load Rcpp and lxLibrary/.../runtime/lib/mlxComputeR.so(.dll)
-  #library("Rcpp");
+  if (!requireNamespace("Rcpp", quietly = TRUE)){
+    .error("Error during Rcpp library loading")
+    return(invisible(FALSE))
+  }
   
   if (myOS == "Windows" )
   { 
@@ -131,4 +137,6 @@ mlxComputeRLibraryBuilder <- function (lixoftHOME)
   else {
     dyn.load(mlxComputeFileName)
   }
+  
+  return(invisible(is.loaded("mlxComputeR")))
 }

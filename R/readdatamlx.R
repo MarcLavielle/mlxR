@@ -3,48 +3,67 @@
 #' Read data in a Monolix/NONMEM format
 #' 
 #' See http://simulx.webpopix.org/mlxr/readdatamlx/ for more details.
+#' @param data a list with fields
+#' \itemize{
+#'   \item \code{dataFile}: path of a formatted data file
+#'   \item \code{headerTypes}: a vector of strings
+#' }
 #' @param project a Monolix project
-#' @param datafile a formatted data file 
-#' @param header a vector of strings (mandatory if \code{datafile} is used) 
-#' @param infoProject an xmlfile 
 #' @param out.data TRUE/FALSE (default=FALSE) returns the original data as a table and some information about the Monolix project  
-#' @param addl.ss number of additional doses to use for steady-state  (default=10) 
+#' @param nbSSDoses number of additional doses to use for steady-state (default=10) 
+#' @param obs.rows a list of observation indexes 
+#' @param datafile (deprecated) a formatted data file 
+#' @param header (deprecated) a vector of strings  
+#' @param infoProject (deprecated) an xmlfile 
+#' @param addl.ss (deprecated) number of additional doses to use for steady-state  (default=10) 
 #' 
 #' @return A list of data frames 
 #' @examples
 #' \dontrun{
-#' d <- readDatamlx(project='monolixRuns/warfarin_project.mlxtran')
-#' names(d)
-#' head(d$treatment)
-#' head(d$covariate)
-#' head(d$y1)
+#' # using a Monolix project:
+#' d <- readDatamlx(project='projects/warfarinPK.mlxtran')
 #' 
-#' #-- reserved key-words for the header:
-#' #   ID,TIME,AMT,ADM,RATE,TINF,Y,YTYPE,X,COV,CAT,OCC,MDV,EVID,ADDL,SS,II,IGNORE
-#' d <- readDatamlx(datafile='monolixRuns/warfarin_data.txt', 
-#'                  header=c('id','time','amt','y','ytype','cov','cov','cat'))
+#' 
+#' # using a data file:
+#' warfarinPK <- list(dataFile = "data/warfarinPK.csv",
+#'                    headerTypes = c("id", "time", "observation", "amount", 
+#'                                    "contcov", "contcov", "catcov"),
+#'                    administration = "oral")
+#' d <- readDatamlx(data=warfarinPK)
+#' 
 #' }
 #' @importFrom stats time
+#' @importFrom tools file_path_sans_ext
 #' @export
-readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=NULL, out.data=FALSE, addl.ss=10){
-  # READDATAMLX
-  #
-  # READDATAMLX reads a datafile and create a list.
+readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10, obs.rows=FALSE,
+                         datafile=NULL, header=NULL, infoProject=NULL, addl.ss=NULL){
   id <- NULL
   observationName <- NULL
   datas=NULL
   
-  if (!is.null(project)) {
+  if (!is.null(addl.ss)) 
+    warning("addl.ss is deprecated. Use nbSSDoses instead.", call. = FALSE)
+  if (!is.null(nbSSDoses))
+    addl.ss <- nbSSDoses 
+    
+
+  if (!is.null(project)){
+      
     if (!file.exists(project)) 
       stop(paste0("The Monolix project ", file.path(getwd(),project), " does not exists..."), call.=FALSE)
-    infoProject <- getInfoXml(project)
+      
+    infoProject <- getProjectInformation(project)
+    if (is.null(infoProject))
+      stop("The project could not be loaded properly", call.=FALSE)
+      
     r= tryCatch(
       readPopEstimate(infoProject$resultFolder)
       , error=function(e) {
         error<-  NULL
       }      
     )    
-    datas$populationParameters <- r[[1]]
+    datas$populationParameters <- r$param
+      
   }
   
   if (!is.null(infoProject)) {
@@ -52,6 +71,11 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     observationName = infoProject$output
     datafile        = infoProject$datafile
   } 
+  
+  if (!is.null(data)) {
+    header <- data$headerTypes
+    datafile <- data$dataFile
+  }
   
   headerList      = c('ID','TIME','AMT','ADM','RATE','TINF','Y','YTYPE',
                       'X','COV','CAT','OCC','MDV','EVID','ADDL','SS','II',
@@ -73,8 +97,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   header[header=="REGRESSOR"]="X"
   nlabel = length(header)
   
-  # icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
-  # ievid <- iaddl <- iii <- iss <- iadm <- irate <- itinf <- icens <- NULL
+  icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
+  ievid <- iaddl <- iii <- iss <- iadm <- irate <- itinf <- ilimit <- icens <- NULL
   
   for (i in 1:length(headerList)) {
     hi=headerList[[i]]
@@ -101,7 +125,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     if (isfield(infoProject, 'dataformat'))
       fileFormat = infoProject$dataformat      
   }
-  if (is.null(fileFormat)) {  
+  if (is.null(fileFormat)) {
     tmp=unlist(strsplit(datafile, "\\."))
     e= tmp[[length(tmp)]]
     if (e=='csv')
@@ -110,8 +134,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
       fileFormat="space"
   }
   if (tolower(fileFormat)=="csv") {
-    h1 = read.table(datafile, sep=",", nrows=1)
-    h2 = read.table(datafile, sep=";", nrows=1)
+    h1 = lixoft.read.table(file = datafile, sep = ",", nrows = 1)
+    h2 = lixoft.read.table(file = datafile, sep = ";", nrows = 1)
     if (length(h1)>length(h2)) 
       delimiter=','
     else 
@@ -123,7 +147,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     delimiter=""
   } else if (tolower(fileFormat)=="tab") {
     delimiter='\t'
-  } else if (tolower(fileFormat)==";"||tolower(fileFormat)=="semicolumn") {
+  } else if (tolower(fileFormat)==";"||tolower(fileFormat)=="semicolumn"||tolower(fileFormat)=="semicolon") {
     delimiter=';'
   } else if (tolower(fileFormat)=="\t") {
     delimiter='\t'
@@ -131,15 +155,15 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     delimiter=','
   
   catNames<-NULL
-  headerTest = read.table(datafile, comment.char="",sep=delimiter, nrows=1,stringsAsFactors=FALSE)
+  headerTest =lixoft.read.table(file = datafile, comment.char = "", sep = delimiter, nrows = 1, stringsAsFactors = FALSE)
   if(headerTest[1,1]=="#") {
     headerToUse<-headerTest[,-1]
     dataNoHeader    =  tryCatch(
-      read.table(datafile,comment.char = "#", sep=delimiter,stringsAsFactors=FALSE)
+      lixoft.read.table(file = datafile,comment.char = "#", sep=delimiter,stringsAsFactors=FALSE)
       , error=function(e) {
         error<-  geterrmessage()
         message(paste0("WARNING: reading data using delimiter '",delimiter,"' failed: ", geterrmessage()))
-        return( read.table(datafile,comment.char = "#",stringsAsFactors=FALSE))
+        return( lixoft.read.table(file = datafile,comment.char = "#",stringsAsFactors=FALSE))
       }      
     )    
     data<- dataNoHeader
@@ -153,13 +177,13 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
         names(catNames)<-NULL
         catNames<-trimws(unlist(catNames))
         colCatType[icat]<-rep("character",length(icat))
-        read.table(datafile, comment.char="", header = TRUE, sep=delimiter,colClasses = colCatType)
+        lixoft.read.table(file = datafile, comment.char="", header = TRUE, sep=delimiter,colClasses = colCatType)
       } else {
-        read.table(datafile, comment.char="", header = TRUE, sep=delimiter)
+        lixoft.read.table(file = datafile, comment.char="", header = TRUE, sep=delimiter)
       }), error=function(e) {
         error<-  geterrmessage()
         message(paste0("WARNING: reading data using delimiter '",delimiter,"' failed: ", geterrmessage()))
-        return( read.table(datafile, comment.char="", header = TRUE))
+        return( lixoft.read.table(file = datafile, comment.char="", header = TRUE))
       }      
     )
   }
@@ -245,6 +269,7 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   } else {
     iduf <- 1
     idnum <- as.factor(1)
+    idObsRows <- nrow(S)
   }
   
   iduf = as.factor(iduf)
@@ -271,10 +296,12 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
   
   if (!is.null(iocc)) {
     socc <- S[,c(iid,itime,iocc)]
-    socc1 <- socc[with(socc, order(id, time,occ)), ]
-    socc2 <- socc[with(socc, order(id,occ, time)), ]
+    socc['time'] <- socc[names(S)[itime]]
+    socc1 <- socc[with(socc, order(id, time,occ)), 1:3 ]
+    socc2 <- socc[with(socc, order(id,occ, time)), 1:3 ]
     if (!identical(socc1,socc2))
-      stop("Only occasions within a same period of time are supported", call.=FALSE)
+      stop("Overlapping occasions are not handled by Simulx", call.=FALSE)
+    #stop("Only occasions within a same period of time are supported", call.=FALSE)
   }
   ##************************************************************************
   #       TREATMENT FIELD
@@ -295,7 +322,8 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     if (!is.null(iadm)) si1[[iadm]] <- as.numeric(as.character(si1[[iadm]]))
     if (!is.null(ievid)) si1[[ievid]] <- as.numeric(as.character(si1[[ievid]]))
     ixdose <- c(iamt, irate, itinf, iadm, ievid)
-    si1dose <- data.frame(sapply(si1[,ixdose], function(x) as.numeric(as.character(x))))
+    #si1dose <- data.frame(sapply(si1[,ixdose], function(x) as.numeric(as.character(x))))
+    si1dose <- si1[,ixdose]
     if (length(ixdose)==1)
       u=data.frame(idnum[i1], t[i1], si1dose)
     else
@@ -350,8 +378,12 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     u <- rbind(u,u.addl)
     u <- rbind(u,u.ss)
     # u <- u[order(u$id,u$time),]
-    if (("evid" %in% names(u)) & any(u$evid==4) )
-      stop("Washout (EVID=4) is not supported", call.=FALSE)
+    
+    if ("evid" %in% names(u)){
+      if (any(u$evid==4))
+        stop("Washout (EVID=4) is not supported", call.=FALSE)
+      u$evid <- NULL
+    }
     
     if(nrow(u)) {
       datas   = c(datas,list(treatment = u))
@@ -386,12 +418,15 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     # n.y <- length(l.ytype)
     # if (length(observationName)<n.y)
     #   observationName <- paste0("y",l.ytype)
-    y<- list()
+    y<- obsRows <- list()
     for (in.y in (1:n.y)) {
-      y[[in.y]] <- yvalues[ytype==l.ytype[in.y],]
+      idObs.i <- which(ytype==l.ytype[in.y])
+      y[[in.y]] <- yvalues[idObs.i,]
       names(y[[in.y]])[3] <- observationName[in.y]
       attr(y[[in.y]],'type') <- "longitudinal"
+      obsRows[[in.y]] <-  idObsRows[iobs1[idObs.i]]
     }
+    names(obsRows) <- observationName
     #     yvalues$ytype <- observationName[S[[iytype]][iobs1]]
   } else {
     y <- yvalues
@@ -400,6 +435,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     names(y)[3] <- observationName
     attr(y,'type') <- "longitudinal"
     y <- list(y)
+    obsRows <- list(idObsRows[iobs1])
+    names(obsRows) <- observationName
+    
   }
   names(y) <- observationName
   datas <- c(datas,y)
@@ -418,10 +456,10 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
       for (k in (ix.num)) {
         jx <- c(jx, findstrcmp(Sx[[ix.num[k]]],'.'))
       }
-      if (!is.null(jx))
-        Dx <- Dx[-jx,]
-      for (k in (ix.num))
-        Dx[[k+2]] <- as.numeric(as.character(Dx[[k+2]]))        
+      # if (!is.null(jx))
+      #   Dx <- Dx[-jx,]
+      # for (k in (ix.num))
+      #   Dx[[k+2]] <- as.numeric(as.character(Dx[[k+2]]))        
     }
     datas$regressor <- subset(Dx, !duplicated(cbind(id,time)))
   }
@@ -458,9 +496,9 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
             occ[i] <- 1
         }     
       }
-        ov.io$occ <- occ
-        datas$occasion <- ov.io
-        iocc <- length(names(data))+1
+      ov.io$occ <- occ
+      datas$occasion <- ov.io
+      iocc <- length(names(data))+1
     }
   }
   
@@ -504,13 +542,19 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     if (is.data.frame(dk)) {
       ik <- match(dk$id,iduf)
       if (!is.null(dk$time))
-        datas[[k]] <- dk[order(ik,dk$time),]
+        ok <- order(ik,dk$time)
       else
-        datas[[k]] <- dk[order(ik),]
+        ok <- order(ik)
+      datas[[k]] <- dk[ok,]
       if (is.null(iid))
         datas[[k]]$id <- NULL
+      imk <- match(names(datas)[k], names(obsRows))
+      if (!is.na(imk))
+        obsRows[[imk]] <- obsRows[[imk]][ok]
     }
   }
+  if (obs.rows)
+    datas$obsRows <- obsRows
   if (!is.null(iid)) {
     datas$id <- iduf  
     datas$N <- N
@@ -527,83 +571,4 @@ readDatamlx  <- function(project=NULL, datafile=NULL, header=NULL, infoProject=N
     datas[["catNames"]] <- datas[["covariate"]] <- NULL
   }
   return(datas)
-}
-
-getInfoXml  <- function (project)
-{
-  myOldENVPATH = Sys.getenv('PATH');
-  initMlxLibrary()
-  session=Sys.getenv("session.simulx")
-  Sys.setenv(LIXOFT_HOME=session)
-  infoProject = list(datafile=NULL, dataformat=NULL, dataheader=NULL, output=NULL, resultFolder=NULL, mlxtranpath=NULL );
-  
-  # get path and name of monolix project
-  mlxtranpath      = dirname(project);
-  mlxtranpathfile = file_path_sans_ext(project)
-  mlxtranfile = file_path_sans_ext(basename(project))
-  infoProject$mlxtranpath = mlxtranpath
-  if(file_ext(project) == "mlxtran") {
-    #  project<-mlxProject2xml(project)
-    session<-Sys.getenv("session.simulx")
-    xmlfile <- file.path(mlxtranpath,paste0(mlxtranfile,"_tr.xmlx"))
-    zz=file.path(session,'lib','lixoftLanguageTranslator')
-    str=paste0('"',zz,'" --from=mlxproject --to=xmlx')  
-    str=paste0(str,' --output-file=',xmlfile,' --input-file=',project,' --option=with-observation-model') 
-    system(str, wait=T)
-  } else {
-    xmlfile <- project
-  }
-  
-  infoResultFolder         = myparseXML(xmlfile, mlxtranpath, "resultFolder")
-  infoProject$resultFolder = infoResultFolder[[1]]$uri
-  ##************************************************************************
-  #       GET DATA INFO
-  #*************************************************************************
-  #  get data format and data header used in the current project
-  #   Exemple : 
-  #
-  #   infoProject = 
-  #           datafile         : './warfarin_data.txt'
-  #           dataformat       : '\t'
-  #           dataheader       : {'ID'  'TIME'  'AMT'  'Y'  'YTYPE'  'COV'  'IGNORE'  'IGNORE'}
-  #
-  #
-  infoData                = myparseXML(xmlfile, mlxtranpath, "data")
-  infoProject$datafile    = infoData[[1]]$uri
-  infoProject$dataformat  = infoData[[1]]$columnDelimiter
-  # regressor in monolixC+++ are now named REG
-  headers <- gsub("REG","X",infoData[[1]]$headers)
-  infoProject$dataheader  = headers
-  ##************************************************************************
-  #       GET OUTPUT INFO
-  #*************************************************************************
-  #   Exemple : 
-  #
-  #   infoProject = 
-  #           output           : {'conc'  'pca'}
-  infoOutput         = myparseXML(xmlfile, mlxtranpath, 'observationModel')
-  
-  for (k in 1:length(infoOutput)) 
-    infoProject$output[[k]] = infoOutput[[k]]$name
-  
-  infoParam = myparseXML(xmlfile, mlxtranpath, "parameter")
-  info.length <- unlist(lapply(infoParam,length))
-  infoParam <- infoParam[info.length==2]
-  p.names <- do.call("rbind", lapply(infoParam, "[[", 1))[,1]
-  p.trans <- do.call("rbind", lapply(infoParam, "[[", 2))[,1]
-  infoProject$parameter <- list(name=p.names, trans=p.trans)
-  
-  infoFixedParam = myparseXML(xmlfile, mlxtranpath, "fixedParameter")
-  info.length <- unlist(lapply(infoFixedParam,length))
-  infoFixedParam <- infoFixedParam[info.length==2]
-  fixp.names <- do.call("rbind", lapply(infoFixedParam, "[[", "name"))[,1]
-  fixp.values <- do.call("rbind", lapply(infoFixedParam, "[[", "value"))[,1]
-  fixedParamValues <-as.numeric(fixp.values)
-  names(fixedParamValues) = fixp.names
-  infoProject$fixedParameters <- fixedParamValues
-  
-  if(file_ext(project) == "mlxtran")
-    unlink(xmlfile, recursive=T)
-  
-  return(infoProject)
 }

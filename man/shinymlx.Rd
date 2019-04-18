@@ -5,8 +5,9 @@
 \title{Automatic code generation for Shiny applications}
 \usage{
 shinymlx(model, parameter = NULL, output = NULL, treatment = NULL,
-  data = NULL, appname = "shinymlxApp", style = "basic",
-  settings = NULL, title = " ")
+  regressor = NULL, group = NULL, data = NULL,
+  appname = "shinymlxApp", style = "basic", settings = NULL,
+  title = " ")
 }
 \arguments{
 \item{model}{a \code{Mlxtran} model used for the simulation}
@@ -29,6 +30,23 @@ shinymlx(model, parameter = NULL, output = NULL, treatment = NULL,
 }
 Input argument of Simulx can also be used,  i.e. a list with fields \code{time}, 
 \code{amount}, \code{rate}, \code{tinf}, \code{type}, \code{target}.}
+
+\item{regressor}{a list, or a list of lists, with fields
+\itemize{
+  \item \code{name} : a vector of regressor names,
+  \item \code{time} : a vector of times,
+  \item \code{value} : a vector of values.
+}}
+
+\item{group}{a list, or a list of lists, with fields: 
+\itemize{
+  \item \code{size} : size of the group (default=1),
+  \item \code{level} : level(s) of randomization,
+  \item \code{parameter} : if different parameters per group are defined,
+  \item \code{output} : if different outputs per group are defined,
+  \item \code{treatment} : if different treatements per group are defined,
+  \item \code{regressor} : if different regression variables per group are defined.
+}}
 
 \item{data}{a datafile to display with the plot}
 

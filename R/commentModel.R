@@ -31,7 +31,7 @@ commentModel  <-  function(model, parameters, test.project) {
     #   stop("individual parameter values cannot be used with IOV")
     long = splitModel( model,"LONGITUDINAL")[[1]]$lines
     if (!test.project) {
-      model <- paste0(model,"_simulxModel.txt")
+      model <- paste0(file_path_sans_ext(basename(model)),"_simulxModel.txt")
       test.project <- TRUE
     }
     write(c(long,lines),model)
