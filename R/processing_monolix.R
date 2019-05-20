@@ -30,11 +30,11 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   # id.input <- as.factor(id.input)
   # id.input <- as.factor(unique(unlist(idt[which(!unlist(lapply(idt, is.null)))])))
   for (k2 in seq_len(length(id2))) {
-    if (!is.null(id2[[k2]]) & !identical(id.input, id2[[k2]]))
+    if (!is.null(id2[[k2]]) & !identical(id.input, unique(id2[[k2]])))
       stop(paste0("Some id's are missing in 'parameter'"), call.=FALSE)
   }
   for (k3 in seq_len(length(id3))) {
-    if (!is.null(id3[[k3]]) & !identical(id.input, id3[[k3]]))
+    if (!is.null(id3[[k3]]) & !identical(id.input, unique(id3[[k3]])))
       stop(paste0("Some id's are missing in 'regressor'"), call.=FALSE)
   }
   
@@ -117,7 +117,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       }
       if (!is.null(datas$regressor$id)) {
         datas$regressor <- subset(datas$regressor, id %in% id.input)
-        if (nrow(datas$regressor$value) == 0) datas$regressor <- NULL
+        if (!is.null(datas$regressor$value) && nrow(datas$regressor$value) == 0) datas$regressor <- NULL
       }
     }
     
