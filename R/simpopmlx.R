@@ -1,13 +1,14 @@
 #' Population parameters simulation
 #' 
-#' Draw population parameters using the covariance matrix of the estimates
+#' Draw population parameters using the covariance matrix of the estimates.
 #' 
 #' See http://simulx.webpopix.org/mlxr/simpopmlx/ for more details.
 #' @param n the number of vectors of population parameters (default = 1), 
 #' @param project a Monolix project, assuming that the Fisher information Matrix was estimated by Monolix.
 #' @param fim the Fisher Information Matrix estimated by Monolix. fim={"sa", "lin"} (default="sa") 
 #' @param parameter  a data frame with a column \samp{pop.param} (no default), a column \samp{sd} (no default), 
-#' and possibly a column \samp{trans} (default ='N'). Only when project is not used. 
+#' possibly a column \samp{trans} (default ='N') and possibly columns \samp{lim.a} (default=0) and
+#' \samp{lim.b} (default=1). Only when project is not used. 
 #' @param corr correlation matrix of the population parameters (default = identity). Only when project is not used.
 #' @param kw.max maximum number of trials for generating a positive definite covariance matrix (default = 100) 
 #' @examples
@@ -27,13 +28,29 @@ simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.
   mu <- parameter$pop.param
   sd <- parameter$sd
   trans <- parameter$trans
+  if (is.null(parameter$lim.a))  {
+    lim.a <- 0
+  } else {
+    if (!is.null(parameter$trans))
+    lim.a <- parameter$lim.a[trans=="G"]
+  }
+  if (is.null(parameter$lim.b))   {
+    lim.b <- 1
+  } else {
+    if (!is.null(parameter$trans))
+      lim.b <- parameter$lim.b[trans=="G"]
+  }
+  
   if (!is.null(project)){
     ans <- processing_monolix(project=project, fim=fim, create.model=FALSE)
     if (is.null(mu))
     mu <- ans$param[[1]]
     fim   <- ans$fim
-    if (is.null(sd))
+    if (is.null(sd)) {
+      if (is.null(fim))
+        stop("The standard errors have not been estimated.", call.=FALSE)
       sd=fim$se
+    }
     if (is.null(corr))
       corr=fim$mat
     np <- length(mu)    
@@ -44,6 +61,14 @@ simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.
     i.pop <- match(infoParam$name,p2.name)
     i1 <- which(!is.na(i.pop))
     trans[i.pop[i1]] <- infoParam$trans[i1]
+    if (is.null(infoParam$limits)) {
+      lim.a <- 0
+      lim.b <- 1
+    } else {
+      lim.a <- unlist(lapply(infoParam$limits, function(x) return(x[1])))
+      lim.b <- unlist(lapply(infoParam$limits, function(x) return(x[2])))
+    }
+    
   } else { 
     pname <- row.names(parameter)
     np <- length(mu)    
@@ -92,8 +117,8 @@ simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.
   set[iL] <- se1[iL]/mu1[iL]
   mut[iL] <- log(mu1[iL])
   iG <- which(tr1=="G")
-  set[iG] <- se1[iG]/(mu1[iG]*(1-mu1[iG]))
-  mut[iG] <- log(mu1[iG]/(1-mu1[iG]))
+  set[iG] <- se1[iG]*(lim.b-lim.a)/((mu1[iG]-lim.a)*(lim.b-mu1[iG]))
+  mut[iG] <- log((mu1[iG]-lim.a)/(lim.b-mu1[iG]))
   iR <- which(tr1=="R")
   set[iR] <- se1[iR]*2/(1 - mu1[iR]^2)
   mut[iR] <- log((mu1[iR]+1)/(1-mu1[iR]))
@@ -137,7 +162,7 @@ simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.
     x=matrix(rnorm(K*n1),ncol=K)
     st <- t(t(x%*%Rt) + mut)
     st[,iL] <- exp(st[,iL])
-    st[,iG] <- 1/(1+exp(-st[,iG]))
+    st[,iG] <- (lim.a + lim.b*exp(st[,iG]))/(1+exp(st[,iG]))
     st[,iP] <- pnorm(st[,iP])
     st[,iR] <- (exp(st[,iR])-1)/(exp(st[,iR])+1)
     s <- t(replicate(n1, mu))  

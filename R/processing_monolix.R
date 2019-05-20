@@ -1105,6 +1105,21 @@ getProjectInformation <- function(project){
     paramTrans <-as.vector(dataOut$individualParameters)
     paramTrans <- transformationsAlias(paramTrans)
     projectInfo$parameter <- list(name=paramNames, trans=paramTrans)
+    if (any(paramTrans=="G")) {
+      op0 <- options()
+      op1 <- op0
+      op1$lixoft_notificationOptions$warnings <- 1
+      op1$lixoft_notificationOptions$info <- 1
+      options(op1)
+      gip <- NULL
+      .hiddenCall('lixoftConnectors::initializeLixoftConnectors(software="monolix", force=TRUE)')
+      .hiddenCall('loadProject(project)')
+      .hiddenCall('gip <- getIndividualParameterModel()')
+      projectInfo$parameter$limits <- gip$limits
+      .hiddenCall('lixoftConnectors::initializeLixoftConnectors(software="simulx", force=TRUE)')
+      options(op0)
+    }
+    
     
   }
   
