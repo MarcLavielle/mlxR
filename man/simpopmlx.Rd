@@ -15,14 +15,15 @@ simpopmlx(n = 1, project = NULL, fim = "needed", parameter = NULL,
 \item{fim}{the Fisher Information Matrix estimated by Monolix. fim={"sa", "lin"} (default="sa")}
 
 \item{parameter}{a data frame with a column \samp{pop.param} (no default), a column \samp{sd} (no default), 
-and possibly a column \samp{trans} (default ='N'). Only when project is not used.}
+possibly a column \samp{trans} (default ='N') and possibly columns \samp{lim.a} (default=0) and
+\samp{lim.b} (default=1). Only when project is not used.}
 
 \item{corr}{correlation matrix of the population parameters (default = identity). Only when project is not used.}
 
 \item{kw.max}{maximum number of trials for generating a positive definite covariance matrix (default = 100)}
 }
 \description{
-Draw population parameters using the covariance matrix of the estimates
+Draw population parameters using the covariance matrix of the estimates.
 }
 \details{
 See http://simulx.webpopix.org/mlxr/simpopmlx/ for more details.
