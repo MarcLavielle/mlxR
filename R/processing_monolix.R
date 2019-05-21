@@ -1113,8 +1113,9 @@ getProjectInformation <- function(project){
       options(op1)
       gip <- NULL
       .hiddenCall('lixoftConnectors::initializeLixoftConnectors(software="monolix", force=TRUE)')
-      .hiddenCall('loadProject(project)')
-      .hiddenCall('gip <- getIndividualParameterModel()')
+      .hiddenCall('lixoftConnectors::initializeLixoftConnectors(software="monolix", force=TRUE)')
+      .hiddenCall('lixoftConnectors::loadProject(project)')
+      .hiddenCall('gip <- lixoftConnectors::getIndividualParameterModel()')
       projectInfo$parameter$limits <- gip$limits
       .hiddenCall('lixoftConnectors::initializeLixoftConnectors(software="simulx", force=TRUE)')
       options(op0)
