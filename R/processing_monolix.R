@@ -79,6 +79,16 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       datas$parameter <- readIndEstimate(infoProject$resultFolder,param[which(sapply(param,is.character))])
     else if (any(sapply(param,is.data.frame))) {
       datas$parameter <- param[[which(sapply(param,is.data.frame))]]
+      
+      icat <- which(names(datas$parameter) %in% datas$catNames)
+      if (length(icat)>0) {
+        for (ijcat in names(datas$parameter)[icat]) {
+          datas$parameter[[ijcat]] <- factor(as.character(datas$parameter[[ijcat]]), levels(datas$covariate[[ijcat]]) )
+     if (any(is.na(datas$parameter[[ijcat]])))
+       stop(paste("Some values of", ijcat, "do not match the levels of this covariate"), call.=FALSE)
+        }
+      }
+      
       n.diff <- setdiff(names(datas$covariate), names(datas$parameter))
       if (length(n.diff)>0) {
         if (is.null(datas$parameter$id))
@@ -255,8 +265,16 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
         
         if (.useLixoftConnectors()){ # >= 2019R1
           
-          model = file.path(normalizePath(mlxtranpath),paste0(mlxtranfile,"_simulxModel.txt"))
+     #     model = file.path(normalizePath(mlxtranpath),paste0(mlxtranfile,"_simulxModel.txt"))
+          model = paste0(mlxtranfile,"_simulxModel.txt")
+         dmlx <- dir(normalizePath(mlxtranpath))
+          dmlx0 <- dmlx[grep(paste0(mlxtranfile,"_model"), dmlx)]
           .hiddenCall('lixoftConnectors::writeProjectModelSection(project, model)')
+          dmlx <- dir(normalizePath(mlxtranpath))
+          dmlx1 <- dmlx[grep(paste0(mlxtranfile,"_model"), dmlx)]
+          dmlx01 <- setdiff(dmlx1,dmlx0)
+          if (length(dmlx01)>0)
+            file.remove(file.path(normalizePath(mlxtranpath),dmlx01))
           
         } else { # !! < 2019R1 ======================================================= !!
           
