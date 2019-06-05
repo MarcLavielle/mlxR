@@ -262,7 +262,7 @@ fparameter <- function(param) {
     if (!any(names(param) %in% c("numeric", "slider",  "none" )))
       param=list(param) 
   }
-  if (is.null(names(param)))  names(param) <- "slider"
+  if (is.null(names(param)))  names(param)[1:length(param)] <- "slider"
   names(param)[which(names(param)=="")] <- "slider"
   for (k in seq(1,length(param))){
     paramk <- param[[k]]
