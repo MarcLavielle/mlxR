@@ -376,8 +376,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       id <- as.factor(id)
     N <- length(id)
   }
-  
-  if (!Rmodel ) {
+
+    if (!Rmodel ) {
     r <- commentModel(model, parameter, test.project)
     model <- r$model
     test.project <- r$test.project
@@ -447,11 +447,15 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   #--------------------------------------------------
   if (!is.null(addlines))
     model <- modify.mlxtran(model, addlines)
-  
+ 
   # For time to event output, add a right censoring time = 1e10 if missing
   # remove level=id from correlation definitions
-  if (!Rmodel)
+  if (!Rmodel) {
+    model0 <- model
     model <- rct.mlxtran(model)
+    if (!identical(model, model0))
+      file.remove(model0)
+  }
   
   #--------------------------------------------------
   lv <- list(treatment=treatment,
@@ -472,7 +476,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
         stop("Only 'size' can be defined in group when a single group is created and when id's are defined in the inputs of simulx", call.=FALSE)
     } else {
       u.name <- unique(unlist(sapply(group, function(x) names(x))))
-      if (!all(u.name %in% c("size","treatment", "regressor")))
+      if (!all(u.name %in% c("size","treatment", "regressor", "level")))
         stop("Only 'size', 'treatment' and 'regressor' can be defined in group when several groups are created and when id's are defined in the inputs of simulx", call.=FALSE)
       if ("treatment" %in% u.name) {
         tr <- NULL
@@ -716,8 +720,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     Sys.setenv('PATH' = myOldENVPATH);  
   }
   # !! =============================================================================== !!  
-  
-  
   # For categorical output, returns the categories defined in the model, instead of {0, 1, ...}
   if (!Rmodel)
     R.complete <- repCategories(R.complete, model)
