@@ -456,7 +456,7 @@ iovdef <- function(lines, v.iov=NULL, nocc) {
   iop.sd <- (length(grep("sd=",lines))>0) 
   fields <- line2field(lines)
   if (length(lines)==1) fields <- list(fields)
-    
+  
   i.iov <- which(sapply(fields, function(x) !is.null(x$fields$varlevel)))
   vcv <- list()
   for (k in (1:length(fields))) {
@@ -524,6 +524,26 @@ iovdef <- function(lines, v.iov=NULL, nocc) {
     d.iov <- NULL
   }
   new.lines <- gsub("no-variability=no-variability","no-variability",new.lines)
+  
+  #---   transform correlations at the iov level into correlations at the iiv level
+  l.cor <- grep("id\\*occ",new.lines)
+  if (length(l.cor)>0) {
+    lk.cor <- NULL
+    for (i in l.cor) {
+      li.cor <- new.lines[i]
+      li.cor <- gsub("id\\*occ", "id", li.cor)
+      i1 <- regexpr("\\(", li.cor) 
+      i2 <- regexpr("\\)", li.cor) 
+      str12 <- substr(li.cor, start=i1, stop=i2)
+      isep <- regexpr(",", str12) 
+      viov <- c(substring(str12,first=2,last=isep-1),substring(str12,first=isep+1, last=nchar(str12)-1))
+      for (ko in (1:nocc)) 
+        lk.cor <- c(lk.cor, gsub(str12,paste0("(eta_",viov[1],suffix,ko,", ","eta_",viov[2],suffix,ko,")"),li.cor, fixed=TRUE))
+    }
+    new.lines <- new.lines[-l.cor] 
+    new.lines <- c(new.lines, lk.cor)
+  }
+  
   return(list(iov=v.iov,d.iov=d.iov,lines=new.lines))
 }
 
@@ -681,8 +701,8 @@ param.iov <- function(p, occ) {
   p2 <- p2[sapply(p2,length)>0]
   for (j in seq_len(length(cat))) {
     cj <- grep("[\\+\\-\\*<>]",cat[[j]]$categories)
-      if (length(cj)>0)
-        cat[[j]]$categories[cj] <- paste0("'",cat[[j]]$categories[cj],"'")
+    if (length(cj)>0)
+      cat[[j]]$categories[cj] <- paste0("'",cat[[j]]$categories[cj],"'")
   }
   return(list(param=p2, iov=v.iov, cat=cat))
 }
