@@ -4,7 +4,7 @@
 \alias{initMlxR}
 \title{Initialize mlxR library}
 \usage{
-initMlxR(path = "", ...)
+initMlxR(path = NULL, ...)
 }
 \arguments{
 \item{path}{(\emph{character}) [optional] Path to installation directory of the Lixoft suite.
@@ -16,7 +16,13 @@ If mlxR library is not already loaded and no path is given, the directory writte
 }}
 }
 \value{
-A boolean equaling TRUE if the initialization has been successful and FALSE if not.
+A list:
+\itemize{
+  \item \code{software}: the software that is used (should be monolix with Rsmlx)
+  \item \code{path}: the path to MonolixSuite
+  \item \code{version}: the version of MonolixSuite that is used
+  \item \code{status}: boolean equaling TRUE if the initialization has been successful.
+}
 }
 \description{
 Initialize mlxR library
