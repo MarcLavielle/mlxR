@@ -36,7 +36,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
     return()
   # !! =============================================================================== !!
   
-  if (!initMlxR())
+  if (!initMlxR()$status)
     return()
   
   # !! RETRO-COMPTATIBILITY ========================================================== !!
@@ -49,8 +49,8 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   
   
   #------- project to be converted into Simulx project
-  if (!is.null(names(group)))
-    group <- list(group)
+  # if (!is.null(names(group)))
+  #   group <- list(group)
   ans <- processing_monolix(project=project,
                             model=NULL,
                             treatment=NULL,
@@ -64,7 +64,7 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
   treatment     <- ans$treatment
   parameter     <- ans$param
   output        <- ans$output
-  group         <- ans$group
+  #group         <- ans$group
   regressor     <- ans$regressor
   occasion      <- ans$occ
   fim           <- ans$fim
@@ -224,6 +224,10 @@ list.out$treatment <- file.path(Rproject,"/treatment.txt")
     cat(param.str, file =projectExe, fill = FALSE, labels = NULL, append = TRUE)   
   }
   
+  if (!is.null(group)) {
+    cat("\n\n# group", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+    cat(paste0("\ngrp =  list(size = ",group$size, ")\n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
+  }
   # write f.i.m
   if(!(is.null(fim))) {
     outfile <- file.path(Rproject,"/fim.txt")
@@ -346,5 +350,7 @@ clean.id <- function(x) {
   }
   return(x)
 }
+
+
 
 
