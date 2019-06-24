@@ -137,6 +137,7 @@ line2field <- function(str) {
     rv <- sub(".*\\=","",sp)
     nv <- lapply(rv, function(x) sum(gregexpr("\\{",x)[[1]]>0))
     lrv <- as.list(rv)
+    
     iv1 <- which(nv==1)
     if (length(iv1)>0) {
       riv1 <- gsub(".*?\\{(.*?)\\}.*", "\\1", rv[iv1])
@@ -161,6 +162,8 @@ line2field <- function(str) {
             j2 <- regexpr("\\,",substr(rvi2,j1+1,ni2))+j1-1
           if (j2>=j1)
             lrvi2 <- c(lrvi2, substr(rvi2,j1,j2))
+          else
+            lrvi2 <- c(lrvi2, substr(rvi2,j1,ni2))
         }
         lrv[[iv2]] <- lrvi2
       }
@@ -267,6 +270,7 @@ splitSection  <-  function(section) {
 iovin <- function(lines, c.iov=NULL, v.iov=NULL, nocc, name, cat=NULL, rem.name=NULL) {
   # duplicates the list of variables with IOV in the input list
   
+  
   if (!is.null(rem.name)) {
     vc <- sub("\\=.*","",lines)
     lines <- lines[!(vc %in% rem.name)]
@@ -287,10 +291,15 @@ iovin <- function(lines, c.iov=NULL, v.iov=NULL, nocc, name, cat=NULL, rem.name=
   if (length(lines)==0)
     return(list(iov=NULL, lines=name))
   
+  
   suffix <- "_iov"
   sep <- "([\\,\\{\\}])"
   vi <- c()
   v.iov <- setdiff(v.iov,rem.name)
+  
+  l.input <- grep("input", lines)
+  if (length(v.iov)==1 && l.input %in% grep(v.iov,lines) && length(grep("\\{", lines[l.input]))==0)
+    lines[l.input] <- paste0("input={",v.iov,"}")
   
   for (expr in c.iov) {
     nexpr0 <- paste0(expr,"0")
