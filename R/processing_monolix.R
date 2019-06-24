@@ -258,7 +258,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
         model = file.path(mlxtranpath,paste0(mlxtranfile,"_simulxModel.txt"))
         write(lines,model)
         
-      } else if (initMlxR()){ # init mlxR package if needed
+      } else if (initMlxR()$status){ # init mlxR package if needed
         
         mlxtranfile = file_path_sans_ext(basename(project))
         mlxtranpath <- dirname(project)
@@ -1070,7 +1070,7 @@ transPatch <- function(model) {
 
 getProjectInformation <- function(project){
   
-  if (!initMlxR())
+  if (!initMlxR()$status)
     return(NULL)
   
   projectInfo = list(datafile = NULL, dataformat = NULL, dataheader = NULL, output = NULL, resultFolder = NULL, mlxtranpath = NULL);

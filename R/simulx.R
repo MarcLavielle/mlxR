@@ -139,7 +139,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     return()
   # !! =============================================================================== !!
   
-  if (!initMlxR())
+  if (!initMlxR()$status)
     return()
   
   # !! RETRO-COMPTATIBILITY ========================================================== !!
@@ -164,6 +164,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   kw.max <- settings$kw.max
   replacement <- settings$replacement
   out.trt <- settings$out.trt
+  
+  remove.model <- remove.model0 <- FALSE
   
   if (!is.null(data)) {
     imodel.inline <- FALSE
@@ -207,6 +209,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     if (imodel.inline==TRUE) {
       write(model$str, model$filename)
       model <- model$filename
+      remove.model <- TRUE
+      remove.model0 <- TRUE
     }
   }
   
@@ -376,8 +380,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       id <- as.factor(id)
     N <- length(id)
   }
-
-    if (!Rmodel ) {
+  
+  if (!Rmodel ) {
     r <- commentModel(model, parameter, test.project)
     model <- r$model
     test.project <- r$test.project
@@ -415,7 +419,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       file.remove(model)
       model <- riov$model
       output <- outiov(output,r$iov,varlevel,r$iov)
-     # riov <- NULL
+      # riov <- NULL
     }
     regressor <- c(regressor, varlevel)
     varlevel <- NULL
@@ -447,14 +451,14 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   #--------------------------------------------------
   if (!is.null(addlines))
     model <- modify.mlxtran(model, addlines)
- 
+  
   # For time to event output, add a right censoring time = 1e10 if missing
   # remove level=id from correlation definitions
   if (!Rmodel) {
     model0 <- model
     model <- rct.mlxtran(model)
     if (!identical(model, model0))
-      file.remove(model0)
+      remove.model <- TRUE
   }
   
   #--------------------------------------------------
@@ -731,6 +735,12 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       file.remove(riov$model)
   }
   
+  if (remove.model && file.exists(model))
+    file.remove(model)
+  if (remove.model0 && file.exists(model0))
+    file.remove(model0)
+  
+  
   return(R.complete)
 }
 
@@ -808,7 +818,7 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
     return(dataOut)
     
   } else {
-
+    
     if (.useLixoftConnectors()) # >= 2019R1
       .hiddenCall('dataOut <- lixoftConnectors::computeSimulations(dataIn, s)')
     else # < 2019R1 ================================================================== !!
@@ -828,7 +838,7 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
     if (!is.null(riov)) 
       dataOut <- dataOutiov(dataOut,riov)
     return(dataOut)
-  
+    
   }
   
 }

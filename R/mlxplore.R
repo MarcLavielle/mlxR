@@ -36,7 +36,7 @@ mlxplore <- function(model,parameter=NULL,output=NULL,group=NULL,treatment=NULL)
   #
   #  mlxplore.R was developed by Marc Lavielle and the Inria Popix team for the DDMoRe project. 
   # ########################################################################################  
-  if (!initMlxR())
+  if (!initMlxR()$status)
     return()
   
   # !! RETRO-COMPTATIBILITY ========================================================== !!

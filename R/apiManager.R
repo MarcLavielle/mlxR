@@ -58,36 +58,43 @@ remove(myOS)
 #' \itemize{
 #' \item \code{force} (\emph{bool}) [optional] Should mlxR initialization overpass lixoftConnectors software switch security or not. Equals FALSE by default.
 #' }
-#' @return A boolean equaling TRUE if the initialization has been successful and FALSE if not.
+#' @return A list:
+#' \itemize{
+#'   \item \code{software}: the software that is used (should be monolix with Rsmlx)
+#'   \item \code{path}: the path to MonolixSuite
+#'   \item \code{version}: the version of MonolixSuite that is used
+#'   \item \code{status}: boolean equaling TRUE if the initialization has been successful.
+#' }
 #' @examples
 #' \dontrun{
 #' initMlxR(path = "/path/to/lixoftRuntime/")
 #' }
 #' @export
-initMlxR <- function(path = "", ...){
-  
-  path <- normalizePath(path, winslash = "/", mustWork = FALSE)
+initMlxR <- function(path = NULL, ...){
   
   
   # check if mlxR needs to be (re-)initialized:
   currentLixoftCoreLibrary <- get("CURRENT_LIXOFT_CORE_LIBRARY", envir = mlxREnvironment) # RETRO
   currentPath <- get("LIXOFT_DIRECTORY", envir = mlxREnvironment)
   
+  if (!is.null(path))
+    path <- normalizePath(path, winslash = "/", mustWork = FALSE)
+  
   if (!is.null(currentLixoftCoreLibrary)){ # RETRO
-   
-    if (currentPath != "" && path != "" && path != currentPath){
+    
+    if (currentPath != "" && !is.null(path) && path != currentPath){
       .warning(paste0("mlxR package has already been initialized with \"", currentPath,
                       "\". R session must be restarted to use a different Lixoft installation directory."))
-      return(invisible(FALSE))   
+      return(invisible(list(status=FALSE, path=path)))   
     }
     
     # !! RETRO-COMPTATIBILITY - < 2019R1 =============================================== !!
     if (currentLixoftCoreLibrary == "mlxlibrary"){
       Sys.setenv('PATH' = get("EXECUTION_SYS_PATH", envir = mlxREnvironment))
-      return(invisible(TRUE))
+      return(invisible(list(status=TRUE)))
     }
     # !! =============================================================================== !!
-     
+    
   }
   
   if (isNamespaceLoaded("lixoftConnectors")){
@@ -98,25 +105,26 @@ initMlxR <- function(path = "", ...){
     
     if (!is.null(lixoftConnectorsState)){
       
-      if (path == ""){
-      
-        path <- lixoftConnectorsState$path
+      if (is.null(path)){
+        
+        #path <- lixoftConnectorsState$path
         
         if (lixoftConnectorsState$software == "simulx"){ # => nothing to be done
           
           assign("CURRENT_LIXOFT_CORE_LIBRARY", "lixoftConnectors", envir = mlxREnvironment) # RETRO
-          assign("LIXOFT_DIRECTORY", path, envir = mlxREnvironment)
-          return(invisible(TRUE))
+          assign("LIXOFT_DIRECTORY", lixoftConnectorsState$path, envir = mlxREnvironment)
+          lixoftConnectorsState$status <- TRUE
+          return(lixoftConnectorsState)
           
         }
         
         .info(paste0("lixoftConnectors package has already been initialized using the Lixoft installation directory \"",
                      lixoftConnectorsState$path, "\". This directory will be used to run \"simulx\"."))
-      
+        
       } else if (lixoftConnectorsState$path != path){
-          .warning(paste0("lixoftConnectors package has already been initialized using an other Lixoft installation directory (\"",
-                          lixoftConnectorsState$path, "\"). R session must be restarted to use a different Lixoft installation directory."))
-          return(invisible(FALSE))
+        .warning(paste0("lixoftConnectors package has already been initialized using an other Lixoft installation directory (\"",
+                        lixoftConnectorsState$path, "\"). R session must be restarted to use a different Lixoft installation directory."))
+        return(invisible(list(status=FALSE)))
       }
       
     }
@@ -126,22 +134,26 @@ initMlxR <- function(path = "", ...){
   
   # !! RETRO-COMPTATIBILITY ========================================================== !!
   # lixoft runtime directory identification:
-  if (path == "")
+  if (is.null(path))
     path = .findLixoftDirectory()
   path = normalizePath(path, winslash = "/", mustWork = FALSE)
   
   lixoftRuntimeProperties = .checkLixoftDirectory(path)
-  if (!lixoftRuntimeProperties$status)
-    return(invisible(FALSE))  
+  
+  if (!lixoftRuntimeProperties$status) {
+    .hiddenCall('lixoftConnectors::initializeLixoftConnectors(path=path)')
+    return(invisible(lixoftRuntimeProperties))  
+  }
   # !! =============================================================================== !!
   
   
-
+  
   # lixoft core library initialization:
   if (lixoftRuntimeProperties$reliesOnLixoftConnectors) # >= 2019R1
-    return(invisible( .initLixoftConnectorsLibrary(path, ...) ))
+    lixoftRuntimeProperties$status <- .initLixoftConnectorsLibrary(path, ...)
   else # !! < 2019R1 ================================================================= !!
-    return(invisible( .initMlxRLibrary(path) ))
+    lixoftRuntimeProperties$status <- .initMlxRLibrary(path)
+  return(invisible(lixoftRuntimeProperties))
   # !! =============================================================================== !!
   
 }
