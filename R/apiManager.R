@@ -149,13 +149,17 @@ initMlxR <- function(path = NULL, ...){
   
   
   # lixoft core library initialization:
-  if (lixoftRuntimeProperties$reliesOnLixoftConnectors) # >= 2019R1
-    lixoftRuntimeProperties$status <- .initLixoftConnectorsLibrary(path, ...)
-  else # !! < 2019R1 ================================================================= !!
+  if (lixoftRuntimeProperties$reliesOnLixoftConnectors) { # >= 2019R1
+   lixoft.status <- .initLixoftConnectorsLibrary(path, ...)
+   lixoftConnectorsState <- NULL
+   .hiddenCall('lixoftConnectorsState <- lixoftConnectors::getLixoftConnectorsState(quietly = TRUE)')
+   lixoftConnectorsState$status <- lixoft.status
+   return(lixoftConnectorsState) 
+  } else { # < 2019R1 ================================================================= !!
     lixoftRuntimeProperties$status <- .initMlxRLibrary(path)
-  return(invisible(lixoftRuntimeProperties))
-  # !! =============================================================================== !!
-  
+    return(lixoftRuntimeProperties)
+    # !! =============================================================================== !!
+  }
 }
 
 .initLixoftConnectorsLibrary <- function(path, ...){
