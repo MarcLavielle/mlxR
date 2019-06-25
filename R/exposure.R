@@ -191,12 +191,13 @@ Try increasing ngc, or fix the number of doses", call.=FALSE)
         group <- NULL
     }
   }
+  if (is.null(output$time))
+    stop("'output' should be a list with 'time' as an element", call.=FALSE)
   t <- output$time
   t.min <- min(t)
   t.max <- max(t)
   t.n   <- length(t)
-  if (sd(diff(t))<mean(diff(t))*0.001)
-  {
+  if (sd(diff(t))<mean(diff(t))*0.001) {
     cst.step <- T
     t.step <- (t.max - t.min)/(t.n-1)
     output$time <- seq(t.min,t.max, by=t.step)
