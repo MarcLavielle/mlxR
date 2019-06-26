@@ -201,9 +201,7 @@ Try increasing ngc, or fix the number of doses", call.=FALSE)
     cst.step <- T
     t.step <- (t.max - t.min)/(t.n-1)
     output$time <- seq(t.min,t.max, by=t.step)
-  }
-  else
-  {
+  } else {
     cst.step <- F
     t.step <- NA
     dt <- diff(t)
@@ -222,9 +220,8 @@ Try increasing ngc, or fix the number of doses", call.=FALSE)
       kk <- kk+1
       i.id <- any("id" %in% names(rk))
       i.group <- any("group" %in% names(rk))
-      if (!i.id){
-        rk$id <- 1
-      }
+      if (!i.id)
+        rk$id <- as.factor(1)
       N <- nlevels(rk$id)
       cmin <- vector(length=N)
       tmin <- vector(length=N)
@@ -234,8 +231,9 @@ Try increasing ngc, or fix the number of doses", call.=FALSE)
       gr   <- vector(length=N)
       i2 <- 0
       for (i in (1:N)){
+        t.ni <- sum(rk$id==levels(rk$id)[i])
         i1 <- i2 + 1 
-        i2 <- i2 + t.n
+        i2 <- i2 + t.ni
         rki <- rk[i1:i2,]
         tki <- rki["time"][[1]]
         fki <- rki[namek][[1]]
@@ -246,9 +244,9 @@ Try increasing ngc, or fix the number of doses", call.=FALSE)
         tmax[i] <- tki[imax]
         cmax[i] <- fki[imax]
         if (cst.step)
-          auc[i] <- ((fki[1]+fki[t.n])/2+sum(fki[2:(t.n-1)]))*t.step
+          auc[i] <- ((fki[1]+fki[t.ni])/2+sum(fki[2:(t.ni-1)]))*t.step
         else
-          auc[i] <- sum(dt*(fki[1:(t.n-1)]+fki[2:t.n]))/2
+          auc[i] <- sum(dt*(fki[1:(t.ni-1)]+fki[2:t.ni]))/2
         if (i.group){ gr[i] <- rki$group[1]  }
       }
       if (!i.id){

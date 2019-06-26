@@ -538,7 +538,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       lv$gr.ori <- as.factor(gr.ori)
     }
   }
-  
   if (is.null(N)) N<-1
   if (is.null(npop)) npop<-1
   

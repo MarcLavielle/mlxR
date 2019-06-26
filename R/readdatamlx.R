@@ -289,7 +289,7 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
   if (!is.null(icat)) {
     for (j in (1:length(icat))) {
       Scatj <- S[[icat[j]]]  
-      Scatj <- gsub(" ", "", Scatj, fixed = TRUE)
+#      Scatj <- gsub(" ", "", Scatj, fixed = TRUE)
       S[[icat[j]]] <- as.factor(Scatj)  
     }
   }

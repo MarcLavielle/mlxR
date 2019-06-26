@@ -539,15 +539,24 @@ iovdef <- function(lines, v.iov=NULL, nocc) {
   if (length(l.cor)>0) {
     lk.cor <- NULL
     for (i in l.cor) {
-      li.cor <- new.lines[i]
-      li.cor <- gsub("id\\*occ", "id", li.cor)
-      i1 <- regexpr("\\(", li.cor) 
-      i2 <- regexpr("\\)", li.cor) 
-      str12 <- substr(li.cor, start=i1, stop=i2)
-      isep <- regexpr(",", str12) 
-      viov <- c(substring(str12,first=2,last=isep-1),substring(str12,first=isep+1, last=nchar(str12)-1))
-      for (ko in (1:nocc)) 
-        lk.cor <- c(lk.cor, gsub(str12,paste0("(eta_",viov[1],suffix,ko,", ","eta_",viov[2],suffix,ko,")"),li.cor, fixed=TRUE))
+      li.cor0 <- new.lines[i]
+      li.cor0 <- gsub("id\\*occ", "id", li.cor0)
+      vi1 <- gregexpr("\\(", li.cor0)[[1]] 
+      vi2 <- gregexpr("\\)", li.cor0)[[1]]
+      nv1 <- length(vi1)
+      li.cor <- NULL
+      for (ko in (1:nocc)) {
+        li.cork <- li.cor0
+        for (ji in seq_len(nv1)) {
+          i1 <- vi1[nv1-ji+1]
+          i2 <- vi2[nv1-ji+1]
+          str12 <- substr(li.cork, start=i1, stop=i2)
+          isep <- regexpr(",", str12) 
+          viov <- c(substring(str12,first=2,last=isep-1),substring(str12,first=isep+1, last=nchar(str12)-1))
+          li.cork <- gsub(str12,paste0("(eta_",viov[1],suffix,ko,", ","eta_",viov[2],suffix,ko,")"),li.cork, fixed=TRUE)
+        }
+        lk.cor <- c(lk.cor, li.cork )
+      }
     }
     new.lines <- new.lines[-l.cor] 
     new.lines <- c(new.lines, lk.cor)
