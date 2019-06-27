@@ -733,6 +733,8 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     else if (!is.null(riov))
       file.remove(riov$model)
   }
+  if(settings$data.in)
+    remove.model <- remove.model0 <- FALSE
   
   if (remove.model && file.exists(model))
     file.remove(model)
