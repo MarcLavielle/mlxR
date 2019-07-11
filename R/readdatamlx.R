@@ -449,18 +449,14 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
   
   if (nx>0) {
     Sx <- S[ix]
-    Dx <- data.frame(id=idnum, time=t, Sx)
+    Sx[Sx=="."] <- NA
     ix.num <- which(!sapply(Sx,is.numeric))
     if (!is.null(ix.num)) {
-      jx <- NULL
       for (k in (ix.num)) {
-        jx <- c(jx, findstrcmp(Sx[[ix.num[k]]],'.'))
+        Sx[,ix.num[k]] <- as.numeric(as.character(Sx[,ix.num[k]])) 
       }
-      # if (!is.null(jx))
-      #   Dx <- Dx[-jx,]
-      # for (k in (ix.num))
-      #   Dx[[k+2]] <- as.numeric(as.character(Dx[[k+2]]))        
-    }
+}
+    Dx <- data.frame(id=idnum, time=t, Sx)
     datas$regressor <- subset(Dx, !duplicated(cbind(id,time)))
   }
   

@@ -202,29 +202,33 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
     for (k in (1:nreg)){
       xk <- reg[k+2]
       nk <- names(xk)
-      idk <- which(!is.na(xk))
-      regk <- reg[idk,c(1,2,k+2)]
-      if (N>1){
-        id0 <- 0
-        reg.gk <- NULL
-        for (j in (1:length(g))){
-          regkj <- regk[which(regk$id==j),]
-          dj <- nrow(regkj)
-          gj.size <- prod(g[[j]]$size)
-          regkj <- do.call("rbind", replicate(gj.size, regkj, simplify = FALSE))
-          regkj$id <- rep((1:gj.size),each=dj) +id0
-          if (length(g)>1 & iop.group==1)
-            regkj$group <- j
-          id0 <- id0 + gj.size
-          reg.gk <- rbind(reg.gk,regkj)
-        }        
-      }else{
-        regk$id <- NULL
-        reg.gk <- regk
+      if (!(nk %in% names(dd))) {
+        idk <- which(!is.na(xk))
+        regk <- reg[idk,c(1,2,k+2)]
+        if (N>1){
+          id0 <- 0
+          reg.gk <- NULL
+          for (j in (1:length(g))){
+            regkj <- regk[which(regk$id==j),]
+            dj <- nrow(regkj)
+            gj.size <- prod(g[[j]]$size)
+            regkj <- do.call("rbind", replicate(gj.size, regkj, simplify = FALSE))
+            regkj$id <- rep((1:gj.size),each=dj) +id0
+            if (length(g)>1 & iop.group==1)
+              regkj$group <- j
+            id0 <- id0 + gj.size
+            reg.gk <- rbind(reg.gk,regkj)
+          }        
+        }else{
+          regk$id <- NULL
+          reg.gk <- regk
+        }
+        attr(reg.gk,"type") <- "regressor"      
+        attr(reg.gk,"name") <- nk
+        dd[[nk]] <- reg.gk
+      } else {
+        attr(dd[[nk]], "type") <- "regressor"
       }
-      attr(reg.gk,"type") <- "regressor"      
-      attr(reg.gk,"name") <- nk
-      dd[[nk]] <- reg.gk
     }
   }
   
