@@ -127,6 +127,7 @@ line2field <- function(str) {
   rout <- list()
   for (k in (1:length(str))) {
     strk <- str[k]
+    strk <- gsub("no-variability","sd=0",strk)
     r <- list(name=sub("\\=.*","",strk))
     i1 <- regexpr("\\{",strk)
     i2 <- tail(gregexpr("\\}",strk)[[1]],n=1)
