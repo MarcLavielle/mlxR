@@ -322,6 +322,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     format.original  <- ans$format.original
     id        <- as.factor(ans$id$oriId)
     N         <- nlevels(id)
+    
     test.pop <- FALSE
     if (iproj.pop==TRUE) {
       test.pop <- TRUE
@@ -468,6 +469,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
              regressor=regressor,
              varlevel=varlevel,
              id=id)
+  # browser()
   if (test.N==TRUE && !is.null(group)) {
     if (any(sapply(group, function(x) is.null(x$size))))
       stop("'size' is missing in group", call.=FALSE)
@@ -559,6 +561,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
         cat("population: ",ipop,"\n")
     }
     irw <- 0
+    
     if (test.pop == TRUE)  lv$parameter[[k.pop]] <- pop.mat[ipop,]
     if (test.rep == TRUE) {
       if (test.N==FALSE)  
@@ -566,6 +569,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
       dataIn <- simulxunit(model=model,lv=lv,settings=c(settings, data.in=TRUE),riov=riov)
     }
     if (ipop==1) lv0 <- lv
+    if (test.pop == TRUE)  lv0$parameter[[k.pop]] <- pop.mat[ipop,]
     for (irep in (1:nrep)) {
       irw <- irw + 1
       settings$seed <- settings$seed +12345
@@ -646,7 +650,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
             r[[k]] <- cbind(list(pop=as.factor(ipop)),r[[k]])
           if (nrep>1)  
             r[[k]] <- cbind(list(rep=as.factor(irw)), r[[k]])
-          attr(r[[k]],"type") <- r.attr[k]
+          attr(r[[k]],"type") <- r.attr[[k]]
         }
         if (ipop==1 & irep==1)
           app <- FALSE
@@ -654,9 +658,9 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
           app <- TRUE
         if (settings$format.original) 
           r[['format.original']] <- format.original
-        
-        writeDatamlx(r,result.folder=result.folder,result.file=result.file,
-                     sep=sep,digits=digits,app.dir=app,app.file=app)
+        r[['simulx']] <- TRUE
+         writeDatamlx(r,result.folder=result.folder,result.file=result.file,
+                     sep=sep,digits=digits,app.dir=app,app.file=app, project=project)
         
       } 
       if (irep==1) {
@@ -811,7 +815,6 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
   }
   if (identical(file_ext(model),"R")) {Rfile <- TRUE} else {Rfile <- FALSE}
   if ( !is.null(model) && exists(model, mode="function") ){Rsource <- TRUE} else {Rsource <- FALSE}
-  
   dataOut <- NULL
   if (Rfile || Rsource){
     

@@ -46,6 +46,8 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
       result.file <- file.path(dp.info$resultFolder,paste0("sim_",basename(dp.info$datafile)))
   }
   
+  if (!is.null(r$simulx) && r$simulx) project=NULL
+  
   if (!is.null(result.folder)){
     if (app.dir==F){
       unlink(result.folder, recursive = TRUE, force = TRUE)
@@ -240,39 +242,43 @@ writeDatamlx <- function(r,result.file=NULL,result.folder=NULL,sep=",",ext=NULL,
     
     format.original$data[,iy] <- as.character(format.original$data[,iy])
     for (j in (1:length(format.original$obsRows))) {
-      nj <- names(format.original$obsRows)[j]
+    #  nj <- names(format.original$obsRows)[j]
+      ndj <- dp.info$fit$data[j] 
+      if (length(format.original$obsRows)>1) 
+        ndj <- substr(ndj,2,nchar(ndj))
+      nmj <- dp.info$fit$model[j]
       rowj <- format.original$obsRows[[j]]
       if (length(itime)>0) {
-        if (identical(r[[nj]][['time']], format.original$data[rowj,itime])) {
-          format.original$data[rowj,iy] <- r[[nj]][[nj]]
+        if (identical(r[[nmj]][['time']], format.original$data[rowj,itime])) {
+          format.original$data[rowj,iy] <- r[[nmj]][[nmj]]
         } else {
           iid <- which(format.original$infoProject$dataheader=="ID")
-          id <- r[[nj]][['id']]
+          id <- r[[nmj]][['id']]
           data.j <- format.original$data[rowj,]
           D <- NULL
           for (i in (1:nlevels(id))) {
             dij <- data.j[data.j[,iid]==r$originalId$oriId[i],]
-            rij <- subset(r[[nj]],id==r$originalId$newId[i] )
+            rij <- subset(r[[nmj]],id==r$originalId$newId[i] )
             dijt <- dij[,itime]
             sij <- sapply(rij$time, function(x) {which.min(abs(dijt-x))})
             D <- rbind(D, dij[sij,])
           }
-          D[,itime] <- r[[nj]][['time']]
-          D[,iy] <- r[[nj]][[nj]]
+          D[,itime] <- r[[nmj]][['time']]
+          D[,iy] <- r[[nmj]][[nmj]]
           format.original$data <- format.original$data[-rowj,]
           format.original$data <- rbind(format.original$data, D)
         }
       } else {
-        format.original$data[rowj,iy] <- r[[nj]][[nj]]
+        format.original$data[rowj,iy] <- r[[nmj]][[nmj]]
       }
       if (length(icens)>0) {
-        if ("cens" %in% names(r[[nj]]))
-          format.original$data[format.original$obsRows[[j]],icens] <- r[[nj]]$cens
+        if ("cens" %in% names(r[[nmj]]))
+          format.original$data[format.original$obsRows[[j]],icens] <- r[[nmj]]$cens
         else
           format.original$data[format.original$obsRows[[j]],icens] <- 0
       }
-      if ( (length(ilimit)>0) && ("limit" %in% names(r[[nj]])))
-        format.original$data[format.original$obsRows[[j]],ilimit] <- r[[nj]]$limit
+      if ( (length(ilimit)>0) && ("limit" %in% names(r[[nmj]])))
+        format.original$data[format.original$obsRows[[j]],ilimit] <- r[[nmj]]$limit
     }
     sep <- format.original$infoProject$delimiter
     write.table(format.original$data,result.file,row.names=FALSE,quote=FALSE,sep=sep,append=F)

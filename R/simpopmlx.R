@@ -114,8 +114,10 @@ simpopmlx <- function(n=1,project=NULL,fim="needed",parameter=NULL,corr=NULL,kw.
   set <- se1
   mut <- mu1
   iL <- which(tr1=="L")
-  set[iL] <- se1[iL]/mu1[iL]
-  mut[iL] <- log(mu1[iL])
+ # set[iL] <- se1[iL]/mu1[iL]
+ # mut[iL] <- log(mu1[iL])
+  set[iL] <- sqrt(log(1+(se1[iL]/mu1[iL])^2))
+  mut[iL] <- log(mu1[iL]) - (set[iL]^2)/2
   iG <- which(tr1=="G")
   set[iG] <- se1[iG]*(lim.b-lim.a)/((mu1[iG]-lim.a)*(lim.b-mu1[iG]))
   mut[iG] <- log((mu1[iG]-lim.a)/(lim.b-mu1[iG]))

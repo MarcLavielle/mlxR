@@ -84,8 +84,8 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
       if (length(icat)>0) {
         for (ijcat in names(datas$parameter)[icat]) {
           datas$parameter[[ijcat]] <- factor(as.character(datas$parameter[[ijcat]]), levels(datas$covariate[[ijcat]]) )
-     if (any(is.na(datas$parameter[[ijcat]])))
-       stop(paste("Some values of", ijcat, "do not match the levels of this covariate"), call.=FALSE)
+          if (any(is.na(datas$parameter[[ijcat]])))
+            stop(paste("Some values of", ijcat, "do not match the levels of this covariate"), call.=FALSE)
         }
       }
       
@@ -223,6 +223,15 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   #**************************************************************************
   
   outputp = datas$observation
+  for (k in seq_len(length(outputp))) {
+    outk <- outputp[[k]]
+    dnk <- infoProject$fit$data[k]
+    mnk <- infoProject$fit$model[k]
+    outk[['name']] <- mnk
+    outk[['colNames']] <- lapply(outk[['colNames']], function(x) {gsub(dnk,mnk,x)})
+    names(outk[['value']]) <- outk[['colNames']]
+    outputp[[k]] <- outk
+  }
   #  if (!is.null(id.input)) {
   if (length(id.input)>0) {
     for (k in seq_len(length(outputp))) {
@@ -265,9 +274,9 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
         
         if (.useLixoftConnectors()){ # >= 2019R1
           
-     #     model = file.path(normalizePath(mlxtranpath),paste0(mlxtranfile,"_simulxModel.txt"))
+          #     model = file.path(normalizePath(mlxtranpath),paste0(mlxtranfile,"_simulxModel.txt"))
           model = paste0(mlxtranfile,"_simulxModel.txt")
-         dmlx <- dir(normalizePath(mlxtranpath))
+          dmlx <- dir(normalizePath(mlxtranpath))
           dmlx0 <- dmlx[grep(paste0(mlxtranfile,"_model"), dmlx)]
           .hiddenCall('lixoftConnectors::writeProjectModelSection(project, model)')
           dmlx <- dir(normalizePath(mlxtranpath))
@@ -1088,19 +1097,6 @@ getProjectInformation <- function(project){
     projectInfo$mlxtranpath = mlxtranpath
     
     projectInfo$resultFolder = dataOut$resultFolder
-    ##************************************************************************
-    #       GET DATA INFO
-    #*************************************************************************
-    #  get data format and data header used in the current project
-    #   Exemple :
-    #
-    #   infoProject =
-    #           datafile         : './warfarin_data.txt'
-    #           dataformat       : '\t'
-    #           dataheader       : {'ID'  'TIME'  'AMT'  'Y'  'YTYPE'  'COV'  'IGNORE'  'IGNORE'}
-    #
-    #
-    
     projectInfo$datafile = dataOut$dataFile
     projectInfo$dataformat = dataOut$columnDelimiter
     
@@ -1109,13 +1105,6 @@ getProjectInformation <- function(project){
     dataHeaders <- gsub("REG","X",dataHeaders)
     projectInfo$dataheader =  dataHeaders
     
-    ##************************************************************************
-    #       GET OUTPUT INFO
-    #*************************************************************************
-    #   Exemple :
-    #
-    #   infoProject =
-    #           output           : {'conc'  'pca'}
     for (k in 1:length(dataOut$observationNames))
       projectInfo$output[[k]] = dataOut$observationNames[k]
     
@@ -1156,6 +1145,7 @@ getProjectInformation <- function(project){
     
   }
   # !! =============================================================================== !!
+  projectInfo$fit <- getFit(project, header=projectInfo$dataheader)
   
   return(projectInfo)
   
@@ -1293,4 +1283,57 @@ getInfoXmlFromTranslator <- function(project){
   return(infoProject)
   
 }
+
+# -----------------------------------------------
+
+getFit <- function(project, header) {
+  con     <- file(project, open = "r")
+  lines.complete   <- readLines(con, warn=FALSE)
+  close(con)
+  lines.complete <- gsub("\\;.*","",lines.complete)
+  l.fit <- grep("<FIT>", lines.complete)
+  lines <- lines.complete[l.fit:length(lines.complete)]
+  l.data <- lines[grep("data", lines)[1]]
+  l.model <- lines[grep("model", lines)[1]]
+  
+  ll <- gsub(" ","",l.data)
+  ll <- gsub("data=","",ll)
+  if (grepl("\\{",ll)) {
+    i1 <- regexpr("\\{",ll)
+    i2 <- regexpr("\\}",ll)
+    ll <- substr(ll,i1+1,i2-1)
+    data.names  <- strsplit(ll,",")[[1]]
+  } else {
+    data.names <- ll
+  }
+  ll <- gsub(" ","",l.model)
+  ll <- gsub("model=","",ll)
+  if (grepl("\\{",ll)) {
+    i1 <- regexpr("\\{",ll)
+    i2 <- regexpr("\\}",ll)
+    ll <- substr(ll,i1+1,i2-1)
+    model.names  <- strsplit(ll,",")[[1]]
+  } else {
+    model.names <- ll
+  }
+  
+  if (grepl("YTYPE",header)) {
+    i.obs <- FALSE
+    i <- grep("\\[CONTENT\\]", lines.complete)
+    while(!i.obs) {
+      i <- i+1
+      s <- line2field(lines.complete[i])
+      if (identical(s$fields$use,"observation"))
+        i.obs <- TRUE
+    }
+    sf <- s$fields
+    if (is.null(sf$yname)) sf$yname <- sf$ytype 
+    sf$yname <- gsub("'","",sf$yname)
+    data.ytype <- sf$yname[unlist(lapply(data.names, function(x) {grep(x,sf$name)}))]
+  } else
+    data.ytype=data.names
+  return(list(data=data.names, model=model.names, ytype=data.ytype))
+}
+
+
 # !! ================================================================================= !!

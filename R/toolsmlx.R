@@ -432,7 +432,7 @@ simulx.check <- function(project=NULL, model=NULL, parameter=NULL, output=NULL, 
   if (isfield(settings,"record.file")) {
     settings$result.file <- settings$record.file
     settings$record.file <- NULL
-    warning("\n\n 'record.file' is a deprecated option. Use 'result.file' instead.", call.=FALSE)
+    warning("'record.file' is a deprecated option. Use 'result.file' instead.", call.=FALSE)
   }
   
   # --- MODEL ->  PROJECT
@@ -442,7 +442,7 @@ simulx.check <- function(project=NULL, model=NULL, parameter=NULL, output=NULL, 
     if (length(data.test)) {
       project <- model
       model <- NULL
-      warning(paste0("\n\n'",project,"' was recognized as a Monolix project. Use \n","> simulx(project = '",project,"',...)"))
+      warning(paste0("'",project,"' was recognized as a Monolix project. You probably wanted to run \n","> simulx(project = '",project,"',...)"), call.=FALSE)
     }
   }
   
@@ -451,8 +451,15 @@ simulx.check <- function(project=NULL, model=NULL, parameter=NULL, output=NULL, 
     if (is.null(output) & !("output" %in% names(group)) & !("output" %in% unlist(lapply(group, names))))
       stop(" The output is not defined", call.=FALSE)
   }
-    if (!is.null(regressor) && !("time" %in% names(regressor)) & !("time" %in% unlist(lapply(regressor, names))))
-      stop("time is missing in regressor", call.=FALSE)
+  if (!is.null(output)) {
+    if (!is.list(output)) 
+      output <- list(name=output)
+    if (!is.null(output$name) & !is.character(output$name))
+      stop(" The output is not correctly defined", call.=FALSE)
+  }
+  
+  if (!is.null(regressor) && !("time" %in% names(regressor)) & !("time" %in% unlist(lapply(regressor, names))))
+    stop("time is missing in regressor", call.=FALSE)
   
   return(list(model=model,parameter=parameter,output=output,treatment=treatment,regressor=regressor, 
               varlevel=varlevel,group=group,data=data,project=project,settings=settings))
