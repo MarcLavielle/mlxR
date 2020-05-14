@@ -164,7 +164,7 @@ list.out$treatment <- file.path(Rproject,"/treatment.txt")
         }
         cat(")\n", file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
         cat(paste0("colCatType[catNamesCols] <- rep(\"character\",",length(catNames),")\n"),file =projectExe, fill = FALSE, labels = NULL, append = TRUE)
-        cat(paste0(indcov," <- lixoft.read.table(file='",indcov,".txt', header = TRUE, colClasses = colCatType) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
+        cat(paste0(indcov," <- lixoft.read.table(file='",indcov,".txt', header = TRUE, colClasses = colCatType, na.strings=NULL) \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       }else{
         cat(paste0(indcov," <- read.csv(file='",indcov,".txt') \n"), file =projectExe, fill = FALSE, labels = NULL, append = TRUE) 
       }
