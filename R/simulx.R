@@ -469,7 +469,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
              regressor=regressor,
              varlevel=varlevel,
              id=id)
-  # browser()
   if (test.N==TRUE && !is.null(group)) {
     if (any(sapply(group, function(x) is.null(x$size))))
       stop("'size' is missing in group", call.=FALSE)
@@ -804,6 +803,19 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
     dataIn$id.ori <- NULL
     riov <- data$riov
   }
+  
+  i.null <- which(unlist(lapply(dataIn$individual, function(x) {length(x$response$time[[1]])==0})))
+  if (length(i.null>0)) {
+    n <- length(dataIn$individual )
+    dataIn$individual <- dataIn$individual[-i.null]
+    if (length(dataIn$group) == n)
+    dataIn$group <- dataIn$group[-i.null]
+    if (nrow(dataIn$individual_parameters$value) == n)
+      dataIn$individual_parameters$value <- dataIn$individual_parameters$value[-i.null,]
+    if (length(dataIn$trt) == n)
+      dataIn$trt <- dataIn$trt[-i.null]
+  }
+  
   if (out.trt==TRUE)
     trt <- dataIn$trt
   else
@@ -822,7 +834,6 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
     return(dataOut)
     
   } else {
-    
     if (.useLixoftConnectors()) # >= 2019R1
       .hiddenCall('dataOut <- lixoftConnectors::computeSimulations(dataIn, s)')
     else # < 2019R1 ================================================================== !!

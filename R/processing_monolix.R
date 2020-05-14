@@ -174,7 +174,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   r <- readPopEstimate(infoProject$resultFolder,fim)
   names.proj <- unique(c(names.proj, unlist(lapply(r,names))))
   names.param <- unique(setdiff(unlist(lapply(parameter,names)),c("id", "time", "occ", "pop")))
-  test2 <- !(names.param %in% names.proj)
+  test2 <- !(names.param %in% gsub("_pop","",names.proj))
   if (any(test2))
     warning(paste0("Parameter ",names.param[test2]," is not used in the project\n"), call.=FALSE)
   
@@ -236,6 +236,8 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   if (length(id.input)>0) {
     for (k in seq_len(length(outputp))) {
       ik <- which(unlist(lapply(outputp[[k]], function(x) {"id" %in% names(x)})))
+      if (length(which(!(id.input %in% outputp[[k]][[ik]]$id )))>0  && is.null(output))
+        stop(paste0("Some id's defined as inputs do not match with the id's of the original project\n"), call.=FALSE)
       outputp[[k]][[ik]] <- subset(outputp[[k]][[ik]], id %in% id.input)
       # if (nrow(outputp[[k]][[ik]])==0)
       #   outputp[[k]] <- NULL
@@ -1089,7 +1091,9 @@ getProjectInformation <- function(project){
     
     dataOut <- NULL
     .hiddenCall('dataOut <- lixoftConnectors::getProjectInformation(project)')
-    
+    if (is.null(dataOut))
+      return(NULL)
+  
     # get path and name of monolix project
     mlxtranpath      = dirname(project);
     mlxtranpathfile = file_path_sans_ext(project)
@@ -1120,7 +1124,6 @@ getProjectInformation <- function(project){
       options(op1)
       gip <- NULL
       .hiddenCall('lixoftConnectors::initializeLixoftConnectors(software="monolix", force=TRUE)')
-      .hiddenCall('lixoftConnectors::initializeLixoftConnectors(software="monolix", force=TRUE)')
       .hiddenCall('lixoftConnectors::loadProject(project)')
       .hiddenCall('gip <- lixoftConnectors::getIndividualParameterModel()')
       projectInfo$parameter$limits <- gip$limits
@@ -1145,9 +1148,25 @@ getProjectInformation <- function(project){
     
   }
   # !! =============================================================================== !!
-  projectInfo$fit <- getFit(project, header=projectInfo$dataheader)
+  
+  if (.useLixoftConnectors()){
+    lixoftConnectorsVersion <- NULL
+    .hiddenCall('lixoftConnectorsVersion <- lixoftConnectors::getLixoftConnectorsState(quietly = TRUE)$version')
+    projectInfo$fit = if (lixoftConnectorsVersion >= "2019R2") getFit(dataOut) else getFit_2019R1(project, header = projectInfo$dataheader)
+    
+  } else
+    projectInfo$fit = getFit_2019R1(project, header = projectInfo$dataheader)
+
   
   return(projectInfo)
+  
+}
+
+getFit <- function(data){
+  
+  fit = list(data = data$observationNames, ytype = data$observationMapping)
+  fit$model = data$modelMapping
+  return(fit)
   
 }
 
@@ -1283,10 +1302,11 @@ getInfoXmlFromTranslator <- function(project){
   return(infoProject)
   
 }
+# !! ================================================================================= !!
 
-# -----------------------------------------------
-
-getFit <- function(project, header) {
+# !! RETRO-COMPTATIBILITY - < 2019R1 ================================================= !!
+getFit_2019R1 <- function(project, header) {
+  
   con     <- file(project, open = "r")
   lines.complete   <- readLines(con, warn=FALSE)
   close(con)

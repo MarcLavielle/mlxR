@@ -1,6 +1,6 @@
 Package: mlxR
 Type: Package
-Version: 4.0.8
+Version: 4.1.1
 Title: Simulation of Longitudinal Data
 Description: Simulation and visualization of complex
     models for longitudinal data. The models are encoded using the model coding
@@ -21,7 +21,6 @@ License: BSD_2_clause + file LICENSE
 Copyright: Inria
 RoxygenNote: 6.1.1
 NeedsCompilation: no
-Packaged: 2019-04-18 12:33:39 UTC; marc
 Maintainer: Marc Lavielle <Marc.Lavielle@inria.fr>
 Collate: 'apiTools.R' 'apiManager.R' 'mlxComputeRCleaner.R'
         'mlxComputeRLibraryBuilder.R' 'addFieldsFromHeader.R'

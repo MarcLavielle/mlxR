@@ -173,20 +173,35 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
     names(data)<- headerToUse
     
   } else {
-    data = tryCatch(
-      (if(!is.null(icat)) {
-        colCatType<-rep(NA,length(headerTest))
-        catNames <-headerTest[icat]
-        names(catNames)<-NULL
-        catNames<-trimws(unlist(catNames))
-        colCatType[icat]<-rep("character",length(icat))
-        lixoft.read.table(file = datafile, comment.char="", header = TRUE, sep=delimiter,colClasses = colCatType)
-      } else {
-        lixoft.read.table(file = datafile, comment.char="", header = TRUE, sep=delimiter)
-      }), error=function(e) {
+
+    istrCols = c()
+    
+    if (!is.null(iytype))
+      istrCols = append(istrCols, iytype)
+    
+    if (!is.null(icat)) {
+      
+      catNames <- headerTest[icat]
+      names(catNames) <- NULL
+      catNames <- trimws(unlist(catNames))
+      istrCols = append(istrCols, icat)
+      
+    }
+    
+    colClasses <- rep(NA, length(headerTest))
+    colClasses[istrCols] <- rep("character", length(istrCols))
+    
+    
+    data = tryCatch({ 
+      
+        lixoft.read.table(file = datafile, comment.char="", header = TRUE, sep=delimiter, colClasses = colClasses)
+      
+      } , error=function(e) {
+        
         error<-  geterrmessage()
-        message(paste0("WARNING: reading data using delimiter '",delimiter,"' failed: ", geterrmessage()))
-        return( lixoft.read.table(file = datafile, comment.char="", header = TRUE))
+        message(paste0("WARNING: reading data using delimiter '", delimiter, "' failed: ", geterrmessage()))
+        return( lixoft.read.table(file = datafile, comment.char = "", header = TRUE, colClasses = colClasses) )
+        
       }      
     )
   }
@@ -518,6 +533,17 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
   
   cdf <- cdf.iov <- NULL
   nc = length(icov) + length(icat)
+  for (j in seq_len(length(icat))) {
+    icatj <- icat[j]
+    if ("." %in% levels(S[[icatj]]))
+      levels(S[[icatj]])[levels(S[[icatj]])=="."] <- "NA"
+    if (sum(is.na(S[[icatj]]))>0) {
+      if (!("NA" %in% levels(S[[icatj]])))
+        levels(S[[icatj]]) <- c(levels(S[[icatj]]), "NA")
+      S[[icatj]][is.na(S[[icatj]])] <- "NA"
+    }
+  }
+  
   if (nc>0) {
     ic <- c(icov,icat)
     cdf <- data.frame(id=iduf)

@@ -38,8 +38,7 @@ fsort <- function(X){
   ans  = list(arg1=Y, arg2=I)
 }
 
-mklist <- function(x, add.name=T)
-{
+mklist <- function(x, add.name=T) {
   s <- list()
   if (is.list(x) && is.null(names(x)))
   {
@@ -154,8 +153,12 @@ dpopid <- function(x,s) {
 }  
 
 
-resample.data  <- function(data,idOri,N=NULL,new.id=NULL,replacement=F)
-{
+resample.data  <- function(data,idOri,N=NULL,new.id=NULL,replacement=F) {
+  # retro-compatibility with R version < 3.6.0
+  .Rversion <- version
+  if (.Rversion$major > 3 || (.Rversion$major == 3 && .Rversion$minor >= "6.0"))
+    eval(parse(text='suppressWarnings(RNGkind(sample.kind = "Rounding"))'))
+  
   n <- length(unique(idOri))
   if (is.null(new.id)) {
     if (replacement==TRUE){
@@ -173,29 +176,22 @@ resample.data  <- function(data,idOri,N=NULL,new.id=NULL,replacement=F)
   data$idOri <- NULL  
   data$id <- NULL
   uN <- as.factor(1:N)
-  for  (j in (1:length(data)))
-  {
+  for  (j in (1:length(data))) {
     dataj <- data[[j]]
-    for  (k in (1:length(dataj)))
-    {
+    for  (k in (1:length(dataj))) {
       datak <- dataj[[k]]
-      
-      if (is.data.frame(datak))
-      {
-        if (!is.null(datak$id))
-        {
+      if (is.data.frame(datak)) {
+        if (!is.null(datak$id)) {
           ik  <- which(names(datak)=="id")
           idk <- datak$id
           dkv=NULL
           id1 <- as.character(idk)
           #id1 <- as.numeric(as.character(idk))
-          for (i in 1:N)
-          {
+          for (i in 1:N) {
             id2 <- as.character(idOri[new.id][i])
             #id2 <- as.numeric(as.character(idOri[new.id][i]))
             ji <- which(id1==id2)
-            if (length(ji)>0)
-            {
+            if (length(ji)>0) {
               dkji <- datak[ji,]
               dkji[,ik] <- i
               dkv <- rbind(dkv,dkji,deparse.level=0)
@@ -206,20 +202,16 @@ resample.data  <- function(data,idOri,N=NULL,new.id=NULL,replacement=F)
           data[[j]][[k]] <- dkv
         }
       }
-      else if (is.list(datak))
-      {
-        for (m in (1:length(datak)))
-        {
+      else if (is.list(datak)) {
+        for (m in (1:length(datak))) {
           datam <- datak[[m]]
-          if (is.data.frame(datam) && !is.null(datam$id))
-          {
+          if (is.data.frame(datam) && !is.null(datam$id)) {
             ik  <- which(names(datam)=="id")
             idk <- datam$id
             id1 <- as.character(idk)
             #id1 <- as.numeric(as.character(idk))
             dkv=NULL
-            for (i in 1:N)
-            {
+            for (i in 1:N) {
               id2 <- as.character(idOri[new.id][i])
               #id2 <- as.numeric(as.character(idOri[new.id][i]))
               ji <- which(id1==id2)
@@ -241,8 +233,7 @@ resample.data  <- function(data,idOri,N=NULL,new.id=NULL,replacement=F)
   return(data)
 }
 
-select.data  <- function(data)
-{
+select.data  <- function(data) {
   select.id <- NULL
   for  (j in (1:length(data))) {
     dataj <- data[[j]]
@@ -295,8 +286,7 @@ select.data  <- function(data)
   return(data)
 }
 
-unlistRec <- function(x,s=NULL)
-{
+unlistRec <- function(x,s=NULL) {
   if (is.list(x) && is.null(names(x))){
     n <- length(x)
     for (k in (1:n)){
@@ -309,8 +299,7 @@ unlistRec <- function(x,s=NULL)
   }
 }
 
-modify.mlxtran <- function(model, addlines)
-{
+modify.mlxtran <- function(model, addlines) {
   con     <- file(model, open = "r")
   lines   <- readLines(con, warn=FALSE)
   close(con)
@@ -343,8 +332,7 @@ modify.mlxtran <- function(model, addlines)
   return(model)
 }
 
-rct.mlxtran <- function(model, addlines)
-{
+rct.mlxtran <- function(model, addlines) {
   con     <- file(model, open = "r")
   lines   <- readLines(con, warn=FALSE)
   close(con)
