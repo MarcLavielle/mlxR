@@ -59,7 +59,8 @@ monolix2simulx <-function(project,parameter=NULL,group=NULL,open=FALSE,r.data=TR
                             output=NULL,
                             group=group,
                             r.data=r.data,
-                            fim=fim)
+                            fim=fim,
+                            error.iov=FALSE)
   model         <- ans$model
   treatment     <- ans$treatment
   parameter     <- ans$param

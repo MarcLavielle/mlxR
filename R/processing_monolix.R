@@ -1,6 +1,7 @@
 #' @importFrom tools file_path_sans_ext
 processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL,regressor=NULL,
-                                output=NULL,group=NULL,r.data=TRUE,fim=NULL,create.model=TRUE, format.original=FALSE)
+                                output=NULL,group=NULL,r.data=TRUE,fim=NULL,create.model=TRUE, 
+                                format.original=FALSE, error.iov=TRUE)
 {
   ### processing_monolix
   #     takes a monolix project and extract information from
@@ -52,9 +53,9 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   names.proj <- NULL
   if (r.data==TRUE) {
     #    datas <- readDatamlx(infoProject=infoProject)
-    datas <- readDatamlx(project=project, obs.rows=format.original)
+    datas <- readDatamlx(project=project, obs.rows=format.original, error.iov=error.iov)
     if (format.original) {
-      datao <- readDatamlx(project=project, out.data=TRUE)
+      datao <- readDatamlx(project=project, out.data=TRUE, error.iov=error.iov)
       datao$obsRows <- datas$obsRows
       datas$format.original <- datao
     }
