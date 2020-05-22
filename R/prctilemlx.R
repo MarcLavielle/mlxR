@@ -105,7 +105,7 @@ prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="#9a35ff
   }else{
     m.test <- 1
     q=seq(q1,q2,length.out=m+1)
-    q <- append(q,0.5,m/2) 
+    q <- (append(q,0.5,m/2))
     q[m/2+2] <- 0.5
     m <- m+1
   }
@@ -218,7 +218,7 @@ prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="#9a35ff
       iq <- sort(unique(c(iq1,iq2)))
       vq <- q[iq]
     }else{
-      vq <- q[1:nq]
+      vq <- q[1:length(colq)]
     }
     
     bq <- as.character(rev(vq))
@@ -240,9 +240,6 @@ prctilemlx <- function(r,col=NULL, number=8, level=80, plot=TRUE, color="#9a35ff
     }
     # pk<-pk + geom_polygon(data=datapoly, aes(x=x, y=pr, fill=vf, group=vf)) 
     pk<-pk +  xlab(x.label)+ylab(y.label)
-    
-    
-    pk<-pk + xlab(x.label)+ylab(y.label) 
     
     pk <- pk +sfm
     if (m.test==1){
