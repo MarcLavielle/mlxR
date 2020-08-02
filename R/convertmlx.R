@@ -225,9 +225,11 @@ convertmlx <- function(data, dataIn,trt,iop.group,id.out=FALSE,id.ori=NULL,gr.or
         }
         attr(reg.gk,"type") <- "regressor"      
         attr(reg.gk,"name") <- nk
-        dd[[nk]] <- reg.gk
+        if (!is.na(nk))
+          dd[[nk]] <- reg.gk
       } else {
-        attr(dd[[nk]], "type") <- "regressor"
+        if (!is.null(dd[[nk]]))
+          attr(dd[[nk]], "type") <- "regressor"
       }
     }
   }

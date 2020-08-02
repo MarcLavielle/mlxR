@@ -4,8 +4,14 @@
 \alias{simpopmlx}
 \title{Population parameters simulation}
 \usage{
-simpopmlx(n = 1, project = NULL, fim = "needed", parameter = NULL,
-  corr = NULL, kw.max = 100)
+simpopmlx(
+  n = 1,
+  project = NULL,
+  fim = "needed",
+  parameter = NULL,
+  corr = NULL,
+  kw.max = 100
+)
 }
 \arguments{
 \item{n}{the number of vectors of population parameters (default = 1),}

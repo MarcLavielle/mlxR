@@ -4,8 +4,14 @@
 \alias{monolix2simulx}
 \title{Convert a Monolix Project  into an executable for the simulator  Simulx}
 \usage{
-monolix2simulx(project, parameter = NULL, group = NULL, open = FALSE,
-  r.data = TRUE, fim = NULL)
+monolix2simulx(
+  project,
+  parameter = NULL,
+  group = NULL,
+  open = FALSE,
+  r.data = TRUE,
+  fim = NULL
+)
 }
 \arguments{
 \item{project}{: the name of a Monolix project}

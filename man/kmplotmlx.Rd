@@ -4,9 +4,18 @@
 \alias{kmplotmlx}
 \title{Kaplan Meier plot}
 \usage{
-kmplotmlx(r, index = 1, level = NULL, time = NULL, cens = TRUE,
-  plot = TRUE, color = "#e05969", group = NULL, facet = TRUE,
-  labels = NULL)
+kmplotmlx(
+  r,
+  index = 1,
+  level = NULL,
+  time = NULL,
+  cens = TRUE,
+  plot = TRUE,
+  color = "#e05969",
+  group = NULL,
+  facet = TRUE,
+  labels = NULL
+)
 }
 \arguments{
 \item{r}{a data frame with a column \samp{id}, a column \samp{time}, 

@@ -1,4 +1,4 @@
-#' @importFrom methods setRefClass new
+#' @importFrom methods setRefClass new getGeneric
 
 cleanerEnv <- environment()
 mlxComputeRcleanUp <- setRefClass("mlxComputeRcleanUp",

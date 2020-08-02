@@ -12,6 +12,7 @@
 #' @param out.data TRUE/FALSE (default=FALSE) returns the original data as a table and some information about the Monolix project  
 #' @param nbSSDoses number of additional doses to use for steady-state (default=10) 
 #' @param obs.rows a list of observation indexes 
+#' @param error.iov TRUE/FALSE (default=TRUE) returns an error message if occasions are overlapping  
 #' @param datafile (deprecated) a formatted data file 
 #' @param header (deprecated) a vector of strings  
 #' @param infoProject (deprecated) an xmlfile 
@@ -81,7 +82,7 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
   
   headerList      = c('ID','TIME','AMT','ADM','RATE','TINF','Y','YTYPE',
                       'X','COV','CAT','OCC','MDV','EVID','ADDL','SS','II',
-                      'CENS', 'LIMIT', 'DATE')
+                      'CENS', 'LIMIT', 'DATE', 'IGNOREDLINE')
   newList         = tolower(headerList)
   newList[3:4] <- c('amount','type')
   newHeader       = vector(length=length(header))
@@ -99,7 +100,7 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
   header[header=="REGRESSOR"]="X"
   nlabel = length(header)
   
-  icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- NULL
+  icov <- icat <- iid <- iamt <- iy <- iytype <- ix <- iocc <- imdv <- iignoredline <- NULL
   ievid <- iaddl <- iii <- iss <- iadm <- irate <- itinf <- ilimit <- icens <- NULL
   
   for (i in 1:length(headerList)) {
@@ -212,7 +213,14 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
     return(list(data=data, infoProject=infoProject))
   }
   
-  #---remove rows containing NA-------
+  #---remove ignored lines -------
+  if (!is.null(iignoredline)) {
+    il <- which((data[iignoredline])==1)
+    if(length(il)>0)
+      data <- data[-il,]
+  }
+
+  #---remove lines containing NA-------
   if (!is.null(iid)) {
     narowsData <- which(is.na(data[iid])) # removed in ID column only
     if(length(narowsData)>0)
@@ -247,7 +255,7 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
     if (!is.null(ievid)) {
       levels(S[,ievid])[levels(S[,ievid])=="."] <- "0"  
       S[,ievid] <- as.numeric(as.character(S[,ievid]))
-      iobs1 <- iobs1[S[iobs1,ievid]==0]
+      iobs1 <- iobs1[S[iobs1,ievid] %in% c(0, 2)]
     }
     i0 <- c(grep(' .',S[iobs1,iy],fixed=TRUE),grep('. ',S[iobs1,iy],fixed=TRUE))
     if (length(i0)>0)
@@ -404,7 +412,7 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
     # u <- u[order(u$id,u$time),]
     
     if ("evid" %in% names(u)){
-      if (any(u$evid==4))
+      if (any(u$evid==4 & error.iov))
         stop("Washout (EVID=4) is not supported", call.=FALSE)
       u$evid <- NULL
     }
@@ -423,7 +431,7 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
       iobs1 <- iobs1[S[iobs1,imdv[kmdv]]!=1]
   }
   if (!is.null(ievid))
-    iobs1 <- iobs1[S[iobs1,ievid]==0]
+    iobs1 <- iobs1[S[iobs1,ievid] %in% c(0, 2)]
   i0 <- c(grep(' .',S[iobs1,iy],fixed=TRUE),grep('. ',S[iobs1,iy],fixed=TRUE))
   if (length(i0)>0)
     iobs1 <- iobs1[-i0]

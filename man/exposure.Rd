@@ -4,9 +4,18 @@
 \alias{exposure}
 \title{Computation of AUC, Cmax and Cmin}
 \usage{
-exposure(model = NULL, output = NULL, group = NULL,
-  treatment = NULL, parameter = NULL, data = NULL, project = NULL,
-  settings = NULL, regressor = NULL, varlevel = NULL)
+exposure(
+  model = NULL,
+  output = NULL,
+  group = NULL,
+  treatment = NULL,
+  parameter = NULL,
+  data = NULL,
+  project = NULL,
+  settings = NULL,
+  regressor = NULL,
+  varlevel = NULL
+)
 }
 \arguments{
 \item{model}{a \code{Mlxtran} model used for the simulation}

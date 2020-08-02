@@ -4,9 +4,18 @@
 \alias{readDatamlx}
 \title{Read formatted data file}
 \usage{
-readDatamlx(project = NULL, data = NULL, out.data = FALSE,
-  nbSSDoses = 10, obs.rows = FALSE, datafile = NULL, header = NULL,
-  infoProject = NULL, addl.ss = NULL)
+readDatamlx(
+  project = NULL,
+  data = NULL,
+  out.data = FALSE,
+  nbSSDoses = 10,
+  obs.rows = FALSE,
+  datafile = NULL,
+  header = NULL,
+  infoProject = NULL,
+  addl.ss = NULL,
+  error.iov = TRUE
+)
 }
 \arguments{
 \item{project}{a Monolix project}
@@ -30,6 +39,8 @@ readDatamlx(project = NULL, data = NULL, out.data = FALSE,
 \item{infoProject}{(deprecated) an xmlfile}
 
 \item{addl.ss}{(deprecated) number of additional doses to use for steady-state  (default=10)}
+
+\item{error.iov}{TRUE/FALSE (default=TRUE) returns an error message if occasions are overlapping}
 }
 \value{
 A list of data frames

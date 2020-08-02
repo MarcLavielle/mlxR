@@ -4,9 +4,18 @@
 \alias{prctilemlx}
 \title{Percentiles of the empiricial distribution of longitudinal data}
 \usage{
-prctilemlx(r, col = NULL, number = 8, level = 80, plot = TRUE,
-  color = "#9a35ff", group = NULL, facet = TRUE, labels = NULL,
-  band = NULL)
+prctilemlx(
+  r,
+  col = NULL,
+  number = 8,
+  level = 80,
+  plot = TRUE,
+  color = "#9a35ff",
+  group = NULL,
+  facet = TRUE,
+  labels = NULL,
+  band = NULL
+)
 }
 \arguments{
 \item{r}{a data frame with a column \samp{id}, a column \samp{time} and a column with values.

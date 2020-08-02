@@ -4,9 +4,17 @@
 \alias{writeDatamlx}
 \title{Write formatted data file}
 \usage{
-writeDatamlx(r, result.file = NULL, result.folder = NULL, sep = ",",
-  ext = NULL, digits = 5, app.file = F, app.dir = F,
-  project = NULL)
+writeDatamlx(
+  r,
+  result.file = NULL,
+  result.folder = NULL,
+  sep = ",",
+  ext = NULL,
+  digits = 5,
+  app.file = F,
+  app.dir = F,
+  project = NULL
+)
 }
 \arguments{
 \item{r}{a list of dataframes}
@@ -49,7 +57,7 @@ p <- c(V=10, Cl=1, a1=0.1)
 y1 <- list(name=c('y1'), time=seq(5,to=50,by=5))
 res <- simulx(model=modelPK, treatment=adm, parameter=p, output=y1)
 writeDatamlx(res, result.file="res.csv")
-writeDatamlx(res, result.file="res.txt", sep="\\t")
+writeDatamlx(res, result.file="res.txt", sep="\t")
 writeDatamlx(res, result.folder="res")
 }
 }

@@ -4,8 +4,16 @@
 \alias{catplotmlx}
 \title{Plot Categorical Longitudinal Data}
 \usage{
-catplotmlx(r, col = NULL, breaks = NULL, plot = TRUE,
-  color = "#194280", group = NULL, facet = TRUE, labels = NULL)
+catplotmlx(
+  r,
+  col = NULL,
+  breaks = NULL,
+  plot = TRUE,
+  color = "#194280",
+  group = NULL,
+  facet = TRUE,
+  labels = NULL
+)
 }
 \arguments{
 \item{r}{a data frame with a column \samp{id}, a column \samp{time}, 

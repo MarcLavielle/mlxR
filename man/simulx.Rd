@@ -4,12 +4,25 @@
 \alias{simulx}
 \title{Simulation of mixed effects models and longitudinal data}
 \usage{
-simulx(model = NULL, parameter = NULL, output = NULL,
-  treatment = NULL, regressor = NULL, varlevel = NULL,
-  group = NULL, data = NULL, project = NULL, nrep = 1,
-  npop = NULL, fim = NULL, result.folder = NULL,
-  result.file = NULL, stat.f = "statmlx", addlines = NULL,
-  settings = NULL)
+simulx(
+  model = NULL,
+  parameter = NULL,
+  output = NULL,
+  treatment = NULL,
+  regressor = NULL,
+  varlevel = NULL,
+  group = NULL,
+  data = NULL,
+  project = NULL,
+  nrep = 1,
+  npop = NULL,
+  fim = NULL,
+  result.folder = NULL,
+  result.file = NULL,
+  stat.f = "statmlx",
+  addlines = NULL,
+  settings = NULL
+)
 }
 \arguments{
 \item{model}{a \code{Mlxtran}, or \code{R} model used for the simulation}

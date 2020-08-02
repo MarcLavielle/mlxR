@@ -87,9 +87,11 @@ translateIOV <- function(model, occ.name, nocc, output, iov0, cat0=NULL) {
       sec.long <- splitSection(sm[[i.long]])
       u.iov <- unique(c(i.iov,o.iov))
       long.lines <- iovinlong(sec.long$input, v.iov, u.iov, nocc, sec.long$name, occ.name)
-      r1.long <- iovseclong(sec.long, v.iov, d.iov, u.iov, nocc, occ.name)
-      #    var.iov <- unique(c(var.iov, r0.long$iov))
-      lines <- c(lines,"",long.lines,r1.long$lines)
+      if (length(v.iov)==length(d.iov)) {
+        r1.long <- iovseclong(sec.long, v.iov, d.iov, u.iov, nocc, occ.name)
+        #    var.iov <- unique(c(var.iov, r0.long$iov))
+        lines <- c(lines,"",long.lines,r1.long$lines)
+      }
     } else {
       lines <- c(lines,"",sm[[i.long]]$lines)
     }

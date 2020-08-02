@@ -4,8 +4,13 @@
 \alias{mlxplore}
 \title{Explore and visualize models}
 \usage{
-mlxplore(model, parameter = NULL, output = NULL, group = NULL,
-  treatment = NULL)
+mlxplore(
+  model,
+  parameter = NULL,
+  output = NULL,
+  group = NULL,
+  treatment = NULL
+)
 }
 \arguments{
 \item{model}{a \code{Mlxtran} model}

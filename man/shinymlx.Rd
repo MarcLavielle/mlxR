@@ -4,10 +4,19 @@
 \alias{shinymlx}
 \title{Automatic code generation for Shiny applications}
 \usage{
-shinymlx(model, parameter = NULL, output = NULL, treatment = NULL,
-  regressor = NULL, group = NULL, data = NULL,
-  appname = "shinymlxApp", style = "basic", settings = NULL,
-  title = " ")
+shinymlx(
+  model,
+  parameter = NULL,
+  output = NULL,
+  treatment = NULL,
+  regressor = NULL,
+  group = NULL,
+  data = NULL,
+  appname = "shinymlxApp",
+  style = "basic",
+  settings = NULL,
+  title = " "
+)
 }
 \arguments{
 \item{model}{a \code{Mlxtran} model used for the simulation}

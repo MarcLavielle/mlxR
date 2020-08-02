@@ -46,7 +46,7 @@
 #'   \item \code{treatment} : if different treatements per group are defined,
 #'   \item \code{regressor} : if different regression variables per group are defined.
 #' }
-#' @param data a datafile to display with the plot
+#' @param data data to display with the plot (either a data frame or the name of a file)
 #' @param title the title of the application
 #' @param appname the name of the application (and possibly its path)
 #' @param style the style of the Shiny app
@@ -106,8 +106,8 @@
 #' @importFrom utils read.csv
 #' @export         
 shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,regressor=NULL,
-                     group=NULL, data=NULL,appname="shinymlxApp",style="basic",
-                     settings=NULL,title=" ")
+                      group=NULL, data=NULL,appname="shinymlxApp",style="basic",
+                      settings=NULL,title=" ")
 {
   
   select=list()
@@ -139,10 +139,37 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,regressor=N
   i.data=0
   if (!is.null(data)){
     i.data=1
-    file.copy(data,file.path(appname,basename(data)),overwrite=TRUE)
-    data.txt <- paste0("datax <- read.csv(file='",basename(data),"', header=TRUE, sep='\\t', quote='\')")
+    if (is.character(data)) {
+      n.data <- basename(data)
+      data.path <- data
+      data <- read.csv(data.path, sep="\t")
+      if (ncol(data)==1) {
+        data <- read.csv(data.path, sep=",")
+        if (ncol(data)==1) {
+          data <- read.csv(data.path, sep=";")
+          if (ncol(data)==1)
+            stop("Separator character in the data file should be ';', ',' or '\t'")
+        }
+      }
+    } 
+    n.data <- "data.txt"
+    if (ncol(data)==2)
+      data$ytype=1
+    else
+      names(data)[3] <- "ytype"
+    write.csv(data, file=file.path(appname,n.data), quote=FALSE, row.names=F)
+    d.data <- length(unique(data$ytype))
+    data.txt <- paste0("datax <- read.csv(file='",n.data,"', header=TRUE, sep=',', quote='\')
+d.data <- ", d.data)
     s1 <- paste0(s1,'\n',data.txt)
-    data <- read.csv(file=data, header=TRUE, sep="\t", quote="\"")
+    sz <- 3.5
+    if (nrow(data)/d.data > 50)
+      sz <- 3
+    if (nrow(data)/d.data > 75)
+      sz <- 2.5
+    if (nrow(data)/d.data > 100)
+      sz <- 2
+    #   data <- read.csv(file=file.path(appname,n.data), header=TRUE, sep="\t", quote="\"")
   }
   parameter <- fparameter(parameter)
   ptxt <- param2str(parameter)
@@ -173,9 +200,10 @@ shinymlx <- function(model,parameter=NULL,output=NULL,treatment=NULL,regressor=N
   }
   
   
-  if (i.data==1)
-    s4 <- paste0("    pl <- pl + geom_point(data=datax,aes(x=",names(data)[1],",y=",names(data)[2],"),size=3.5,color='#6666CC')")
-  else
+  if (i.data==1) {
+    s4 <- paste0("if (j <= d.data)  
+         pl <- pl + geom_point(data=subset(datax, ytype==j),aes(x=",names(data)[1],",y=",names(data)[2],"), size=", sz, ", color='#6666CC')")
+  } else
     s4 <- ""
   
   sui <- list2ui(parameter,treatment,output,select,style,tabstyle)
@@ -278,8 +306,8 @@ fparameter <- function(param) {
       if (identical(names(param)[k], "slider")) {
         for (j in (1:length(paramk))) {
           pj <- paramk[[j]]
-           if (pj>0)
-             paramk[[j]] <- c(1,0.5,2,0.1)*pj
+          if (pj>0)
+            paramk[[j]] <- c(1,0.5,2,0.1)*pj
           else if (pj<0)
             paramk[[j]] <- c(1,2,0.5,-0.1)*pj
           else 
@@ -643,7 +671,7 @@ serverTemplate <- function(s, select, i.output, select.y)
 {
   if (select$x==TRUE){
     spl <- paste0(
-      "   pj <- paste0('pl <- pl + geom_path(data=res, aes(x=',xj,',y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
+      "   pj <- paste0('pl <- pl + geom_path(data=res, aes(x=',xj,',y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=1)')
     eval(parse(text=pj))") 
     if (select$ref==TRUE){
       srf <- paste0(
@@ -656,12 +684,12 @@ serverTemplate <- function(s, select, i.output, select.y)
     }
   }else{
     spl <- paste0(
-      "       pj <- paste0('pl <- pl + geom_path(data=res[[j]], aes(x=time,y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=0.75)')
+      "       pj <- paste0('pl <- pl + geom_path(data=res[[j]], aes(x=time,y=',name.fj[k],',colour=",'"',"',info[[j]]$colour[k],'",'"',"),size=1)')
        eval(parse(text=pj))") 
     if (select$ref==TRUE){
       srf <- paste0(
         "   if (input$boxref==TRUE){
-      pj <- paste0('pl <- pl + geom_path(data=ref[[j]], aes(x=time,y=',name.fj[k],'),colour=",'"grey",',"size=0.75)')
+      pj <- paste0('pl <- pl + geom_path(data=ref[[j]], aes(x=time,y=',name.fj[k],'),colour=",'"grey",',"size=1)')
       eval(parse(text=pj))
     }") 
     }else{
@@ -716,6 +744,7 @@ serverTemplate <- function(s, select, i.output, select.y)
   }
   if (i.plot){
     pl <- ggplotmlx()
+  ',s[5],'
     nfj <- length(name.fj)
     for (k in (1:nfj)){
       if (k %in% ij){
@@ -733,7 +762,6 @@ serverTemplate <- function(s, select, i.output, select.y)
     }else{
       pl <- pl + theme(legend.position="none")
     }
-  ',s[5],'
   ',slog,'
     eval(parse(text=paste0("pl",j," <- pl")))
     gr.txt <- paste0(gr.txt,"pl",j,",")
@@ -741,6 +769,7 @@ serverTemplate <- function(s, select, i.output, select.y)
   }else{
     splot <- paste0('
       pl <- ggplotmlx()
+      ',s[5],'
       nfj <- length(name.fj)
       for (k in (1:nfj)){',
                     srfpl,'
@@ -748,11 +777,9 @@ serverTemplate <- function(s, select, i.output, select.y)
       pl <- pl + scale_colour_manual(values=info[[j]]$values, labels=info[[j]]$labels)
       print(pl)
       if (length(name.fj)>1)
-        pl <- pl + guides(colour=guide_legend(title=NULL)) + theme(legend.position=c(.9, .8))
+        pl <- pl + guides(colour=guide_legend(title=NULL)) + theme(legend.position=c(.9, .8)) + ylab("")
       else
-        pl <- pl + theme(legend.position="none")
-      pl <- pl + ylab("")
-      ',s[5],'
+        pl <- pl + theme(legend.position="none") + ylab(name.fj)
       ',slog,'
       eval(parse(text=paste0("pl",j," <- pl")))
       gr.txt <- paste0(gr.txt,"pl",j,",")')  
@@ -994,3 +1021,4 @@ set.settings <- function(s,style){
     r <- s
   return(r)
 }
+

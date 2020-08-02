@@ -1,6 +1,6 @@
 Package: mlxR
 Type: Package
-Version: 4.1.2
+Version: 4.1.3
 Title: Simulation of Longitudinal Data
 Description: Simulation and visualization of complex
     models for longitudinal data. The models are encoded using the model coding
@@ -19,7 +19,7 @@ Suggests: XML, Rcpp (>= 0.11.3), reshape2, gridExtra, shiny
 Imports: tools, methods, graphics, grDevices, utils, stats
 License: BSD_2_clause + file LICENSE
 Copyright: Inria
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 NeedsCompilation: no
 Maintainer: Marc Lavielle <Marc.Lavielle@inria.fr>
 Collate: 'apiTools.R' 'apiManager.R' 'mlxComputeRCleaner.R'
