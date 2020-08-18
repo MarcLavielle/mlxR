@@ -57,7 +57,7 @@ Input argument of Simulx can also be used,  i.e. a list with fields \code{time},
   \item \code{regressor} : if different regression variables per group are defined.
 }}
 
-\item{data}{a datafile to display with the plot}
+\item{data}{data to display with the plot (either a data frame or the name of a file)}
 
 \item{appname}{the name of the application (and possibly its path)}
 
