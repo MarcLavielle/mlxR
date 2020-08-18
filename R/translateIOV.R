@@ -218,6 +218,18 @@ strmerge <- function(str1, op=0) {
     str2 <- c(str2, si)
   }
   
+  list1 <- NULL
+  for (idx in (1:length(str2))) {
+    si <- str2[idx]
+    if (identical(substr(si,nchar(si),nchar(si)),"="))
+        list1 <- c(list1, idx)
+  }
+  if (length(list1)>0) {
+    for (idx in list1)
+      str2[idx] <- paste0(str2[idx],str2[idx+1])
+    str2 <- str2[-(list1+1)]
+  }
+  
   if (op==1) {
     n <- length(str2)
     str3 <- c()

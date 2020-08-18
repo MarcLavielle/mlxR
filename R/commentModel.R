@@ -16,6 +16,9 @@ commentModel  <-  function(model, parameters, test.project) {
       nmod <- c(nmod, gsub("\\=.*","",li[(jdi+1):length(li)]))
     }
   }
+  if (length(grep("EQUATION:",nmod))>0)
+    nmod <- nmod[-grep("EQUATION:",nmod)]
+  
   test.comment <- FALSE
   for (k in 1:length(parameters)) {
     nk <- names(parameters[[k]])
