@@ -226,10 +226,11 @@ exposure <- function (model = NULL, output = NULL, group = NULL, treatment = NUL
                     project = project, settings = settings, regressor = regressor, 
                     varlevel = varlevel)
   r.simul$treatment <- NULL
-  r.names <- names(r.simul)
+ # r.names <- names(r.simul)
+  r.names <- output$name
   res <- list()
   kk <- 0
-  for (k in seq(1:length(r.simul))) {
+  for (k in seq(1:length(r.names))) {
     namek <- r.names[k]
     rk <- r.simul[[k]]
     if (any("time" %in% names(rk))) {
