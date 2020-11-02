@@ -285,7 +285,6 @@ splitSection  <-  function(section) {
 iovin <- function(lines, c.iov=NULL, v.iov=NULL, nocc, name, cat=NULL, rem.name=NULL) {
   # duplicates the list of variables with IOV in the input list
   
-  
   if (!is.null(rem.name)) {
     vc <- sub("\\=.*","",lines)
     lines <- lines[!(vc %in% rem.name)]
@@ -310,6 +309,10 @@ iovin <- function(lines, c.iov=NULL, v.iov=NULL, nocc, name, cat=NULL, rem.name=
   suffix <- "_iov"
   sep <- "([\\,\\{\\}])"
   vi <- c()
+  
+  for (expr in v.iov)
+    if (length(grep(expr, lines))==0)
+        rem.name <- c(rem.name, expr)
   v.iov <- setdiff(v.iov,rem.name)
   
   l.input <- grep("input", lines)
@@ -477,7 +480,7 @@ iovdef <- function(lines, v.iov=NULL, nocc) {
   lines <- gsub(",mean=",",reference=",lines)
   lines <- gsub(",prediction=",",reference=",lines)
   lines <- gsub(",typical=",",reference=",lines)
-  iop.sd <- (length(grep("sd=",lines))>0) 
+  iop.sd <- (length(grep("var=",lines))==0) 
   fields <- line2field(lines)
   if (length(lines)==1) fields <- list(fields)
   

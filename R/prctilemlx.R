@@ -5,7 +5,7 @@
 #' See http://simulx.webpopix.org/mlxr/prctilemlx/ for more details.
 #' @param r a data frame with a column \samp{id}, a column \samp{time} and a column with values.
 #' The times should be the same for each individual. 
-#' @param col a vector of 3 column numbers: (\samp{id}, \samp{time/x}, \samp{y}. Default = c(1, 2,3).
+#' @param col a vector with the three column indexes for \samp{id}, \samp{time/x} and \samp{y}. Default = c(1, 2,3).
 #' @param number the number of intervals (i.e. the number of percentiles minus 1).
 #' @param level the largest interval (i.e. the difference between the lowest and the highest percentile).
 #' @param plot if \code{TRUE} the empirical distribution is displayed, if \code{FALSE}

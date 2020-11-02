@@ -10,11 +10,12 @@ readDatamlx(
   out.data = FALSE,
   nbSSDoses = 10,
   obs.rows = FALSE,
+  error.iov = FALSE,
+  filter = NULL,
   datafile = NULL,
   header = NULL,
   infoProject = NULL,
-  addl.ss = NULL,
-  error.iov = TRUE
+  addl.ss = NULL
 )
 }
 \arguments{
@@ -32,6 +33,10 @@ readDatamlx(
 
 \item{obs.rows}{a list of observation indexes}
 
+\item{error.iov}{TRUE/FALSE (default=TRUE) returns an error message if occasions are overlapping}
+
+\item{filter}{filter to apply to the data (string)}
+
 \item{datafile}{(deprecated) a formatted data file}
 
 \item{header}{(deprecated) a vector of strings}
@@ -39,8 +44,6 @@ readDatamlx(
 \item{infoProject}{(deprecated) an xmlfile}
 
 \item{addl.ss}{(deprecated) number of additional doses to use for steady-state  (default=10)}
-
-\item{error.iov}{TRUE/FALSE (default=TRUE) returns an error message if occasions are overlapping}
 }
 \value{
 A list of data frames

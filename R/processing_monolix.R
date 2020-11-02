@@ -175,7 +175,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
   r <- readPopEstimate(infoProject$resultFolder,fim)
   names.proj <- unique(c(names.proj, unlist(lapply(r,names))))
   names.param <- unique(setdiff(unlist(lapply(parameter,names)),c("id", "time", "occ", "pop")))
-  test2 <- !(names.param %in% gsub("_pop","",names.proj))
+  test2 <- !(names.param %in% unique(c(names.proj,gsub("_pop","",names.proj))))
   if (any(test2))
     warning(paste0("Parameter ",names.param[test2]," is not used in the project\n"), call.=FALSE)
   

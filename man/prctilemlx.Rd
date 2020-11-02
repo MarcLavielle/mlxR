@@ -21,7 +21,7 @@ prctilemlx(
 \item{r}{a data frame with a column \samp{id}, a column \samp{time} and a column with values.
 The times should be the same for each individual.}
 
-\item{col}{a vector of 3 column numbers: (\samp{id}, \samp{time/x}, \samp{y}. Default = c(1, 2,3).}
+\item{col}{a vector with the three column indexes for \samp{id}, \samp{time/x} and \samp{y}. Default = c(1, 2,3).}
 
 \item{number}{the number of intervals (i.e. the number of percentiles minus 1).}
 

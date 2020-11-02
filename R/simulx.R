@@ -803,7 +803,6 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
     dataIn$id.ori <- NULL
     riov <- data$riov
   }
-  
   i.null <- which(unlist(lapply(dataIn$individual, function(x) {length(x$response$time[[1]])==0})))
   if (length(i.null>0)) {
     n <- length(dataIn$individual )
@@ -839,7 +838,6 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
     else # < 2019R1 ================================================================== !!
       .hiddenCall('dataOut <- .Call("mlxComputeR", argList, PACKAGE = "mlxComputeR")')
     # !! ============================================================================= !!
-    
     if(data.in==TRUE)
       return(dataIn)
     if (!exists("gr.ori"))

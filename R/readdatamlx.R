@@ -13,6 +13,7 @@
 #' @param nbSSDoses number of additional doses to use for steady-state (default=10) 
 #' @param obs.rows a list of observation indexes 
 #' @param error.iov TRUE/FALSE (default=TRUE) returns an error message if occasions are overlapping  
+#' @param filter filter to apply to the data (string)  
 #' @param datafile (deprecated) a formatted data file 
 #' @param header (deprecated) a vector of strings  
 #' @param infoProject (deprecated) an xmlfile 
@@ -36,8 +37,8 @@
 #' @importFrom stats time
 #' @importFrom tools file_path_sans_ext
 #' @export
-readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10, obs.rows=FALSE,
-                         datafile=NULL, header=NULL, infoProject=NULL, addl.ss=NULL, error.iov=TRUE){
+readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10, obs.rows=FALSE, error.iov=FALSE, filter=NULL,
+                         datafile=NULL, header=NULL, infoProject=NULL, addl.ss=NULL){
   id <- NULL
   observationModelName <- NULL
   datas=NULL
@@ -206,6 +207,9 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
     }      
     )
   }
+  
+  if (!is.null(filter))
+    eval(parse(text= paste0("data <- subset(data, ",filter,")")))
   
   if (out.data) {
     infoProject$delimiter <- delimiter
