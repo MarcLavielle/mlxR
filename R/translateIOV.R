@@ -222,7 +222,7 @@ strmerge <- function(str1, op=0) {
   for (idx in (1:length(str2))) {
     si <- str2[idx]
     if (identical(substr(si,nchar(si),nchar(si)),"="))
-        list1 <- c(list1, idx)
+      list1 <- c(list1, idx)
   }
   if (length(list1)>0) {
     for (idx in list1)
@@ -263,6 +263,10 @@ splitSection  <-  function(section) {
   i.pk   = grep("PK:",lines, fixed=TRUE)
   is <- sort(c(i.pk,i.eq,i.def))
   is <- c(is, length(lines)+1)
+  if (!is.na(i.input))
+    input <- lines[i.input:(is[1]-1)]
+  else
+    input <- NULL
   bt <- c()
   bc <- list()
   if (length(is)>1) {
@@ -279,7 +283,7 @@ splitSection  <-  function(section) {
         bc[[k]] <- ""
     }
   }
-  return(list(name=section$name, input=lines[i.input:(is[1]-1)], blocks=bt, lines=bc))
+  return(list(name=section$name, input=input, blocks=bt, lines=bc))
 }
 
 iovin <- function(lines, c.iov=NULL, v.iov=NULL, nocc, name, cat=NULL, rem.name=NULL) {
@@ -312,7 +316,7 @@ iovin <- function(lines, c.iov=NULL, v.iov=NULL, nocc, name, cat=NULL, rem.name=
   
   for (expr in v.iov)
     if (length(grep(expr, lines))==0)
-        rem.name <- c(rem.name, expr)
+      rem.name <- c(rem.name, expr)
   v.iov <- setdiff(v.iov,rem.name)
   
   l.input <- grep("input", lines)
