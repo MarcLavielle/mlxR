@@ -249,6 +249,7 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
   loq.a <- list()
   loq.arg <- c("limit", "lloq", "uloq")
   arg.names <- c("name", "time", loq.arg)
+
   if (length(output)>0) {
     ik0 <- NULL
     for (k in (1:length(output))){
@@ -461,7 +462,6 @@ simulx <- function(model=NULL, parameter=NULL, output=NULL,treatment=NULL,
     if (!identical(model, model0))
       remove.model <- TRUE
   }
-  
   #--------------------------------------------------
   lv <- list(treatment=treatment,
              parameter=parameter,

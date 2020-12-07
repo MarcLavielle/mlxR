@@ -95,7 +95,7 @@ processing_monolix  <- function(project,model=NULL,treatment=NULL,parameter=NULL
         if (is.null(datas$parameter$id))
           datas$covariate <- datas$covariate[unique(c('id', n.diff))]
         else 
-          if (length(n.diff)>0 && identical(datas$covariate$id,datas$parameter$id))
+          if (length(n.diff)>0 && identical(as.factor(datas$covariate$id),as.factor(datas$parameter$id)))
             datas$covariate <- datas$covariate[c('id', n.diff)]
           else
             datas$covariate <- NULL
