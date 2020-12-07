@@ -487,7 +487,7 @@ readDatamlx  <- function(project=NULL, data = NULL, out.data=FALSE, nbSSDoses=10
     ix.num <- which(!sapply(Sx,is.numeric))
     if (!is.null(ix.num)) {
       for (k in (ix.num)) {
-        Sx[,ix.num[k]] <- as.numeric(as.character(Sx[,ix.num[k]])) 
+        Sx[,k] <- as.numeric(as.character(Sx[,k])) 
       }
     }
     Dx <- data.frame(id=idnum, time=t, Sx)
