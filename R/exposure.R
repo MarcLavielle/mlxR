@@ -172,6 +172,7 @@ exposure <- function (model = NULL, output = NULL, group = NULL, treatment = NUL
           fki <- matrix(rki[namek][[1]], ncol = ngc)
           dki <- diff(apply(fki, 2, mean))
           alphai <- diff(log(abs(dki)))
+          alphai <- alphai[!is.na(alphai)]
           if (max(alphai) < 0) {
             alpha <- min(alpha, -tail(alphai, n = 1))
           }

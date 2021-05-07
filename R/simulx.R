@@ -814,7 +814,6 @@ simulxunit <- function(model=NULL, lv=NULL, data=NULL, settings=NULL, out.trt=TR
     if (length(dataIn$trt) == n)
       dataIn$trt <- dataIn$trt[-i.null]
   }
-  
   if (out.trt==TRUE)
     trt <- dataIn$trt
   else
