@@ -96,7 +96,7 @@ A list may contain the type of widget ("slider", "select", "numeric") and the se
 (value, min, max, step) for \code{slider}, (selected, choices) for \code{select} and
 value for \code{numeric}.
 
-See http://simulx.webpopix.org/mlxr/shinymlx/ for more details.
+See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 }
 \examples{
 \dontrun{

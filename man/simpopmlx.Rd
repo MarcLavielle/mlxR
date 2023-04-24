@@ -32,7 +32,7 @@ possibly a column \samp{trans} (default ='N') and possibly columns \samp{lim.a} 
 Draw population parameters using the covariance matrix of the estimates.
 }
 \details{
-See http://simulx.webpopix.org/mlxr/simpopmlx/ for more details.
+See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 }
 \examples{
 \dontrun{

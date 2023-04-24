@@ -93,5 +93,5 @@ Input arguments are the input arguments of Simulx (http://simulx.webpopix.org)
  
 Specific input arguments can be also used for computing the exposure at steady state,
 i.e. after the administration of an "infinite" number of doses.              
-See http://simulx.webpopix.org/exposure/ for more details.
+See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 }

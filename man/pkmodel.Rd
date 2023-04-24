@@ -6,7 +6,7 @@
        
 Easy simulation of basic PK models
        
-See http://simulx.webpopix.org/mlxr/pkmodel/ for more details.}
+See https://simulx.lixoft.com/mlxr-documentation/ for more details.}
 \usage{
 pkmodel(time, treatment, parameter)
 }
@@ -28,7 +28,7 @@ Easy simulation of PK models
        
 Easy simulation of basic PK models
        
-See http://simulx.webpopix.org/mlxr/pkmodel/ for more details.
+See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 }
 \examples{
    

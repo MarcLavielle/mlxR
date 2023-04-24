@@ -52,7 +52,7 @@ a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
 Plot empirical survival functions using the Kaplan Meier estimate.
 }
 \details{
-See http://simulx.webpopix.org/mlxr/kmplotmlx/ for more details.
+See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 }
 \examples{
 \dontrun{

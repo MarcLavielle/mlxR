@@ -40,7 +40,7 @@ Write data contained in a list of dataframes in a single file (NONMEM/Monolix fo
 or in several files as tables
 }
 \details{
-See http://simulx.webpopix.org/mlxr/writedatamlx/ for more details.
+See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 }
 \examples{
 \dontrun{

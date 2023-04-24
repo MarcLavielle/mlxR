@@ -22,7 +22,7 @@ A data frame.
 Compute statistical summaries (mean, quantile, variance, survival rate,...)
 }
 \details{
-See http://simulx.webpopix.org/stamlx for more details.
+See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 }
 \examples{
 \dontrun{

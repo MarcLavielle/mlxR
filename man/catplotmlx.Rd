@@ -49,7 +49,7 @@ a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
 Plot the empirical distribution of categorical longitudinal data.
 }
 \details{
-See http://simulx.webpopix.org/mlxr/catplotmlx/ for more details.
+See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 }
 \examples{
 \dontrun{

@@ -56,7 +56,7 @@ a ggplot object if \code{plot=TRUE} ; otherwise, a list with fields:
 Compute and display percentiles of the empiricial distribution of longitudinal data.
 }
 \details{
-See http://simulx.webpopix.org/mlxr/prctilemlx/ for more details.
+See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 }
 \examples{
 \dontrun{

@@ -52,7 +52,7 @@ A list of data frames
 Read data in a Monolix/NONMEM format
 }
 \details{
-See http://simulx.webpopix.org/mlxr/readdatamlx/ for more details.
+See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 }
 \examples{
 \dontrun{

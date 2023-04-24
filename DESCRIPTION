@@ -12,14 +12,14 @@ Authors@R: c(
     person( "Marc", "Lavielle", role = c("aut","cre"), email = "Marc.Lavielle@inria.fr" ),
     person( "Esther", "Ilinca", role = c("ctb"), email = "esther.ilinca@lixoft.com" ),
     person( "Raphael", "Kuate", role = c("ctb"), email = "raphael.kuate@lixoft.com" ))
-URL: http://simulx.webpopix.org
+URL: https://simulx.lixoft.com/mlxr-documentation/
 BugReports: https://github.com/MarcLavielle/mlxR/issues
 Depends: R (>= 3.0.1), ggplot2
 Suggests: XML, Rcpp (>= 0.11.3), reshape2, gridExtra, shiny
 Imports: tools, methods, graphics, grDevices, utils, stats
 License: BSD_2_clause + file LICENSE
 Copyright: Inria
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.2
 NeedsCompilation: no
 Maintainer: Marc Lavielle <Marc.Lavielle@inria.fr>
 Collate: 'apiTools.R' 'apiManager.R' 'mlxComputeRCleaner.R'
