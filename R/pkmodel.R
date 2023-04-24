@@ -2,7 +2,7 @@
 #'        
 #' Easy simulation of basic PK models
 #'        
-#' See http://simulx.webpopix.org/mlxr/pkmodel/ for more details.
+#' See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 #' @export
 #' @param time a vector
 #' @param treatment a list with fields

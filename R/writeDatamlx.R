@@ -3,7 +3,7 @@
 #' Write data contained in a list of dataframes in a single file (NONMEM/Monolix format)
 #' or in several files as tables
 #' 
-#' See http://simulx.webpopix.org/mlxr/writedatamlx/ for more details.
+#' See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 #' @param r a list of dataframes
 #' @param result.file a string with the name of the file 
 #' @param result.folder a string with the name of the folder 

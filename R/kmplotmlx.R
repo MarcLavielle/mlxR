@@ -2,7 +2,7 @@
 #' 
 #' Plot empirical survival functions using the Kaplan Meier estimate.
 #' 
-#' See http://simulx.webpopix.org/mlxr/kmplotmlx/ for more details.
+#' See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 #' @param r a data frame with a column \samp{id}, a column \samp{time}, 
 #' a column with values and possibly a column \samp{group}.
 #' @param index an integer: \code{index=k} means that the survival function for the k-th event is displayed. 

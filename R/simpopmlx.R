@@ -2,7 +2,7 @@
 #' 
 #' Draw population parameters using the covariance matrix of the estimates.
 #' 
-#' See http://simulx.webpopix.org/mlxr/simpopmlx/ for more details.
+#' See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 #' @param n the number of vectors of population parameters (default = 1), 
 #' @param project a Monolix project, assuming that the Fisher information Matrix was estimated by Monolix.
 #' @param fim the Fisher Information Matrix estimated by Monolix. fim={"sa", "lin"} (default="sa") 

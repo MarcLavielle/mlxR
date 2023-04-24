@@ -2,7 +2,7 @@
 #'
 #' Compute statistical summaries (mean, quantile, variance, survival rate,...)
 #' 
-#' See http://simulx.webpopix.org/stamlx for more details.      
+#' See https://simulx.lixoft.com/mlxr-documentation/ for more details.      
 #' @param r a data frame
 #' @param FUN a string, or a vector of strings, with the name of the functions to apply to the result of the simulation
 #' @param probs a vector of quantiles  between 0 and 1. Only used when "quantile" has been defined in \code{FUN} 

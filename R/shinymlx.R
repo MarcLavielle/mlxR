@@ -12,7 +12,7 @@
 #' (value, min, max, step) for \code{slider}, (selected, choices) for \code{select} and
 #' value for \code{numeric}.
 #'
-#' See http://simulx.webpopix.org/mlxr/shinymlx/ for more details.      
+#' See https://simulx.lixoft.com/mlxr-documentation/ for more details.      
 #' @param model a \code{Mlxtran} model used for the simulation
 #' @param output a list - or a list of lists - with fields: 
 #' \itemize{

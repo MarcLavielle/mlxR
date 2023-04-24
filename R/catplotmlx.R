@@ -2,7 +2,7 @@
 #'
 #'  Plot the empirical distribution of categorical longitudinal data.
 #'
-#' See http://simulx.webpopix.org/mlxr/catplotmlx/ for more details.      
+#' See https://simulx.lixoft.com/mlxr-documentation/ for more details.      
 #' @param r a data frame with a column \samp{id}, a column \samp{time}, 
 #' a column with values and possibly Hk[ja column \samp{group}.
 #' @param col a vector of 3 column numbers: (\samp{id}, \samp{time/x}, \samp{y}. Default = c(1, 2,3).

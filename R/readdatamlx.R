@@ -2,7 +2,7 @@
 #' 
 #' Read data in a Monolix/NONMEM format
 #' 
-#' See http://simulx.webpopix.org/mlxr/readdatamlx/ for more details.
+#' See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 #' @param data a list with fields
 #' \itemize{
 #'   \item \code{dataFile}: path of a formatted data file

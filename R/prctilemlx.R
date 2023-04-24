@@ -2,7 +2,7 @@
 #'
 #' Compute and display percentiles of the empiricial distribution of longitudinal data.
 #'
-#' See http://simulx.webpopix.org/mlxr/prctilemlx/ for more details.
+#' See https://simulx.lixoft.com/mlxr-documentation/ for more details.
 #' @param r a data frame with a column \samp{id}, a column \samp{time} and a column with values.
 #' The times should be the same for each individual. 
 #' @param col a vector with the three column indexes for \samp{id}, \samp{time/x} and \samp{y}. Default = c(1, 2,3).

@@ -15,7 +15,7 @@
 #' That allows one to implement very easily complex models and to take advantage 
 #' of the numerical sovers used by the C++ \samp{mlxLibrary}.
 #' 
-#' See http://simulx.webpopix.org for more details.      
+#' See https://simulx.lixoft.com/mlxr-documentation/ for more details.      
 #' @param model a \code{Mlxtran}, or \code{R} model used for the simulation
 #' @param parameter a vector of parameters with their names and values
 #' @param output a list (or list of lists) with fields: 
