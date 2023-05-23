@@ -46,7 +46,7 @@ hgdata <- function(lv)
 #------------------------------------------------------
 processing_categorical <- function(param)
 {
-  param[sapply(param, is.character)] <- as.factor(param[sapply(param, is.character)])
+  param[sapply(param, is.character)] <- sapply(param[sapply(param, is.character)], as.factor)
   pf=param[sapply(param, is.factor)]
   npf <- names(pf)
   if (length(npf)>0){
